@@ -1,0 +1,79 @@
+/*
+ * spotless:off
+ * MobsInfo - Minecraft addon
+ * Copyright (C) 2023  kuba6000
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library. If not, see <https://www.gnu.org/licenses/>.
+ * spotless:on
+ */
+
+package com.kuba6000.mobsinfo;
+
+import com.kuba6000.mobsinfo.api.utils.ModUtils;
+import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
+import com.kuba6000.mobsinfo.nei.IMCForNEI;
+
+import cpw.mods.fml.common.event.*;
+
+@SuppressWarnings("unused")
+public class ClientProxy extends CommonProxy {
+
+    @Override
+    public void preInit(FMLPreInitializationEvent event) {
+        ModUtils.isClientSided = true;
+        super.preInit(event);
+    }
+
+    @Override
+    public void init(FMLInitializationEvent event) {
+        super.init(event);
+        IMCForNEI.IMCSender();
+    }
+
+    @Override
+    public void postInit(FMLPostInitializationEvent event) {
+        super.postInit(event);
+    }
+
+    @Override
+    public void loadComplete(FMLLoadCompleteEvent event) {
+        super.loadComplete(event);
+        MobRecipeLoader.generateMobRecipeMap();
+    }
+
+    @Override
+    public void serverAboutToStart(FMLServerAboutToStartEvent event) {
+        super.serverAboutToStart(event);
+    }
+
+    @Override
+    public void serverStarting(FMLServerStartingEvent event) {
+        super.serverStarting(event);
+    }
+
+    @Override
+    public void serverStarted(FMLServerStartedEvent event) {
+        super.serverStarted(event);
+    }
+
+    @Override
+    public void serverStopping(FMLServerStoppingEvent event) {
+        super.serverStopping(event);
+    }
+
+    @Override
+    public void serverStopped(FMLServerStoppedEvent event) {
+        super.serverStopped(event);
+    }
+}
