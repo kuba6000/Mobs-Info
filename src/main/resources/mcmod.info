@@ -1,0 +1,21 @@
+{
+	"modListVersion": 2,
+	"modList": [{
+		"modid": "${modId}",
+		"name": "${modName}",
+		"description": "Mod for 1.7.10 that adds info about mods in NEI",
+		"version": "${modVersion}",
+		"mcversion": "${minecraftVersion}",
+		"url": "https://github.com/kuba6000/MobsInfo",
+		"updateUrl": "",
+		"authorList": ["kuba6000"],
+		"credits": "",
+		"logoFile": "assets/mobsinfo/textures/gui/logo.png",
+		"screenshots": [],
+		"parent": "",
+		"requiredMods": [],
+		"dependencies": [],
+		"dependants": [],
+		"useDependencyInformation": true
+	}]
+}
