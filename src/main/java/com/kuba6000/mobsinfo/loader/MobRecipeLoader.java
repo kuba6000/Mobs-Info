@@ -581,7 +581,7 @@ public class MobRecipeLoader {
 
         isInGenerationProcess = true;
 
-        LOG.info("Generating Recipe Map for Mob Handler and EEC");
+        LOG.info("Generating Recipe Map for Mob Handler");
 
         long time = System.currentTimeMillis();
 
@@ -645,7 +645,6 @@ public class MobRecipeLoader {
                 droplist superraredrops = new droplist();
                 droplist additionaldrops = new droplist();
                 droplist dropslooting = new droplist();
-                droplist dropscustom = new droplist();
 
                 frand.newRound();
                 collector.newRound();
@@ -1136,7 +1135,7 @@ public class MobRecipeLoader {
             recipe.refresh();
 
             if (drops.isEmpty()) {
-                LOG.info("Entity " + k + " doesn't drop any items, skipping EEC map");
+                LOG.info("Entity " + k + " doesn't drop any items");
                 if (!Config.MobHandler.includeEmptyMobs) continue;
                 LoadConfigPacket.instance.mobsToLoad.add(k);
                 LOG.info("Registered " + k);

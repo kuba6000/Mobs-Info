@@ -16,7 +16,7 @@ mobhandler.chance=Chance: %.2f%%
 mobhandler.average_reminder=§7§oPlease remember that these are average drops.
 mobhandler.lootable=Looting is applied
 mobhandler.player_only=§7Hard player-only
-mobhandler.eec_chance=§5Chance to drop in EEC: %.2f%%
+mobhandler.peaceful_allowed=Allowed in peaceful
 
 #Commands
 commandhandler.invalid=§cInvalid use ! The proper use of this command is /%s

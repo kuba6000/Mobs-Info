@@ -32,7 +32,16 @@ import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 
 @SuppressWarnings("unused")
-@Mod(modid = Tags.MODID, version = Tags.VERSION, name = Tags.MODNAME, acceptedMinecraftVersions = "[1.7.10]")
+@Mod(
+    modid = Tags.MODID,
+    version = Tags.VERSION,
+    name = Tags.MODNAME,
+    acceptedMinecraftVersions = "[1.7.10]",
+    dependencies = "required-after: gtnhmixins@[2.0.1,); " + "required-after: NotEnoughItems; "
+        + "after: EnderIO; "
+        + "after: Thaumcraft; "
+        + "after: InfernalMobs; "
+        + "after: MineTweaker3; ")
 public class MobsInfo {
 
     @Mod.Instance

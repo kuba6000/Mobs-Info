@@ -68,12 +68,10 @@ public class Config {
         public static _CacheRegenerationTrigger regenerationTrigger = _CacheRegenerationTrigger.ModAdditionRemovalChange;
         public static boolean includeEmptyMobs = true;
         public static String[] mobBlacklist;
-        public static double playerOnlyDropsModifier = .1d;
 
         private static void load(Configuration configuration) {
             Category category = Category.MOB_HANDLER;
-            mobHandlerEnabled = configuration
-                .get(category.get(), "Enabled", true, "Enable \"Mob Drops\" NEI page and Extreme Extermination Chamber")
+            mobHandlerEnabled = configuration.get(category.get(), "Enabled", true, "Enable \"Mob Info\" NEI page")
                 .getBoolean();
             StringBuilder c = new StringBuilder("When will cache regeneration trigger? ");
             for (_CacheRegenerationTrigger value : _CacheRegenerationTrigger.values()) c.append(value.ordinal())
@@ -104,13 +102,6 @@ public class Config {
                         "SpecialMobs.SpecialSilverfish", },
                     "These mobs will be skipped when generating recipe map")
                 .getStringList();
-            playerOnlyDropsModifier = configuration
-                .get(
-                    category.get(),
-                    "PlayerOnlyDropsModifier",
-                    .1d,
-                    "Hard player only loot (such as core mod drops) will be multiplied by this number")
-                .getDouble();
         }
     }
 
