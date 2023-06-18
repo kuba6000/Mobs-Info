@@ -22,7 +22,7 @@ These informations includes:
 <details>
   <summary>Screenshots in game</summary>
   
-  ![1](https://github.com/kuba6000/Mobs-Info/assets/53441451/dc13cb2d-2a53-4769-be10-8e44836fd429)
+  ![1](https://github.com/kuba6000/Mobs-Info/assets/53441451/771b0adc-8b4d-450c-b7c5-2c2bd6b0b3fd)
   
 </details>
 
