@@ -1,8 +1,39 @@
-# MobsInfo
+# MobsInfo 1.7.10
 
 ## About
 
-MobsInfo is
+This mod is an addon to NEI that adds a new tab with all of the information about the mobs.
+
+These informations includes:
+- How does it look (it is rendered and always looks at your cursor)
+- Mob name
+- Mob registry name (shown only with F3+H and shift)
+- Which mod added the mob
+- Max health
+- Can it be spawned as infernal (only with Infernal-Mobs mod)
+- Is it a boss
+- Is it allowed on peaceful
+- Can it be captured with a vial (only with EnderIO)
+- Mob loot:
+  - Normal drops
+  - Rare drops
+  - Additional drops (armor, equipment)
+
+<details>
+  <summary>Screenshots in game</summary>
+  
+  ![1](https://github.com/kuba6000/Mobs-Info/assets/53441451/dc13cb2d-2a53-4769-be10-8e44836fd429)
+  
+</details>
+
+## Override Config
+Sometimes there are cases where it is impossible to generate loot that the mob gives.
+In this cases you can manually edit the information on the page with the override config.
+
+You can find it in .minecraft\config\MobsInfo\MobOverrides.json
+
+Example file should generate at first start
+
 
 ## License
 
