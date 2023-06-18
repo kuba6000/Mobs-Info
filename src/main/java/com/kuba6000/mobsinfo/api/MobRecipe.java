@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
-import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 
@@ -93,15 +92,12 @@ public class MobRecipe {
         mMaxDamageChance = maxdamagechance;
     }
 
-    public ItemStack[] generateRandomOutputs(World world, Random rnd, int lootinglevel,
+    public ItemStack[] generateRandomOutputs(World world, Random rnd, int lootinglevel, boolean includePlayerOnlyLoot,
         boolean includeInfernalDropsIfPossible) {
         ArrayList<ItemStack> stacks = new ArrayList<>(mOutputs.size());
         for (MobDrop o : mOutputs) {
             int chance = o.chance;
-            if (o.playerOnly) {
-                chance = (int) ((double) chance * Config.MobHandler.playerOnlyDropsModifier);
-                if (chance < 1) chance = 1;
-            }
+            if (o.playerOnly && !includePlayerOnlyLoot) continue;
             int amount = o.stack.stackSize;
             if (o.lootable && lootinglevel > 0) {
                 chance += lootinglevel * 5000;

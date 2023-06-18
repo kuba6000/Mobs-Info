@@ -20,6 +20,8 @@
 
 package com.kuba6000.mobsinfo.nei;
 
+import static com.kuba6000.mobsinfo.nei.Mob_Handler.Translations.BOSS;
+
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -36,6 +39,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.BossStatus;
 import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -95,7 +99,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
         BOSS,
         LOOTABLE,
         PLAYER_ONLY,
-        EEC_CHANCE,;
+        PEACEFUL_ALLOWED;
 
         final String key;
 
@@ -354,9 +358,14 @@ public class Mob_Handler extends TemplateRecipeHandler {
                 break;
         }
 
-        if (!currentrecipe.isUsableInVial) {
+        if (!currentrecipe.isBoss.isEmpty())
+            GuiDraw.drawString(EnumChatFormatting.BOLD + "" + BOSS.get(), x, y += yshift, 0xFFD68F00, false);
+
+        if (currentrecipe.isPeacefulAllowed)
+            GuiDraw.drawString(Translations.PEACEFUL_ALLOWED.get(), x, y += yshift, 0xFF005500, false);
+
+        if (!currentrecipe.isUsableInVial)
             GuiDraw.drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, 0xFF555555, false);
-        }
 
         x = 6;
         y = 83;
@@ -414,21 +423,25 @@ public class Mob_Handler extends TemplateRecipeHandler {
 
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
-        if (LoaderReference.EnderIO && ingredient.getItem() == Item.getItemFromBlock(EnderIO.blockPoweredSpawner)) {
-            if (!ingredient.hasTagCompound() || !ingredient.getTagCompound()
-                .hasKey("mobType")) {
-                loadCraftingRecipes(getOverlayIdentifier(), (Object) null);
+        if (LoaderReference.EnderIO) {
+            if (ingredient.getItem() == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())) {
+                if (!ingredient.hasTagCompound() || !ingredient.getTagCompound()
+                    .hasKey("mobType")) {
+                    loadCraftingRecipes(getOverlayIdentifier(), (Object) null);
+                    return;
+                }
+                for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
+                    .anyMatch(
+                        s -> s.getItem() == ingredient.getItem() && Objects.equals(
+                            s.getTagCompound()
+                                .getString("mobType"),
+                            ingredient.getTagCompound()
+                                .getString("mobType"))))
+                    arecipes.add(r);
                 return;
             }
-            for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
-                .anyMatch(
-                    s -> s.getItem() == ingredient.getItem() && Objects.equals(
-                        s.getTagCompound()
-                            .getString("mobType"),
-                        ingredient.getTagCompound()
-                            .getString("mobType"))))
-                arecipes.add(r);
-        } else for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
+        }
+        for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
             .anyMatch(ingredient::isItemEqual)) arecipes.add(r);
     }
 
@@ -479,9 +492,6 @@ public class Mob_Handler extends TemplateRecipeHandler {
             if (lootable) extraTooltip.add(EnumChatFormatting.RESET + Translations.LOOTABLE.get());
             if (isPlayerOnly) {
                 extraTooltip.add(EnumChatFormatting.RESET + Translations.PLAYER_ONLY.get());
-                extraTooltip.add(
-                    EnumChatFormatting.RESET + Translations.EEC_CHANCE
-                        .get(((double) ((int) ((double) chance * Config.MobHandler.playerOnlyDropsModifier)) / 100d)));
             }
             extraTooltip.add(EnumChatFormatting.RESET + Translations.AVERAGE_REMINDER.get());
 
@@ -517,6 +527,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
         public final int additionalOutputsCount;
         public final int infernalOutputsCount;
         public final boolean isUsableInVial;
+        public final boolean isPeacefulAllowed;
         public String isBoss = "";
 
         public MobCachedRecipe(EntityLiving mob, List<MobPositionedStack> mOutputs, int normalOutputsCount,
@@ -534,8 +545,10 @@ public class Mob_Handler extends TemplateRecipeHandler {
             this.additionalOutputsCount = additionalOutputsCount;
             this.infernalOutputsCount = infernalOutputsCount;
             this.mInput = new ArrayList<>();
+            this.isPeacefulAllowed = !(mob instanceof IMob);
             int id = EntityList.getEntityID(mob);
             mobname = EntityList.getEntityString(mob);
+            // noinspection ConstantConditions
             localizedName = mobname.equals("Skeleton") && ((EntitySkeleton) mob).getSkeletonType() == 1
                 ? "Wither Skeleton"
                 : StatCollector.translateToLocal("entity." + mobname + ".name");
@@ -544,9 +557,9 @@ public class Mob_Handler extends TemplateRecipeHandler {
                 this.mInput.add(new ItemStack(Blocks.mob_spawner, 1, id));
             }
             if (LoaderReference.EnderIO) {
-                ItemStack s = new ItemStack(EnderIO.blockPoweredSpawner, 1);
+                ItemStack s = new ItemStack(EnderIOGetter.blockPoweredSpawner(), 1);
                 NBTTagCompound nbt = new NBTTagCompound();
-                BlockPoweredSpawner.writeMobTypeToNBT(nbt, mobname);
+                EnderIOGetter.BlockPoweredSpawner$writeMobTypeToNBT(nbt, mobname);
                 s.setTagCompound(nbt);
                 this.mInput.add(0, s);
             } else if (id == 0) this.mInput.add(new ItemStack(Items.spawn_egg, 1, 0)); // ???
@@ -576,6 +589,17 @@ public class Mob_Handler extends TemplateRecipeHandler {
         public List<PositionedStack> getOtherStacks() {
             if (cycleTicksStatic % 10 == 0) mOutputs.forEach(p -> p.setPermutationToRender(0));
             return mOutputs;
+        }
+    }
+
+    private static class EnderIOGetter {
+
+        public static Block blockPoweredSpawner() {
+            return EnderIO.blockPoweredSpawner;
+        }
+
+        public static void BlockPoweredSpawner$writeMobTypeToNBT(NBTTagCompound nbt, String type) {
+            BlockPoweredSpawner.writeMobTypeToNBT(nbt, type);
         }
     }
 }
