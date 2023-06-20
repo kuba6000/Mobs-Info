@@ -14,6 +14,7 @@ public class ExtraLoader {
 
     private static void init() {
         initialized = true;
+        if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
         if (LoaderReference.DraconicEvolution) loaders.add(new DraconicEvolution());
     }
 
