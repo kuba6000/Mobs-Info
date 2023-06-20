@@ -85,6 +85,7 @@ import com.kuba6000.mobsinfo.api.utils.ItemID;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.config.OverridesConfig;
+import com.kuba6000.mobsinfo.loader.extras.ExtraLoader;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EntityAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EntityLivingAccessor;
@@ -1114,6 +1115,8 @@ public class MobRecipeLoader {
             @SuppressWarnings("unchecked")
             ArrayList<MobDrop> drops = (ArrayList<MobDrop>) v.drops.clone();
 
+            ExtraLoader.process(k, drops, recipe);
+
             // MT Scripts should already be loaded here
             if (LoaderReference.MineTweaker) {
                 Optionals.parseMTAdditions(k, drops, recipe);
@@ -1141,7 +1144,7 @@ public class MobRecipeLoader {
                 LOG.info("Registered " + k);
                 continue;
             }
-            if (v.recipe.mOutputs.size() > 0) MobNameToRecipeMap.put(k, recipe);
+            MobNameToRecipeMap.put(k, recipe);
             LoadConfigPacket.instance.mobsToLoad.add(k);
             LOG.info("Registered " + k);
         }
@@ -1158,6 +1161,8 @@ public class MobRecipeLoader {
             recipe = recipe.copy();
             @SuppressWarnings("unchecked")
             ArrayList<MobDrop> drops = (ArrayList<MobDrop>) v.drops.clone();
+
+            ExtraLoader.process(k, drops, recipe);
 
             // MT Scripts should already be loaded here
             if (LoaderReference.MineTweaker) {
@@ -1180,7 +1185,7 @@ public class MobRecipeLoader {
             recipe.refresh();
 
             Mob_Handler.addRecipe(v.mob, drops);
-            if (recipe.mOutputs.size() > 0) MobNameToRecipeMap.put(k, recipe);
+            MobNameToRecipeMap.put(k, recipe);
             LOG.info("Registered " + k);
         });
         LOG.info("Sorting NEI map");

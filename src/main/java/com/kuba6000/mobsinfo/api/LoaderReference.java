@@ -10,5 +10,6 @@ public class LoaderReference {
     public static final boolean MineTweaker = Loader.isModLoaded("MineTweaker3");
     public static final boolean TwilightForest = Loader.isModLoaded("TwilightForest");
     public static final boolean BetterLoadingScreen = Loader.isModLoaded("betterloadingscreen");
+    public static final boolean DraconicEvolution = Loader.isModLoaded("DraconicEvolution");
 
 }
