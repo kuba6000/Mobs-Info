@@ -14,5 +14,6 @@ public class LoaderReference {
     public static final boolean TinkersConstruct = Loader.isModLoaded("TConstruct");
     public static final boolean Witchery = Loader.isModLoaded("witchery");
     public static final boolean ThaumicHorizons = Loader.isModLoaded("ThaumicHorizons");
+    public static final boolean ThaumicBases = Loader.isModLoaded("thaumicbases");
 
 }

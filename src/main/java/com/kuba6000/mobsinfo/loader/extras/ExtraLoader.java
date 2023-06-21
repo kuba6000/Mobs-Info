@@ -18,6 +18,7 @@ public class ExtraLoader {
         if (LoaderReference.TinkersConstruct) loaders.add(new TinkersConstruct());
         if (LoaderReference.Witchery) loaders.add(new Witchery());
         if (LoaderReference.ThaumicHorizons) loaders.add(new ThaumicHorizons());
+        if (LoaderReference.ThaumicBases) loaders.add(new ThaumicBases());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
