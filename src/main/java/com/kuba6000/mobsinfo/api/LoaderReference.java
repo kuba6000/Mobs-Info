@@ -17,5 +17,6 @@ public class LoaderReference {
     public static final boolean ThaumicBases = Loader.isModLoaded("thaumicbases");
     public static final boolean WirelessCraftingTerminal = Loader.isModLoaded("ae2wct");
     public static final boolean CoFHCore = Loader.isModLoaded("CoFHCore");
+    public static final boolean HardcoreEnderExpansion = Loader.isModLoaded("HardcoreEnderExpansion");
 
 }

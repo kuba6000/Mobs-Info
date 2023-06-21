@@ -21,6 +21,7 @@ public class ExtraLoader {
         if (LoaderReference.ThaumicBases) loaders.add(new ThaumicBases());
         if (LoaderReference.WirelessCraftingTerminal) loaders.add(new WirelessCraftingTerminal());
         if (LoaderReference.CoFHCore) loaders.add(new CoFHCore());
+        if (LoaderReference.HardcoreEnderExpansion) loaders.add(new HardcoreEnderExpansion());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
