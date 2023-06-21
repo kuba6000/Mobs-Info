@@ -38,18 +38,10 @@ dependencies {
     api("com.github.GTNewHorizons:NotEnoughItems:2.3.55-GTNH:dev")
     devOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.4.18:dev")
     devOnlyNonPublishable("com.github.GTNewHorizons:Infernal-Mobs:1.7.8-GTNH:dev")
-    compileOnly("com.github.GTNewHorizons:BetterLoadingScreen:1.4.1-GTNH:dev")
-    {
-        transitive = false
-    }
-    compileOnly("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev")
-    {
-        transitive = false
-    }
-    compileOnly("com.github.GTNewHorizons:CraftTweaker:3.2.12:dev")
-    {
-        transitive = false
-    }
+    compileOnly("com.github.GTNewHorizons:BetterLoadingScreen:1.4.1-GTNH:dev") { transitive = false }
+    compileOnly("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:CraftTweaker:3.2.12:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:Draconic-Evolution:1.1.19-GTNH:dev") { transitive = false }
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
     implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 }

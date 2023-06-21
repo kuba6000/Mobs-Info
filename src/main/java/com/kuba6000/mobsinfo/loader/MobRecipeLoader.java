@@ -1164,8 +1164,8 @@ public class MobRecipeLoader {
                 }
                 drops.addAll(override.additions);
                 recipe.mOutputs.addAll(override.additions);
-                drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             }
+            drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             recipe.refresh();
 
             Mob_Handler.addRecipe(v.mob, drops);

@@ -1,5 +1,6 @@
 package com.kuba6000.mobsinfo.mixin;
 
+import static com.kuba6000.mobsinfo.mixin.TargetedMod.DRACONIC_EVOLUTION;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.ENDER_IO;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.INFERNAL_MOBS;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.VANILLA;
@@ -25,6 +26,9 @@ public enum Mixin {
 
     // Ender IO
     ItemSoulVesselAccessor("EnderIO.ItemSoulVesselAccessor", ENDER_IO),
+
+    // Draconic Evolution
+    MinecraftForgeEventHandlerAccessor("DraconicEvolution.MinecraftForgeEventHandlerAccessor", DRACONIC_EVOLUTION),
 
     ;
 
