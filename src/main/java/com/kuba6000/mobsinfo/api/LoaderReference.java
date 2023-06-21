@@ -22,5 +22,6 @@ public class LoaderReference {
     public static final boolean HarvestCraft = Loader.isModLoaded("harvestcraft");
     public static final boolean OpenBlocks = Loader.isModLoaded("OpenBlocks");
     public static final boolean BloodArsenal = Loader.isModLoaded("BloodArsenal");
+    public static final boolean BloodMagic = Loader.isModLoaded("AWWayofTime");
 
 }
