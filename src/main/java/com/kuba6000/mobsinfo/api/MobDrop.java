@@ -74,6 +74,21 @@ public class MobDrop {
         this.playerOnly = playerOnly;
     }
 
+    public MobDrop copy() {
+        @SuppressWarnings("unchecked")
+        MobDrop copy = new MobDrop(
+            this.stack.copy(),
+            this.type,
+            this.chance,
+            this.enchantable,
+            this.damages == null ? null : (HashMap<Integer, Integer>) this.damages.clone(),
+            this.lootable,
+            this.playerOnly);
+        copy.variableChance = this.variableChance;
+        copy.variableChanceInfo = this.variableChanceInfo;
+        return copy;
+    }
+
     public void reconstructStack() {
         this.stack = reconstructableStack.construct();
     }

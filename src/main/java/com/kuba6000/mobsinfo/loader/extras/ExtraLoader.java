@@ -16,6 +16,7 @@ public class ExtraLoader {
         initialized = true;
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
         if (LoaderReference.DraconicEvolution) loaders.add(new DraconicEvolution());
+        if (LoaderReference.TinkersConstruct) loaders.add(new TinkersConstruct());
     }
 
     public static void process(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {

@@ -383,6 +383,14 @@ public class MobRecipeLoader {
             this.recipe = recipe;
             this.drops = drops;
         }
+
+        public ArrayList<MobDrop> copyDrops() {
+            ArrayList<MobDrop> copy = new ArrayList<>(drops.size());
+            for (MobDrop drop : drops) {
+                copy.add(drop.copy());
+            }
+            return copy;
+        }
     }
 
     public static final HashMap<String, GeneralMappedMob> GeneralMobList = new HashMap<>();
@@ -1106,8 +1114,9 @@ public class MobRecipeLoader {
 
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
-            @SuppressWarnings("unchecked")
-            ArrayList<MobDrop> drops = (ArrayList<MobDrop>) v.drops.clone();
+            ArrayList<MobDrop> drops = v.copyDrops();
+            recipe.mOutputs.clear();
+            recipe.mOutputs.addAll(drops);
 
             ExtraLoader.process(k, drops, recipe);
 
@@ -1146,10 +1155,12 @@ public class MobRecipeLoader {
         MobNameToRecipeMap.clear();
         mobs.forEach(k -> {
             GeneralMappedMob v = GeneralMobList.get(k);
+
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
-            @SuppressWarnings("unchecked")
-            ArrayList<MobDrop> drops = (ArrayList<MobDrop>) v.drops.clone();
+            ArrayList<MobDrop> drops = v.copyDrops();
+            recipe.mOutputs.clear();
+            recipe.mOutputs.addAll(drops);
 
             ExtraLoader.process(k, drops, recipe);
 
