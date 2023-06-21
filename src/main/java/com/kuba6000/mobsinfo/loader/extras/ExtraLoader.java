@@ -30,6 +30,7 @@ public class ExtraLoader {
         if (LoaderReference.HardcoreEnderExpansion) loaders.add(new HardcoreEnderExpansion());
         if (LoaderReference.Botania) loaders.add(new Botania());
         if (LoaderReference.HarvestCraft) loaders.add(new HarvestCraft());
+        if (LoaderReference.OpenBlocks) loaders.add(new OpenBlocks());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
