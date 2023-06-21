@@ -3,11 +3,17 @@ package com.kuba6000.mobsinfo.loader.extras;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
 public class ExtraLoader {
+
+    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Extra Loader]");
 
     private static boolean initialized = false;
     private static final List<IExtraLoader> loaders = new ArrayList<>();
@@ -22,6 +28,7 @@ public class ExtraLoader {
         if (LoaderReference.WirelessCraftingTerminal) loaders.add(new WirelessCraftingTerminal());
         if (LoaderReference.CoFHCore) loaders.add(new CoFHCore());
         if (LoaderReference.HardcoreEnderExpansion) loaders.add(new HardcoreEnderExpansion());
+        if (LoaderReference.Botania) loaders.add(new Botania());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
@@ -30,7 +37,14 @@ public class ExtraLoader {
     public static void process(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {
         if (!initialized) init();
         for (IExtraLoader loader : loaders) {
-            loader.process(k, drops, recipe);
+            try {
+                loader.process(k, drops, recipe);
+            } catch (Exception ex) {
+                LOG.error(
+                    "There was an error while loading " + loader.getClass()
+                        .getSimpleName());
+                ex.printStackTrace();
+            }
         }
     }
 }
