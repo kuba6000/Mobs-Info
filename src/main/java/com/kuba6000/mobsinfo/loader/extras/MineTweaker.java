@@ -44,7 +44,6 @@ public class MineTweaker implements IExtraLoader {
                     false,
                     false);
                 drops.add(drop);
-                recipe.mOutputs.add(drop);
             }
             for (Map.Entry<IItemStack, IntRange> entry : ie.getDropsToAddPlayerOnly()
                 .entrySet()) {
@@ -74,7 +73,6 @@ public class MineTweaker implements IExtraLoader {
                     .filter(d -> istack.matches(new MCItemStack(d.stack)))
                     .collect(Collectors.toList());
                 drops.removeAll(toRemove);
-                recipe.mOutputs.removeAll(toRemove);
             }
         }
     }

@@ -14,9 +14,12 @@ public class ExtraLoader {
 
     private static void init() {
         initialized = true;
-        if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
         if (LoaderReference.DraconicEvolution) loaders.add(new DraconicEvolution());
         if (LoaderReference.TinkersConstruct) loaders.add(new TinkersConstruct());
+        if (LoaderReference.Witchery) loaders.add(new Witchery());
+
+        // LAST
+        if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
     }
 
     public static void process(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {

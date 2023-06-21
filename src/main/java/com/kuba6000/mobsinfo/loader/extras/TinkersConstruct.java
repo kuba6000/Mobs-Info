@@ -66,7 +66,6 @@ public class TinkersConstruct implements IExtraLoader {
                     "Each level of beheading on your sword gives additional 10%",
                     "If you are using a Cleaver, it gives another 20%"));
             drops.add(drop);
-            recipe.mOutputs.add(drop);
 
             if (((EntitySkeleton) recipe.entity).getSkeletonType() == 1) {
                 MobDrop drop2 = new MobDrop(
@@ -78,7 +77,6 @@ public class TinkersConstruct implements IExtraLoader {
                     true,
                     false);
                 drops.add(drop2);
-                recipe.mOutputs.add(drop2);
             }
 
         }
@@ -99,7 +97,6 @@ public class TinkersConstruct implements IExtraLoader {
                     "Each level of beheading on your sword gives additional 10%",
                     "If you are using a cleaver, it gives another 20%"));
             drops.add(drop);
-            recipe.mOutputs.add(drop);
 
             MobDrop drop2 = new MobDrop(
                 new ItemStack(TinkerTools.materials, 1, 2),
@@ -112,7 +109,6 @@ public class TinkersConstruct implements IExtraLoader {
             drop2.variableChance = true;
             drop2.variableChanceInfo.addAll(Arrays.asList("Chance: 10%", "* Drops only when killed using Cleaver"));
             drops.add(drop2);
-            recipe.mOutputs.add(drop2);
         }
 
         if (recipe.entity.getClass() == EntityCreeper.class) {
@@ -131,7 +127,6 @@ public class TinkersConstruct implements IExtraLoader {
                     "Each level of beheading on your sword gives additional 5%",
                     "If you are using a cleaver, it gives another 10%"));
             drops.add(drop);
-            recipe.mOutputs.add(drop);
         }
 
         // tconstruct.armor.TinkerArmorEvents.onLivingDrop
@@ -146,7 +141,6 @@ public class TinkersConstruct implements IExtraLoader {
                 false,
                 false);
             drops.add(drop);
-            recipe.mOutputs.add(drop);
         }
 
         if (recipe.entity instanceof IBossDisplayData) {
@@ -165,7 +159,6 @@ public class TinkersConstruct implements IExtraLoader {
                 false,
                 false);
             drops.add(drop);
-            recipe.mOutputs.add(drop);
         }
 
     }

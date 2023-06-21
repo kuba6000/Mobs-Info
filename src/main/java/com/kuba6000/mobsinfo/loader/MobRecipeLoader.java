@@ -1115,10 +1115,11 @@ public class MobRecipeLoader {
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
-            recipe.mOutputs.clear();
-            recipe.mOutputs.addAll(drops);
 
             ExtraLoader.process(k, drops, recipe);
+
+            recipe.mOutputs.clear();
+            recipe.mOutputs.addAll(drops);
 
             OverridesConfig.MobOverride override;
             if ((override = OverridesConfig.overrides.get(k)) != null) {
@@ -1159,10 +1160,11 @@ public class MobRecipeLoader {
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
-            recipe.mOutputs.clear();
-            recipe.mOutputs.addAll(drops);
 
             ExtraLoader.process(k, drops, recipe);
+
+            recipe.mOutputs.clear();
+            recipe.mOutputs.addAll(drops);
 
             OverridesConfig.MobOverride override;
             if ((override = overrides.get(k)) != null) {

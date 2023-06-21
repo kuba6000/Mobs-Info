@@ -31,7 +31,6 @@ public class DraconicEvolution implements IExtraLoader {
                 false,
                 false);
             drops.add(drop);
-            recipe.mOutputs.add(drop);
 
             MobDrop drop2 = new MobDrop(
                 new ItemStack(ModItems.draconiumDust),
@@ -44,7 +43,6 @@ public class DraconicEvolution implements IExtraLoader {
             drop2.clampChance();
 
             drops.add(drop2);
-            recipe.mOutputs.add(drop2);
 
         }
 
@@ -101,6 +99,5 @@ public class DraconicEvolution implements IExtraLoader {
                     baseChance * 8)));
 
         drops.add(drop);
-        recipe.mOutputs.add(drop);
     }
 }

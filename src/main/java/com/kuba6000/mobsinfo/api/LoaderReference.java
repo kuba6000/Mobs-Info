@@ -12,5 +12,6 @@ public class LoaderReference {
     public static final boolean BetterLoadingScreen = Loader.isModLoaded("betterloadingscreen");
     public static final boolean DraconicEvolution = Loader.isModLoaded("DraconicEvolution");
     public static final boolean TinkersConstruct = Loader.isModLoaded("TConstruct");
+    public static final boolean Witchery = Loader.isModLoaded("witchery");
 
 }
