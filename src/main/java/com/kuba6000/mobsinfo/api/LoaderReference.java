@@ -19,5 +19,6 @@ public class LoaderReference {
     public static final boolean CoFHCore = Loader.isModLoaded("CoFHCore");
     public static final boolean HardcoreEnderExpansion = Loader.isModLoaded("HardcoreEnderExpansion");
     public static final boolean Botania = Loader.isModLoaded("Botania");
+    public static final boolean HarvestCraft = Loader.isModLoaded("harvestcraft");
 
 }

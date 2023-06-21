@@ -29,6 +29,7 @@ public class ExtraLoader {
         if (LoaderReference.CoFHCore) loaders.add(new CoFHCore());
         if (LoaderReference.HardcoreEnderExpansion) loaders.add(new HardcoreEnderExpansion());
         if (LoaderReference.Botania) loaders.add(new Botania());
+        if (LoaderReference.HarvestCraft) loaders.add(new HarvestCraft());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
