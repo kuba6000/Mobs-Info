@@ -31,6 +31,7 @@ public class ExtraLoader {
         if (LoaderReference.Botania) loaders.add(new Botania());
         if (LoaderReference.HarvestCraft) loaders.add(new HarvestCraft());
         if (LoaderReference.OpenBlocks) loaders.add(new OpenBlocks());
+        if (LoaderReference.BloodArsenal) loaders.add(new BloodArsenal());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
