@@ -33,6 +33,7 @@ public class ExtraLoader {
         if (LoaderReference.OpenBlocks) loaders.add(new OpenBlocks());
         if (LoaderReference.BloodArsenal) loaders.add(new BloodArsenal());
         if (LoaderReference.BloodMagic) loaders.add(new BloodMagic());
+        if (LoaderReference.Avaritia) loaders.add(new Avaritia());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
