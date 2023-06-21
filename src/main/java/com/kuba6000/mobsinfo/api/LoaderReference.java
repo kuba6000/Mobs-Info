@@ -24,5 +24,6 @@ public class LoaderReference {
     public static final boolean BloodArsenal = Loader.isModLoaded("BloodArsenal");
     public static final boolean BloodMagic = Loader.isModLoaded("AWWayofTime");
     public static final boolean Avaritia = Loader.isModLoaded("Avaritia");
+    public static final boolean ThaumicTinkerer = Loader.isModLoaded("ThaumicTinkerer");
 
 }
