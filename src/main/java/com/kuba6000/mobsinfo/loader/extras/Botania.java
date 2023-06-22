@@ -29,7 +29,7 @@ public class Botania implements IExtraLoader {
                 null,
                 false,
                 false);
-            drop.variableChance = false;
+            drop.variableChance = true;
             drop.variableChanceInfo
                 .addAll(Arrays.asList("Chance: " + 15.38d + "%", "* Drops only when killed using Elementium Axe"));
             drops.add(drop);
@@ -42,7 +42,7 @@ public class Botania implements IExtraLoader {
                 null,
                 false,
                 false);
-            drop.variableChance = false;
+            drop.variableChance = true;
             drop.variableChanceInfo
                 .addAll(Arrays.asList("Chance: " + 7.69d + "%", "* Drops only when killed using Elementium Axe"));
             drops.add(drop);
@@ -55,7 +55,7 @@ public class Botania implements IExtraLoader {
                 null,
                 false,
                 false);
-            drop.variableChance = false;
+            drop.variableChance = true;
             drop.variableChanceInfo
                 .addAll(Arrays.asList("Chance: " + 7.69d + "%", "* Drops only when killed using Elementium Axe"));
             drops.add(drop);
@@ -68,7 +68,7 @@ public class Botania implements IExtraLoader {
                 null,
                 false,
                 false);
-            drop.variableChance = false;
+            drop.variableChance = true;
             drop.variableChanceInfo
                 .addAll(Arrays.asList("Chance: " + 7.69d + "%", "* Drops only when killed using Elementium Axe"));
             drops.add(drop);
