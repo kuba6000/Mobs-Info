@@ -35,7 +35,7 @@ public class CommandHelp extends CommandBase {
         final String key;
 
         Translations() {
-            key = "command.help." + this.name()
+            key = "mobsinfo.command.help." + this.name()
                 .toLowerCase();
         }
 

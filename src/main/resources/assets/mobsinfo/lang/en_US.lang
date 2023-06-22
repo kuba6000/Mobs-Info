@@ -1,30 +1,30 @@
 #This file is a translation file for Mobs Info
 
 #NEI
-mobhandler.normal_drops=Normal drops
-mobhandler.rare_drops=Rare drops
-mobhandler.additional_drops=Additional drops
-mobhandler.infernal_drops=Infernal drops
-mobhandler.infernal_cannot=Cannot spawn infernal
-mobhandler.infernal_can=Can spawn infernal
-mobhandler.infernal_always=Always spawns infernal
-mobhandler.mod=Mod: 
-mobhandler.max_health=Max health: 
-mobhandler.boss=BOSS
-mobhandler.cannot_use_vial=Can't be in soul vial
-mobhandler.chance=Chance: %.2f%%
-mobhandler.average_reminder=§7§oPlease remember that these are average drops.
-mobhandler.lootable=Looting is applied
-mobhandler.player_only=§7Hard player-only
-mobhandler.peaceful_allowed=Allowed in peaceful
+mobsinfo.mobhandler.normal_drops=Normal drops
+mobsinfo.mobhandler.rare_drops=Rare drops
+mobsinfo.mobhandler.additional_drops=Additional drops
+mobsinfo.mobhandler.infernal_drops=Infernal drops
+mobsinfo.mobhandler.infernal_cannot=Cannot spawn infernal
+mobsinfo.mobhandler.infernal_can=Can spawn infernal
+mobsinfo.mobhandler.infernal_always=Always spawns infernal
+mobsinfo.mobhandler.mod=Mod: 
+mobsinfo.mobhandler.max_health=Max health: 
+mobsinfo.mobhandler.boss=BOSS
+mobsinfo.mobhandler.cannot_use_vial=Can't be in soul vial
+mobsinfo.mobhandler.chance=Chance: %.2f%%
+mobsinfo.mobhandler.average_reminder=§7§oPlease remember that these are average drops.
+mobsinfo.mobhandler.lootable=Looting is applied
+mobsinfo.mobhandler.player_only=§7Hard player-only
+mobsinfo.mobhandler.peaceful_allowed=Allowed in peaceful
 
 #Commands
-commandhandler.invalid=§cInvalid use ! The proper use of this command is /%s
-commandhandler.cant_find=§cCan't find command option %s
-commandhandler.generic_help=§cYou can also use "/mobsinfo help" to get possible commands
-commandhandler.usage=<option>
-command.help.possible_commands=Possible commands: 
-command.help.usage=- Shows all possible commands
-command.config.invalid_option=§cInvalid option ! Possible options: reload
-command.config.success=§aConfig reloaded successfully !
-command.config.usage=<option>
+mobsinfo.commandhandler.invalid=§cInvalid use ! The proper use of this command is /%s
+mobsinfo.commandhandler.cant_find=§cCan't find command option %s
+mobsinfo.commandhandler.generic_help=§cYou can also use "/mobsinfo help" to get possible commands
+mobsinfo.commandhandler.usage=<option>
+mobsinfo.command.help.possible_commands=Possible commands: 
+mobsinfo.command.help.usage=- Shows all possible commands
+mobsinfo.command.config.invalid_option=§cInvalid option ! Possible options: reload
+mobsinfo.command.config.success=§aConfig reloaded successfully !
+mobsinfo.command.config.usage=<option>

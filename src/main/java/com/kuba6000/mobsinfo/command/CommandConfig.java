@@ -43,7 +43,7 @@ public class CommandConfig extends CommandBase {
         final String key;
 
         Translations() {
-            key = "command.config." + this.name()
+            key = "mobsinfo.command.config." + this.name()
                 .toLowerCase();
         }
 

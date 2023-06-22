@@ -26,6 +26,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.helper.ByteBufHelper;
 import com.kuba6000.mobsinfo.api.utils.GSONUtils;
 
 import io.netty.buffer.ByteBuf;
@@ -59,6 +60,7 @@ public class MobDrop {
     public boolean playerOnly = false;
     public boolean variableChance = false;
     public List<String> variableChanceInfo = new ArrayList<>();
+    public List<String> additionalInfo = new ArrayList<>();
 
     private MobDrop() {}
 
@@ -86,6 +88,7 @@ public class MobDrop {
             this.playerOnly);
         copy.variableChance = this.variableChance;
         copy.variableChanceInfo = this.variableChanceInfo;
+        copy.additionalInfo = this.additionalInfo;
         return copy;
     }
 
@@ -121,6 +124,16 @@ public class MobDrop {
         }
         BufHelper.writeBoolean(lootable);
         BufHelper.writeBoolean(playerOnly);
+        BufHelper.writeBoolean(variableChance);
+        if (variableChance) {
+            BufHelper.writeInt(variableChanceInfo.size());
+            variableChanceInfo.forEach(i -> ByteBufHelper.writeString(BufHelper, i));
+        }
+        if (additionalInfo == null) BufHelper.writeInt(0);
+        else {
+            BufHelper.writeInt(additionalInfo.size());
+            additionalInfo.forEach(i -> ByteBufHelper.writeString(BufHelper, i));
+        }
         byteBuf.writeInt(BufHelper.readableBytes());
         byteBuf.writeBytes(BufHelper);
     }
@@ -140,6 +153,15 @@ public class MobDrop {
         } else mobDrop.damages = null;
         mobDrop.lootable = byteBuf.readBoolean();
         mobDrop.playerOnly = byteBuf.readBoolean();
+        mobDrop.variableChance = byteBuf.readBoolean();
+        if (mobDrop.variableChance) {
+            mobDrop.variableChanceInfo = new ArrayList<>();
+            int variableChanceInfoSize = byteBuf.readInt();
+            for (int i = 0; i < variableChanceInfoSize; i++)
+                mobDrop.variableChanceInfo.add(ByteBufHelper.readString(byteBuf));
+        }
+        int additionalInfoSize = byteBuf.readInt();
+        for (int i = 0; i < additionalInfoSize; i++) mobDrop.additionalInfo.add(ByteBufHelper.readString(byteBuf));
         mobDrop.reconstructStack();
         return mobDrop;
     }
