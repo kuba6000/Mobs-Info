@@ -478,8 +478,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
             extraTooltip = new ArrayList<>();
 
             if (!drop.variableChance) {
-                if (chance != 10000)
-                    extraTooltip.add(EnumChatFormatting.RESET + Translations.CHANCE.get((double) chance / 100d));
+                extraTooltip.add(EnumChatFormatting.RESET + Translations.CHANCE.get((double) chance / 100d));
             } else {
                 extraTooltip.addAll(drop.variableChanceInfo);
             }
