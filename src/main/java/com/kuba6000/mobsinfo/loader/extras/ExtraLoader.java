@@ -39,6 +39,7 @@ public class ExtraLoader {
         if (LoaderReference.ElectroMagicTools) loaders.add(new ElectroMagicTools());
         if (LoaderReference.WitchingGadgets) loaders.add(new WitchingGadgets());
         if (LoaderReference.Thaumcraft) loaders.add(new Thaumcraft());
+        if (LoaderReference.Automagy) loaders.add(new Automagy());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
