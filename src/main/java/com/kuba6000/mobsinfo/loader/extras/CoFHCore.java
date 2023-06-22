@@ -21,47 +21,54 @@ public class CoFHCore implements IExtraLoader {
         if (!DropHandler.mobPvEOnly) {
             if (recipe.entity instanceof EntitySkeleton) {
                 if (((EntitySkeleton) recipe.entity).getSkeletonType() == 0 && DropHandler.skeletonEnabled) {
-                    MobDrop drop = new MobDrop(
-                        new ItemStack(Items.skull, 1, 0),
-                        MobDrop.DropType.Normal,
-                        (int) (DropHandler.skeletonChance * 100d * chanceMod),
-                        null,
-                        null,
-                        false,
-                        false);
-                    drops.add(drop);
-                } else
-                    if (((EntitySkeleton) recipe.entity).getSkeletonType() == 1 && DropHandler.witherSkeletonEnabled) {
+                    if (DropHandler.skeletonChance != 0) {
                         MobDrop drop = new MobDrop(
-                            new ItemStack(Items.skull, 1, 1),
+                            new ItemStack(Items.skull, 1, 0),
                             MobDrop.DropType.Normal,
-                            (int) (DropHandler.witherSkeletonChance * 100d * chanceMod),
+                            (int) ((double) DropHandler.skeletonChance * 100d * chanceMod),
                             null,
                             null,
                             false,
                             false);
                         drops.add(drop);
                     }
+                } else if (DropHandler.witherSkeletonChance != 0) {
+                    if (((EntitySkeleton) recipe.entity).getSkeletonType() == 1 && DropHandler.witherSkeletonEnabled) {
+                        MobDrop drop = new MobDrop(
+                            new ItemStack(Items.skull, 1, 1),
+                            MobDrop.DropType.Normal,
+                            (int) ((double) DropHandler.witherSkeletonChance * 100d * chanceMod),
+                            null,
+                            null,
+                            false,
+                            false);
+                        drops.add(drop);
+                    }
+                }
             } else if (recipe.entity instanceof EntityZombie && DropHandler.zombieEnabled) {
-                MobDrop drop = new MobDrop(
-                    new ItemStack(Items.skull, 1, 2),
-                    MobDrop.DropType.Normal,
-                    (int) (DropHandler.zombieChance * 100d * chanceMod),
-                    null,
-                    null,
-                    false,
-                    false);
-                drops.add(drop);
+                if (DropHandler.zombieChance != 0) {
+                    MobDrop drop = new MobDrop(
+                        new ItemStack(Items.skull, 1, 2),
+                        MobDrop.DropType.Normal,
+                        (int) ((double) DropHandler.zombieChance * 100d * chanceMod),
+                        null,
+                        null,
+                        false,
+                        false);
+                    drops.add(drop);
+                }
             } else if (recipe.entity instanceof EntityCreeper && DropHandler.creeperEnabled) {
-                MobDrop drop = new MobDrop(
-                    new ItemStack(Items.skull, 1, 4),
-                    MobDrop.DropType.Normal,
-                    (int) (DropHandler.creeperChance * 100d * chanceMod),
-                    null,
-                    null,
-                    false,
-                    false);
-                drops.add(drop);
+                if (DropHandler.creeperChance != 0) {
+                    MobDrop drop = new MobDrop(
+                        new ItemStack(Items.skull, 1, 4),
+                        MobDrop.DropType.Normal,
+                        (int) ((double) DropHandler.creeperChance * 100d * chanceMod),
+                        null,
+                        null,
+                        false,
+                        false);
+                    drops.add(drop);
+                }
             }
         }
     }

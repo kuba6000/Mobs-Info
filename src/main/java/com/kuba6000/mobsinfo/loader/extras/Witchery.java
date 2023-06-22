@@ -40,18 +40,20 @@ public class Witchery implements IExtraLoader {
         else if (PotionParalysis.isVillager(recipe.entity)) chance = 0.1d;
         else if (recipe.entity.isEntityUndead()) chance = 0.02d;
 
-        MobDrop drop = new MobDrop(
-            com.emoniph.witchery.Witchery.Items.GENERIC.itemVampireBookPage.createStack(),
-            MobDrop.DropType.Normal,
-            0,
-            null,
-            null,
-            false,
-            false);
-        drop.variableChance = true;
-        drop.variableChanceInfo
-            .addAll(Arrays.asList("Chance: " + (chance * 100d) + "%", "* Drops only when player has Vampire book"));
-        drops.add(drop);
+        if (chance > 0d) {
+            MobDrop drop = new MobDrop(
+                com.emoniph.witchery.Witchery.Items.GENERIC.itemVampireBookPage.createStack(),
+                MobDrop.DropType.Normal,
+                0,
+                null,
+                null,
+                false,
+                false);
+            drop.variableChance = true;
+            drop.variableChanceInfo
+                .addAll(Arrays.asList("Chance: " + (chance * 100d) + "%", "* Drops only when player has Vampire book"));
+            drops.add(drop);
+        }
 
         if (!EntityUtil.isNoDrops(recipe.entity)) {
 
