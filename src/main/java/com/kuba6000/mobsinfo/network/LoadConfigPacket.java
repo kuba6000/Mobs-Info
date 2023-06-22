@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import com.kuba6000.mobsinfo.MobsInfo;
+import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.config.Config;
-import com.kuba6000.mobsinfo.config.OverridesConfig;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -39,7 +39,7 @@ public class LoadConfigPacket implements IMessage {
     public static final LoadConfigPacket instance = new LoadConfigPacket();
 
     public final HashSet<String> mobsToLoad = new HashSet<>();
-    public final HashMap<String, OverridesConfig.MobOverride> mobsOverrides = new HashMap<>();
+    public final HashMap<String, MobOverride> mobsOverrides = new HashMap<>();
 
     @Override
     public void fromBytes(ByteBuf buf) {
@@ -56,8 +56,7 @@ public class LoadConfigPacket implements IMessage {
             for (int i = 0; i < overridessize; i++) {
                 byte[] sbytes = new byte[buf.readInt()];
                 buf.readBytes(sbytes);
-                mobsOverrides
-                    .put(new String(sbytes, StandardCharsets.UTF_8), OverridesConfig.MobOverride.readFromByteBuf(buf));
+                mobsOverrides.put(new String(sbytes, StandardCharsets.UTF_8), MobOverride.readFromByteBuf(buf));
             }
         }
     }

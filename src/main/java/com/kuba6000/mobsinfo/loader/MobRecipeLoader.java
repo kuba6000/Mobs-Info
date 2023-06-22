@@ -66,6 +66,7 @@ import net.minecraft.world.storage.IPlayerFileData;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 
 import org.apache.logging.log4j.LogManager;
@@ -76,7 +77,13 @@ import com.google.gson.Gson;
 import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
+import com.kuba6000.mobsinfo.api.MobDropSimplified;
+import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.api.MobRecipe;
+import com.kuba6000.mobsinfo.api.event.PostMobRegistrationEvent;
+import com.kuba6000.mobsinfo.api.event.PostMobsRegistrationEvent;
+import com.kuba6000.mobsinfo.api.event.PreMobRegistrationEvent;
+import com.kuba6000.mobsinfo.api.event.PreMobsRegistrationEvent;
 import com.kuba6000.mobsinfo.api.helper.ProgressBarWrapper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.GSONUtils;
@@ -1008,7 +1015,7 @@ public class MobRecipeLoader {
     public static File makeCustomDrops() {
 
         dropCollector collector = new dropCollector();
-        Map<String, OverridesConfig.MobOverride> customDropsMap = new HashMap<>();
+        Map<String, MobOverride> customDropsMap = new HashMap<>();
         isInGenerationProcess = true;
 
         for (Map.Entry<String, GeneralMappedMob> mob : GeneralMobList.entrySet()) {
@@ -1048,7 +1055,7 @@ public class MobRecipeLoader {
             collector.newRound();
 
             if (!dropscustom.isEmpty()) {
-                OverridesConfig.MobOverride override = new OverridesConfig.MobOverride();
+                MobOverride override = new MobOverride();
                 for (dropinstance drop : dropscustom.drops) {
                     ItemStack stack = drop.stack;
                     if (stack.hasTagCompound()) stack.stackTagCompound.removeTag(randomEnchantmentDetectedString);
@@ -1103,6 +1110,9 @@ public class MobRecipeLoader {
         MobNameToRecipeMap.clear();
         LoadConfigPacket.instance.mobsToLoad.clear();
         LoadConfigPacket.instance.mobsOverrides.clear();
+
+        MinecraftForge.EVENT_BUS.post(new PreMobsRegistrationEvent());
+
         for (Map.Entry<String, GeneralMappedMob> entry : GeneralMobList.entrySet()) {
             String k = entry.getKey();
             GeneralMappedMob v = entry.getValue();
@@ -1116,24 +1126,26 @@ public class MobRecipeLoader {
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
 
+            if (MinecraftForge.EVENT_BUS.post(new PreMobRegistrationEvent(k, drops, recipe))) continue;
+
             ExtraLoader.process(k, drops, recipe);
+
+            MobOverride override;
+            if ((override = OverridesConfig.overrides.get(k)) != null) {
+                if (override.removeAll) {
+                    drops.clear();
+                } else for (MobDropSimplified removal : override.removals) {
+                    drops.removeIf(removal::isMatching);
+                }
+                drops.addAll(override.additions);
+                LoadConfigPacket.instance.mobsOverrides.put(k, override);
+            }
+
+            MinecraftForge.EVENT_BUS.post(new PostMobRegistrationEvent(k, drops, recipe));
 
             recipe.mOutputs.clear();
             recipe.mOutputs.addAll(drops);
 
-            OverridesConfig.MobOverride override;
-            if ((override = OverridesConfig.overrides.get(k)) != null) {
-                if (override.removeAll) {
-                    drops.clear();
-                    recipe.mOutputs.clear();
-                } else for (OverridesConfig.MobDropSimplified removal : override.removals) {
-                    drops.removeIf(removal::isMatching);
-                    recipe.mOutputs.removeIf(removal::isMatching);
-                }
-                drops.addAll(override.additions);
-                recipe.mOutputs.addAll(override.additions);
-                LoadConfigPacket.instance.mobsOverrides.put(k, override);
-            }
             recipe.refresh();
 
             if (drops.isEmpty()) {
@@ -1147,13 +1159,16 @@ public class MobRecipeLoader {
             LoadConfigPacket.instance.mobsToLoad.add(k);
             LOG.info("Registered " + k);
         }
+
+        MinecraftForge.EVENT_BUS.post(new PostMobsRegistrationEvent());
     }
 
     @SideOnly(Side.CLIENT)
-    public static void processMobRecipeMap(HashSet<String> mobs,
-        HashMap<String, OverridesConfig.MobOverride> overrides) {
+    public static void processMobRecipeMap(HashSet<String> mobs, HashMap<String, MobOverride> overrides) {
         Mob_Handler.clearRecipes();
         MobNameToRecipeMap.clear();
+
+        MinecraftForge.EVENT_BUS.post(new PreMobsRegistrationEvent());
         mobs.forEach(k -> {
             GeneralMappedMob v = GeneralMobList.get(k);
 
@@ -1161,23 +1176,28 @@ public class MobRecipeLoader {
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
 
+            if (MinecraftForge.EVENT_BUS.post(new PreMobRegistrationEvent(k, drops, recipe))) return;
+
             ExtraLoader.process(k, drops, recipe);
 
             recipe.mOutputs.clear();
             recipe.mOutputs.addAll(drops);
 
-            OverridesConfig.MobOverride override;
+            MobOverride override;
             if ((override = overrides.get(k)) != null) {
                 if (override.removeAll) {
                     drops.clear();
                     recipe.mOutputs.clear();
-                } else for (OverridesConfig.MobDropSimplified removal : override.removals) {
+                } else for (MobDropSimplified removal : override.removals) {
                     drops.removeIf(removal::isMatching);
                     recipe.mOutputs.removeIf(removal::isMatching);
                 }
                 drops.addAll(override.additions);
                 recipe.mOutputs.addAll(override.additions);
             }
+
+            MinecraftForge.EVENT_BUS.post(new PostMobRegistrationEvent(k, drops, recipe));
+
             drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             recipe.refresh();
 
@@ -1185,6 +1205,7 @@ public class MobRecipeLoader {
             MobNameToRecipeMap.put(k, recipe);
             LOG.info("Registered " + k);
         });
+        MinecraftForge.EVENT_BUS.post(new PostMobsRegistrationEvent());
         LOG.info("Sorting NEI map");
         Mob_Handler.sortCachedRecipes();
     }

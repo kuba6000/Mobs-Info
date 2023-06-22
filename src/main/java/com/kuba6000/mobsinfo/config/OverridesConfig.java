@@ -24,13 +24,12 @@ import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,90 +38,15 @@ import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.kuba6000.mobsinfo.Tags;
-import com.kuba6000.mobsinfo.api.ConstructableItemStack;
 import com.kuba6000.mobsinfo.api.MobDrop;
+import com.kuba6000.mobsinfo.api.MobDropSimplified;
+import com.kuba6000.mobsinfo.api.MobOverride;
+import com.kuba6000.mobsinfo.api.event.PostMobsOverridesLoadEvent;
 import com.kuba6000.mobsinfo.api.utils.GSONUtils;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 public class OverridesConfig {
 
     private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Config-Overrides]");
-
-    public static class MobDropSimplified {
-
-        @GSONUtils.SkipGSON
-        ItemStack stack;
-
-        ConstructableItemStack reconstructableStack;
-        MobDrop.DropType type;
-
-        private MobDropSimplified() {}
-
-        public MobDropSimplified(ItemStack stack, MobDrop.DropType type) {
-            reconstructableStack = new ConstructableItemStack(stack);
-            this.type = type;
-        }
-
-        public void reconstructStack() {
-            stack = reconstructableStack.construct();
-        }
-
-        public boolean isMatching(MobDrop drop) {
-            return reconstructableStack.isSame(drop.reconstructableStack, true);
-        }
-
-        private static final ByteBuf BufHelper = Unpooled.buffer();
-
-        public void writeToByteBuf(ByteBuf byteBuf) {
-            BufHelper.clear();
-            reconstructableStack.writeToByteBuf(BufHelper);
-            BufHelper.writeInt(type.ordinal());
-            byteBuf.writeInt(BufHelper.readableBytes());
-            byteBuf.writeBytes(BufHelper);
-        }
-
-        public static MobDropSimplified readFromByteBuf(ByteBuf byteBuf) {
-            MobDropSimplified mobDropSimplified = new MobDropSimplified();
-            int size = byteBuf.readInt();
-            mobDropSimplified.reconstructableStack = ConstructableItemStack.readFromByteBuf(byteBuf);
-            mobDropSimplified.type = MobDrop.DropType.get(byteBuf.readInt());
-            mobDropSimplified.reconstructStack();
-            return mobDropSimplified;
-        }
-    }
-
-    public static class MobOverride {
-
-        public boolean removeAll = false;
-        public final List<MobDrop> additions = new ArrayList<>();
-        public final List<MobDropSimplified> removals = new ArrayList<>();
-
-        private static final ByteBuf BufHelper = Unpooled.buffer();
-
-        public void writeToByteBuf(ByteBuf byteBuf) {
-            BufHelper.clear();
-            BufHelper.writeBoolean(removeAll);
-            BufHelper.writeInt(additions.size());
-            additions.forEach(drop -> drop.writeToByteBuf(BufHelper));
-            BufHelper.writeInt(removals.size());
-            removals.forEach(drop -> drop.writeToByteBuf(BufHelper));
-            byteBuf.writeInt(BufHelper.readableBytes());
-            byteBuf.writeBytes(BufHelper);
-        }
-
-        public static MobOverride readFromByteBuf(ByteBuf byteBuf) {
-            int size = byteBuf.readInt();
-            MobOverride mobOverride = new MobOverride();
-            mobOverride.removeAll = byteBuf.readBoolean();
-            int additionssize = byteBuf.readInt();
-            for (int i = 0; i < additionssize; i++) mobOverride.additions.add(MobDrop.readFromByteBuf(byteBuf));
-            int removalssize = byteBuf.readInt();
-            for (int i = 0; i < removalssize; i++) mobOverride.removals.add(MobDropSimplified.readFromByteBuf(byteBuf));
-            return mobOverride;
-        }
-    }
 
     public static Map<String, MobOverride> overrides = new HashMap<>();
     private static File overrideFile = null;
@@ -148,6 +72,7 @@ public class OverridesConfig {
                 reader.close();
             } catch (Exception ignored) {}
         }
+        MinecraftForge.EVENT_BUS.post(new PostMobsOverridesLoadEvent(overrides));
     }
 
     @SuppressWarnings("UnstableApiUsage")

@@ -45,7 +45,7 @@ public class CommandHandler extends CommandBase {
         final String key;
 
         Translations() {
-            key = "commandhandler." + this.name()
+            key = "mobsinfo.commandhandler." + this.name()
                 .toLowerCase();
         }
 
