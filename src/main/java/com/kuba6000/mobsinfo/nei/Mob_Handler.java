@@ -154,17 +154,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
             else if (d.type == MobDrop.DropType.Rare) raredrops++;
             else if (d.type == MobDrop.DropType.Additional) additionaldrops++;
             else if (d.type == MobDrop.DropType.Infernal) break; // dont render infernal drops
-            positionedStacks.add(
-                new MobPositionedStack(
-                    d.stack.copy(),
-                    xoffset,
-                    yoffset,
-                    d.type,
-                    d.chance,
-                    d.enchantable,
-                    d.damages != null ? new ArrayList<>(d.damages.keySet()) : null,
-                    d.lootable,
-                    d.playerOnly));
+            positionedStacks.add(new MobPositionedStack(d.stack.copy(), xoffset, yoffset, d));
         }
         instance.addRecipeInt(e, positionedStacks, normaldrops, raredrops, additionaldrops, infernaldrops);
     }
@@ -473,24 +463,27 @@ public class Mob_Handler extends TemplateRecipeHandler {
         private final Random rand;
         public final List<String> extraTooltip;
 
-        public MobPositionedStack(Object object, int x, int y, MobDrop.DropType type, int chance, Integer enchantable,
-            List<Integer> damages, boolean lootable, boolean isPlayerOnly) {
+        public MobPositionedStack(Object object, int x, int y, MobDrop drop) {
             super(object, x, y, false);
+
             rand = new FastRandom();
-            this.type = type;
-            this.chance = chance;
-            this.enchantable = enchantable != null;
-            if (this.enchantable) enchantmentLevel = enchantable;
+            this.type = drop.type;
+            this.chance = drop.chance;
+            this.enchantable = drop.enchantable != null;
+            if (this.enchantable) enchantmentLevel = drop.enchantable;
             else enchantmentLevel = 0;
-            this.randomdamage = damages != null;
-            if (this.randomdamage) this.damages = damages;
+            this.randomdamage = drop.damages != null;
+            if (this.randomdamage) this.damages = new ArrayList<>(drop.damages.keySet());
             else this.damages = null;
             extraTooltip = new ArrayList<>();
 
-            if (chance != 10000)
+            if (!drop.variableChance) {
                 extraTooltip.add(EnumChatFormatting.RESET + Translations.CHANCE.get((double) chance / 100d));
-            if (lootable) extraTooltip.add(EnumChatFormatting.RESET + Translations.LOOTABLE.get());
-            if (isPlayerOnly) {
+            } else {
+                extraTooltip.addAll(drop.variableChanceInfo);
+            }
+            if (drop.lootable) extraTooltip.add(EnumChatFormatting.RESET + Translations.LOOTABLE.get());
+            if (drop.playerOnly) {
                 extraTooltip.add(EnumChatFormatting.RESET + Translations.PLAYER_ONLY.get());
             }
             extraTooltip.add(EnumChatFormatting.RESET + Translations.AVERAGE_REMINDER.get());
