@@ -58,6 +58,4 @@ dependencies {
     compileOnly(rfg.deobf("curse.maven:witchery-69673:2234410"))
     compileOnly(rfg.deobf("curse.maven:Automagy-222153:2285272"))
     compileOnly("curse.maven:CoFHCore-69162:2388751") // DEV JAR
-    implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-    implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 }
