@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
@@ -85,6 +84,7 @@ import com.kuba6000.mobsinfo.api.utils.ItemID;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.config.OverridesConfig;
+import com.kuba6000.mobsinfo.loader.extras.ExtraLoader;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EntityAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EntityLivingAccessor;
@@ -99,11 +99,6 @@ import atomicstryker.infernalmobs.common.mods.api.ModifierLoader;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import minetweaker.MineTweakerAPI;
-import minetweaker.api.entity.IEntityDefinition;
-import minetweaker.api.item.IItemStack;
-import minetweaker.mc1710.item.MCItemStack;
-import stanhebben.zenscript.value.IntRange;
 import thaumcraft.common.items.wands.ItemWandCasting;
 
 public class MobRecipeLoader {
@@ -387,6 +382,14 @@ public class MobRecipeLoader {
             this.mob = mob;
             this.recipe = recipe;
             this.drops = drops;
+        }
+
+        public ArrayList<MobDrop> copyDrops() {
+            ArrayList<MobDrop> copy = new ArrayList<>(drops.size());
+            for (MobDrop drop : drops) {
+                copy.add(drop.copy());
+            }
+            return copy;
         }
     }
 
@@ -1111,13 +1114,12 @@ public class MobRecipeLoader {
 
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
-            @SuppressWarnings("unchecked")
-            ArrayList<MobDrop> drops = (ArrayList<MobDrop>) v.drops.clone();
+            ArrayList<MobDrop> drops = v.copyDrops();
 
-            // MT Scripts should already be loaded here
-            if (LoaderReference.MineTweaker) {
-                Optionals.parseMTAdditions(k, drops, recipe);
-            }
+            ExtraLoader.process(k, drops, recipe);
+
+            recipe.mOutputs.clear();
+            recipe.mOutputs.addAll(drops);
 
             OverridesConfig.MobOverride override;
             if ((override = OverridesConfig.overrides.get(k)) != null) {
@@ -1141,7 +1143,7 @@ public class MobRecipeLoader {
                 LOG.info("Registered " + k);
                 continue;
             }
-            if (v.recipe.mOutputs.size() > 0) MobNameToRecipeMap.put(k, recipe);
+            MobNameToRecipeMap.put(k, recipe);
             LoadConfigPacket.instance.mobsToLoad.add(k);
             LOG.info("Registered " + k);
         }
@@ -1154,15 +1156,15 @@ public class MobRecipeLoader {
         MobNameToRecipeMap.clear();
         mobs.forEach(k -> {
             GeneralMappedMob v = GeneralMobList.get(k);
+
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
-            @SuppressWarnings("unchecked")
-            ArrayList<MobDrop> drops = (ArrayList<MobDrop>) v.drops.clone();
+            ArrayList<MobDrop> drops = v.copyDrops();
 
-            // MT Scripts should already be loaded here
-            if (LoaderReference.MineTweaker) {
-                Optionals.parseMTAdditions(k, drops, recipe);
-            }
+            ExtraLoader.process(k, drops, recipe);
+
+            recipe.mOutputs.clear();
+            recipe.mOutputs.addAll(drops);
 
             OverridesConfig.MobOverride override;
             if ((override = overrides.get(k)) != null) {
@@ -1175,78 +1177,15 @@ public class MobRecipeLoader {
                 }
                 drops.addAll(override.additions);
                 recipe.mOutputs.addAll(override.additions);
-                drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             }
+            drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             recipe.refresh();
 
             Mob_Handler.addRecipe(v.mob, drops);
-            if (recipe.mOutputs.size() > 0) MobNameToRecipeMap.put(k, recipe);
+            MobNameToRecipeMap.put(k, recipe);
             LOG.info("Registered " + k);
         });
         LOG.info("Sorting NEI map");
         Mob_Handler.sortCachedRecipes();
-    }
-
-    private static class Optionals {
-
-        private static void parseMTAdditions(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {
-            IEntityDefinition ie = MineTweakerAPI.game.getEntity(k);
-            if (ie != null) {
-                for (Map.Entry<IItemStack, IntRange> entry : ie.getDropsToAdd()
-                    .entrySet()) {
-                    IntRange r = entry.getValue();
-                    // Get average chance
-                    double chance;
-                    if (r.getFrom() == 0 && r.getTo() == 0) chance = 1d;
-                    else {
-                        double a = r.getFrom();
-                        double b = r.getTo();
-                        chance = ((b * b) + b - (a * a) + a) / (2 * (b - a + 1));
-                    }
-                    ItemStack stack = ((ItemStack) entry.getKey()
-                        .getInternal()).copy();
-                    MobDrop drop = new MobDrop(
-                        stack,
-                        MobDrop.DropType.Normal,
-                        (int) (chance * 10000),
-                        null,
-                        null,
-                        false,
-                        false);
-                    drops.add(drop);
-                    recipe.mOutputs.add(drop);
-                }
-                for (Map.Entry<IItemStack, IntRange> entry : ie.getDropsToAddPlayerOnly()
-                    .entrySet()) {
-                    IntRange r = entry.getValue();
-                    // Get average chance
-                    double chance;
-                    if (r.getFrom() == 0 && r.getTo() == 0) chance = 1d;
-                    else {
-                        double a = r.getFrom();
-                        double b = r.getTo();
-                        chance = ((b * b) + b - (a * a) + a) / (2 * (b - a + 1));
-                    }
-                    ItemStack stack = ((ItemStack) entry.getKey()
-                        .getInternal()).copy();
-                    MobDrop drop = new MobDrop(
-                        stack,
-                        MobDrop.DropType.Normal,
-                        (int) (chance * 10000),
-                        null,
-                        null,
-                        false,
-                        true);
-                    drops.add(drop);
-                }
-                for (IItemStack istack : ie.getDropsToRemove()) {
-                    List<MobDrop> toRemove = drops.stream()
-                        .filter(d -> istack.matches(new MCItemStack(d.stack)))
-                        .collect(Collectors.toList());
-                    drops.removeAll(toRemove);
-                    recipe.mOutputs.removeAll(toRemove);
-                }
-            }
-        }
     }
 }

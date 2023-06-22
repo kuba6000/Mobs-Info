@@ -20,7 +20,9 @@
 
 package com.kuba6000.mobsinfo.api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
@@ -55,6 +57,8 @@ public class MobDrop {
     public HashMap<Integer, Integer> damages;
     public boolean lootable = false;
     public boolean playerOnly = false;
+    public boolean variableChance = false;
+    public List<String> variableChanceInfo = new ArrayList<>();
 
     private MobDrop() {}
 
@@ -70,8 +74,32 @@ public class MobDrop {
         this.playerOnly = playerOnly;
     }
 
+    public MobDrop copy() {
+        @SuppressWarnings("unchecked")
+        MobDrop copy = new MobDrop(
+            this.stack.copy(),
+            this.type,
+            this.chance,
+            this.enchantable,
+            this.damages == null ? null : (HashMap<Integer, Integer>) this.damages.clone(),
+            this.lootable,
+            this.playerOnly);
+        copy.variableChance = this.variableChance;
+        copy.variableChanceInfo = this.variableChanceInfo;
+        return copy;
+    }
+
     public void reconstructStack() {
         this.stack = reconstructableStack.construct();
+    }
+
+    public void clampChance() {
+        if (chance > 10000) {
+            int div = (int) Math.ceil(chance / 10000d);
+            stack.stackSize *= div;
+            chance /= div;
+            reconstructableStack = new ConstructableItemStack(stack);
+        }
     }
 
     private static final ByteBuf BufHelper = Unpooled.buffer();
@@ -114,5 +142,10 @@ public class MobDrop {
         mobDrop.playerOnly = byteBuf.readBoolean();
         mobDrop.reconstructStack();
         return mobDrop;
+    }
+
+    public static double getChanceBasedOnFromTo(int from, int to) {
+        return (((double) to * (double) to) + (double) to - ((double) from * (double) from) + (double) from)
+            / (2 * ((double) to - (double) from + 1));
     }
 }

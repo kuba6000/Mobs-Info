@@ -9,6 +9,7 @@ public enum TargetedMod {
     VANILLA("Minecraft", "unused", true),
     INFERNAL_MOBS("InfernalMobs", "InfernalMobs-", true),
     ENDER_IO("EnderIO", "EnderIO", true),
+    DRACONIC_EVOLUTION("DraconicEvolution", "Draconic-Evolution-", true),
 
     ;
 
