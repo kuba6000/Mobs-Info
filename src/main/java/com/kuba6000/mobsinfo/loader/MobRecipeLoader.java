@@ -1167,12 +1167,16 @@ public class MobRecipeLoader {
     public static void processMobRecipeMap(HashSet<String> mobs, HashMap<String, MobOverride> overrides) {
         Mob_Handler.clearRecipes();
         MobNameToRecipeMap.clear();
+
+        MinecraftForge.EVENT_BUS.post(new PreMobsRegistrationEvent());
         mobs.forEach(k -> {
             GeneralMappedMob v = GeneralMobList.get(k);
 
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
+
+            if (MinecraftForge.EVENT_BUS.post(new PreMobRegistrationEvent(k, drops, recipe))) return;
 
             ExtraLoader.process(k, drops, recipe);
 
@@ -1201,6 +1205,7 @@ public class MobRecipeLoader {
             MobNameToRecipeMap.put(k, recipe);
             LOG.info("Registered " + k);
         });
+        MinecraftForge.EVENT_BUS.post(new PostMobsRegistrationEvent());
         LOG.info("Sorting NEI map");
         Mob_Handler.sortCachedRecipes();
     }
