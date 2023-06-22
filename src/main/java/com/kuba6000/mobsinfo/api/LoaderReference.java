@@ -26,5 +26,6 @@ public class LoaderReference {
     public static final boolean Avaritia = Loader.isModLoaded("Avaritia");
     public static final boolean ThaumicTinkerer = Loader.isModLoaded("ThaumicTinkerer");
     public static final boolean ForbiddenMagic = Loader.isModLoaded("ForbiddenMagic");
+    public static final boolean ElectroMagicTools = Loader.isModLoaded("EMT");
 
 }
