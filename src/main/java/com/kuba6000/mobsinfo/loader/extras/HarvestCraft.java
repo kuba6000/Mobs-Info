@@ -18,7 +18,7 @@ public class HarvestCraft implements IExtraLoader {
             MobDrop drop = new MobDrop(
                 new ItemStack(ItemRegistry.muttonrawItem),
                 MobDrop.DropType.Normal,
-                (int) (MobDrop.getChanceBasedOnFromTo(1, 4) * 100d),
+                (int) (MobDrop.getChanceBasedOnFromTo(1, 4) * 10000d),
                 null,
                 null,
                 true,
@@ -29,7 +29,7 @@ public class HarvestCraft implements IExtraLoader {
             MobDrop drop = new MobDrop(
                 new ItemStack(ItemRegistry.calamarirawItem),
                 MobDrop.DropType.Normal,
-                (int) (MobDrop.getChanceBasedOnFromTo(1, 4) * 100d),
+                (int) (MobDrop.getChanceBasedOnFromTo(1, 4) * 10000d),
                 null,
                 null,
                 true,

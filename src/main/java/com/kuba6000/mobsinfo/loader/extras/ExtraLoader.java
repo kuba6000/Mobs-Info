@@ -35,6 +35,7 @@ public class ExtraLoader {
         if (LoaderReference.BloodMagic) loaders.add(new BloodMagic());
         if (LoaderReference.Avaritia) loaders.add(new Avaritia());
         if (LoaderReference.ThaumicTinkerer) loaders.add(new ThaumicTinkerer());
+        if (LoaderReference.ForbiddenMagic) loaders.add(new ForbiddenMagic());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
