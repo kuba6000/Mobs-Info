@@ -47,6 +47,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,6 +60,7 @@ import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
+import com.kuba6000.mobsinfo.api.event.MobNEIRegistrationEvent;
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
@@ -104,7 +106,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
         final String key;
 
         Translations() {
-            key = "mobhandler." + this.name()
+            key = "mobsinfo.mobhandler." + this.name()
                 .toLowerCase();
         }
 
@@ -357,6 +359,12 @@ public class Mob_Handler extends TemplateRecipeHandler {
         if (!currentrecipe.isUsableInVial)
             GuiDraw.drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, 0xFF555555, false);
 
+        if (!currentrecipe.additionalInformation.isEmpty()) {
+            for (String s : currentrecipe.additionalInformation) {
+                GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
+            }
+        }
+
         x = 6;
         y = 83;
         yshift = nextRowYShift;
@@ -486,6 +494,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
             if (drop.playerOnly) {
                 extraTooltip.add(EnumChatFormatting.RESET + Translations.PLAYER_ONLY.get());
             }
+            if (drop.additionalInfo != null && !drop.additionalInfo.isEmpty()) extraTooltip.addAll(drop.additionalInfo);
             extraTooltip.add(EnumChatFormatting.RESET + Translations.AVERAGE_REMINDER.get());
 
             setPermutationToRender(0);
@@ -521,6 +530,7 @@ public class Mob_Handler extends TemplateRecipeHandler {
         public final int infernalOutputsCount;
         public final boolean isUsableInVial;
         public final boolean isPeacefulAllowed;
+        public final List<String> additionalInformation;
         public String isBoss = "";
 
         public MobCachedRecipe(EntityLiving mob, List<MobPositionedStack> mOutputs, int normalOutputsCount,
@@ -566,6 +576,8 @@ public class Mob_Handler extends TemplateRecipeHandler {
                 else if (infernalMobsCore.callCheckEntityClassForced(mob)) infernaltype = 2; // forced
                 else infernaltype = 1; // normal
             }
+            this.additionalInformation = new ArrayList<>();
+            MinecraftForge.EVENT_BUS.post(new MobNEIRegistrationEvent(mobname, mob, this.additionalInformation));
         }
 
         @Override
