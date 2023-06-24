@@ -9,6 +9,7 @@ import java.util.Random;
 
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.StatCollector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +17,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.Tags;
+import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 
@@ -31,6 +33,47 @@ import codechicken.nei.recipe.TemplateRecipeHandler;
 import cpw.mods.fml.common.event.FMLInterModComms;
 
 public class MobHandlerInfernal extends TemplateRecipeHandler {
+
+    enum Translations {
+
+        TITLE,
+        FORMAT,
+        FORMAT_1,
+        FORMAT_2,
+        FORMAT_3,
+        FORMAT_4,
+        ELITE,
+        ULTRA,
+        INFERNO,
+        TOOLTIP_CHANCE,
+        TOOLTIP_CHANCE_ALWAYS,
+
+        ;
+
+        final String key;
+
+        Translations() {
+            key = "mobsinfo.mobhandlerinfernal." + this.name()
+                .toLowerCase();
+        }
+
+        public String get() {
+            return StatCollector.translateToLocal(key);
+        }
+
+        public String get(Object... args) {
+            return TranslationHelper.translateFormattedFixed(key, args);
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String toString() {
+            return get();
+        }
+    }
 
     private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Mob Handler - Infernal drops]");
     private static InfernalRecipe recipe = null;
@@ -149,31 +192,23 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
     public void drawForeground(int recipeID) {
         int y = 0, yshift = 10, x = 7;
 
-        GuiDraw.drawString("Infernal Mobs - Drop Table", x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString("Format: ", x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString("Drop table name - x% (y%)", x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString("x - Chance to get", x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString("y - Chance to get when the mob", x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString("always spawns infernal", x + 20, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, 0xFF555555, false);
 
         x = 6;
         y = itemsYStart;
         yshift = nextRowYShift;
         if (recipe.eliteCount > 0) {
-            GuiDraw.drawString(
-                String.format("Elite drops - %.2f%% (%.2f%%)", recipe.eliteChance * 100d, 100d),
-                x,
-                y,
-                0xFF555555,
-                false);
+            GuiDraw.drawString(Translations.ELITE.get(recipe.eliteChance * 100d, 100d), x, y, 0xFF555555, false);
             y += yshift + ((recipe.eliteCount - 1) / itemsPerRow) * 18;
         }
         if (recipe.ultraCount > 0) {
             GuiDraw.drawString(
-                String.format(
-                    "Ultra drops - %.3f%% (%.2f%%)",
-                    recipe.ultraChance * recipe.eliteChance * 100d,
-                    recipe.ultraChance * 100d),
+                Translations.ULTRA.get(recipe.ultraChance * recipe.eliteChance * 100d, recipe.ultraChance * 100d),
                 x,
                 y,
                 0xFF555555,
@@ -182,8 +217,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
         }
         if (recipe.infernoCount > 0) {
             GuiDraw.drawString(
-                String.format(
-                    "Inferno drops - %.3f%% (%.3f%%)",
+                Translations.INFERNO.get(
                     recipe.infernoChance * recipe.ultraChance * recipe.eliteChance * 100d,
                     recipe.infernoChance * recipe.ultraChance * 100d),
                 x,
@@ -220,8 +254,8 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
         public void handleTooltip(List<String> currenttip) {
             currenttip.addAll(
                 Arrays.asList(
-                    String.format("Total chance to get: %.4f%%", chance * 100d),
-                    String.format("Total chance to get when always infernal: %.4f%%", chanceAlways * 100d)));
+                    Translations.TOOLTIP_CHANCE.get(chance * 100d),
+                    Translations.TOOLTIP_CHANCE_ALWAYS.get(chanceAlways * 100d)));
         }
 
         @Override

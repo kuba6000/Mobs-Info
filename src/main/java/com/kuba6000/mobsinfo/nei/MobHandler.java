@@ -62,6 +62,7 @@ import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.event.MobNEIRegistrationEvent;
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
+import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
@@ -115,7 +116,7 @@ public class MobHandler extends TemplateRecipeHandler {
         }
 
         public String get(Object... args) {
-            return StatCollector.translateToLocalFormatted(key, args);
+            return TranslationHelper.translateFormattedFixed(key, args);
         }
 
         public String getKey() {
