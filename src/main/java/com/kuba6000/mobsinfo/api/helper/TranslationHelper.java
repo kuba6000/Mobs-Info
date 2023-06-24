@@ -13,7 +13,7 @@ public class TranslationHelper {
         List<String> replacements = new ArrayList<>();
         for (Object arg : args) {
             if (arg instanceof Double || arg instanceof Float) {
-                if ((double) arg > 0.05d) replacements.add("%.2f");
+                if ((double) arg > 0.05d || (double) arg == 0d) replacements.add("%.2f");
                 else replacements.add("%.4f");
             } else replacements.add("%s");
         }
