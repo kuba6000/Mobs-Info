@@ -289,7 +289,8 @@ public class Witchery implements IExtraLoader {
                 true,
                 false);
             drop2.variableChance = true;
-            drop2.variableChanceInfo.add("Chance: 33% (or 50% when killed using Arthana)");
+            drop2.variableChanceInfo
+                .add(Translations.CHANCE.get(33d) + " (" + Translations.OR_USING.get(50d, "Arthana") + ")");
             drops.add(drop2);
         }
 
