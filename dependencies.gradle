@@ -49,6 +49,7 @@ dependencies {
     compileOnly("com.github.GTNewHorizons:Botania:1.9.23-GTNH:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:harvestcraft:1.1.0-GTNH:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:OpenBlocks:1.7.0-GTNH:dev") { transitive = false }
+    compileOnly('com.github.GTNewHorizons:OpenModsLib:0.10.4:dev') { transitive = false }
     compileOnly("com.github.GTNewHorizons:BloodArsenal:1.2.11:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:BloodMagic:1.4.1:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:ThaumicTinkerer:2.7.0:dev") { transitive = false }
