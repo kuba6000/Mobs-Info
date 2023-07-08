@@ -42,6 +42,7 @@ public class ExtraLoader {
         if (LoaderReference.Automagy) loaders.add(new Automagy());
         if (LoaderReference.GTPlusPlus) loaders.add(new GregtechPlusPlus());
         if (LoaderReference.DQRespect) loaders.add(new DQRespect());
+        if (LoaderReference.EditMobDrops) loaders.add(new EditMobDrops());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
