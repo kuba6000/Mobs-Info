@@ -530,7 +530,10 @@ public class MobRecipeLoader {
                 if (LoaderReference.TwilightForest && new Throwable().getStackTrace()[1].getClassName()
                     .equals("twilightforest.client.renderer.entity.RenderTFSnowQueenIceShield"))
                     return Blocks.packed_ice;
-                return super.getBlock(aX, aY, aZ);
+                if ((aX >= 16) && (aZ >= 16) && (aX < 32) && (aZ < 32)) {
+                    return aY == 64 ? Blocks.grass : Blocks.air;
+                }
+                return Blocks.air;
             }
         };
         f.isRemote = true; // quick hack to get around achievements
