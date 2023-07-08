@@ -46,6 +46,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.init.Blocks;
@@ -648,7 +649,10 @@ public class MobRecipeLoader {
 
                 e.captureDrops = true;
 
-                if (e instanceof EntitySlime) ((EntitySlimeAccessor) e).callSetSlimeSize(1);
+                if (e instanceof EntitySlime) {
+                    if (v == EntityMagmaCube.class) ((EntitySlimeAccessor) e).callSetSlimeSize(2);
+                    else((EntitySlimeAccessor) e).callSetSlimeSize(1);
+                }
 
                 ((EntityAccessor) e).setRand(frand);
 
@@ -706,9 +710,6 @@ public class MobRecipeLoader {
                 ModUtils.TriConsumer<Supplier<Boolean>, droplist, String> doTheDQRDrop = (callerCanceller, dList,
                     dListName) -> {
                     if (callerCanceller.get()) {
-
-                        // collector.addDrop(dList, e.capturedDrops, frand.chance);
-
                         if (e.capturedDrops.size() != DQRChances.size()) {
                             int c = DQRChances.size();
                             DQRChances.clear();
@@ -741,8 +742,6 @@ public class MobRecipeLoader {
                         ((EntityLivingBaseAccessor) e).callDropFewItems(true, 0);
                         return true;
                     }, drops, "normal");
-
-                    checkForWitchery.run();
 
                     doTheDQRDrop.accept(() -> {
                         ((EntityLivingBaseAccessor) e).callDropFewItems(true, 1);
