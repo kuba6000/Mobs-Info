@@ -44,6 +44,7 @@ public class ExtraLoader {
         if (LoaderReference.DQRespect) loaders.add(new DQRespect());
 
         // LAST
+        if (LoaderReference.EditMobDrops) loaders.add(new EditMobDrops());
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
     }
 
