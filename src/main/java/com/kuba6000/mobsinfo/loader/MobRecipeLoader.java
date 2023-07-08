@@ -650,8 +650,7 @@ public class MobRecipeLoader {
                 e.captureDrops = true;
 
                 if (e instanceof EntitySlime) {
-                    if (v == EntityMagmaCube.class)
-                        ((EntitySlimeAccessor) e).callSetSlimeSize(2);
+                    if (v == EntityMagmaCube.class) ((EntitySlimeAccessor) e).callSetSlimeSize(2);
                     else((EntitySlimeAccessor) e).callSetSlimeSize(1);
                 }
 
