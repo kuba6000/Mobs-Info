@@ -41,6 +41,7 @@ public class ExtraLoader {
         if (LoaderReference.Thaumcraft) loaders.add(new Thaumcraft());
         if (LoaderReference.Automagy) loaders.add(new Automagy());
         if (LoaderReference.GTPlusPlus) loaders.add(new GregtechPlusPlus());
+        if (LoaderReference.DQRespect) loaders.add(new DQRespect());
 
         // LAST
         if (LoaderReference.MineTweaker) loaders.add(new MineTweaker());
