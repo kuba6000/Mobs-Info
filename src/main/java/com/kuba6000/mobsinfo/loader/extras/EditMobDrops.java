@@ -99,11 +99,7 @@ public class EditMobDrops implements IExtraLoader {
                     .equals(c.entityFrom))
             .findAny()
             .ifPresent(addedDrop -> {
-                ItemStack item = new ItemStack(
-                    addedDrop.item,
-                    (int) (MobDrop.getChanceBasedOnFromTo(addedDrop.minStack, addedDrop.maxStack) * 10000d
-                        * (addedDrop.chances.get(0) / 100d)),
-                    addedDrop.metadata);
+                ItemStack item = new ItemStack(addedDrop.item, 1, addedDrop.metadata);
                 MobDrop drop = new MobDrop(
                     item,
                     MobDrop.DropType.Normal,
