@@ -20,6 +20,10 @@ public class ExtraLoader {
 
     private static void init() {
         initialized = true;
+        // FIRST
+        loaders.add(new Minecraft());
+
+        // Mods
         if (LoaderReference.DraconicEvolution) loaders.add(new DraconicEvolution());
         if (LoaderReference.TinkersConstruct) loaders.add(new TinkersConstruct());
         if (LoaderReference.Witchery) loaders.add(new Witchery());
