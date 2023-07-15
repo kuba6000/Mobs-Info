@@ -289,7 +289,10 @@ public class MobHandler extends TemplateRecipeHandler {
             // scaled = (int) Math.min(scaled, maxwidth / ewidth);
 
             int mobx = 30, moby = 50;
-            e.setPosition(mc.thePlayer.posX + 5, mc.thePlayer.posY, mc.thePlayer.posZ);
+            e.setPosition(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
+            e.lastTickPosX = e.posX;
+            e.lastTickPosY = e.posY;
+            e.lastTickPosZ = e.posZ;
 
             // ARGS: x, y, scale, rot, rot, entity
             GuiInventory.func_147046_a(
