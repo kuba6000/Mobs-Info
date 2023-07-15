@@ -151,6 +151,7 @@ public class Config {
 
         MobHandler.load(configuration);
         Debug.load(configuration);
+        Compatibility.load(configuration);
 
         if (configuration.hasChanged()) {
             configuration.save();
