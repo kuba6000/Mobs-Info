@@ -70,4 +70,4 @@ mobsinfo.command.help.possible_commands=可能的指令：
 mobsinfo.command.help.usage=- 显示所有可能的指令
 mobsinfo.command.config.invalid_option=§c无效选项 ! 可能的选项：reload
 mobsinfo.command.config.success=§a配置(Config)重新加载成功 !
-mobsinfo.command.config.usage=<选项
+mobsinfo.command.config.usage=<选项>
