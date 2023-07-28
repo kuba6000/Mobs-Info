@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.StatCollector;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import com.kuba6000.mobsinfo.api.MobRecipe;
@@ -30,7 +31,7 @@ public class ForgeEventHandler {
 
         Entity sourceEntity = source.getEntity();
 
-        if (!(sourceEntity instanceof EntityPlayerMP)) return;
+        if (!(sourceEntity instanceof EntityPlayerMP) || sourceEntity instanceof FakePlayer) return;
 
         PlayerData playerData = PlayerDataManager.getPlayer((EntityPlayer) sourceEntity);
 
