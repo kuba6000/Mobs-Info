@@ -350,11 +350,24 @@ public class MobHandler extends TemplateRecipeHandler {
         GL11.glDisable(GL11.GL_DEPTH_TEST);
     }
 
+    private int drawStringWithWordWrap(String string, int x, int y, int yshift, int width, int color, boolean shadow) {
+        @SuppressWarnings("unchecked")
+        List<String> s = (List<String>) GuiDraw.fontRenderer.listFormattedStringToWidth(string, width);
+        for (int i = 0, sSize = s.size(); i < sSize; i++) {
+            String s1 = s.get(i);
+            if (i > 0) GuiDraw.drawString(" " + s1, x, y, color, shadow);
+            else GuiDraw.drawString(s1, x, y, color, shadow);
+            y += yshift;
+        }
+        return yshift * s.size();
+    }
+
     @Override
     public void drawForeground(int recipe) {
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
         int y = 7, yshift = 10, x = 57;
-        GuiDraw.drawString(currentrecipe.localizedName, x, y, 0xFF555555, false);
+
+        y += drawStringWithWordWrap(currentrecipe.localizedName, x, y, yshift, 168 - x, 0xFF555555, false) - yshift;
         if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
             GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, 0xFF555555, false);
         GuiDraw.drawString(Translations.MOD.get() + currentrecipe.mod, x, y += yshift, 0xFF555555, false);
@@ -621,8 +634,9 @@ public class MobHandler extends TemplateRecipeHandler {
             }
             if (LoaderReference.EnderIO) {
                 this.mInput.add(0, EnderIOGetter.BlockPoweredSpawner$createItemStackForMob(mobname));
-            } else if (id == 0) this.mInput.add(new ItemStack(Items.spawn_egg, 1, 0)); // ???
-            ingredient = new PositionedStack(this.mInput.get(0), 38, 44, false);
+            } // else if (id == 0) this.mInput.add(new ItemStack(Items.spawn_egg, 1, 0)); // ???
+            if (!this.mInput.isEmpty()) ingredient = new PositionedStack(this.mInput.get(0), 38, 44, false);
+            else ingredient = null;
             this.isUsableInVial = EnderIOHelper.canEntityBeCapturedWithSoulVial(mob, mobname);
 
             if (!LoaderReference.InfernalMobs) infernaltype = -1; // not supported
