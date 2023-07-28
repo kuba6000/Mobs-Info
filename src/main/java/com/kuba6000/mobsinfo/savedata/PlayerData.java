@@ -1,6 +1,6 @@
 package com.kuba6000.mobsinfo.savedata;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -11,7 +11,7 @@ import com.kuba6000.mobsinfo.api.utils.ModUtils;
 
 public class PlayerData {
 
-    public ArrayList<String> killedMobs = new ArrayList<>();
+    public HashSet<String> killedMobs = new HashSet<>();
 
     PlayerData() {}
 
