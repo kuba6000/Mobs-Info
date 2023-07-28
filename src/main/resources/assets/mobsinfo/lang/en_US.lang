@@ -17,6 +17,8 @@ mobsinfo.mobhandler.average_reminder=§7§oPlease remember that these are averag
 mobsinfo.mobhandler.lootable=Looting is applied
 mobsinfo.mobhandler.player_only=§7Hard player-only
 mobsinfo.mobhandler.peaceful_allowed=Allowed in peaceful
+mobsinfo.mobhandler.locked_1=To unlock more information,
+mobsinfo.mobhandler.locked_2=you have to kill the mob!
 
 mobsinfo.mobhandlerinfernal.title=Infernal Mobs - Drop Table
 mobsinfo.mobhandlerinfernal.format=Format:

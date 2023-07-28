@@ -25,6 +25,7 @@ import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.BOSS;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -66,6 +67,8 @@ import com.kuba6000.mobsinfo.api.utils.MobUtils;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
+import com.kuba6000.mobsinfo.savedata.PlayerData;
+import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 
 import atomicstryker.infernalmobs.common.InfernalMobsCore;
 import codechicken.lib.gui.GuiDraw;
@@ -101,7 +104,9 @@ public class MobHandler extends TemplateRecipeHandler {
         BOSS,
         LOOTABLE,
         PLAYER_ONLY,
-        PEACEFUL_ALLOWED;
+        PEACEFUL_ALLOWED,
+        LOCKED_1,
+        LOCKED_2;
 
         final String key;
 
@@ -172,6 +177,10 @@ public class MobHandler extends TemplateRecipeHandler {
 
     public static void sortCachedRecipes() {
         cachedRecipes.sort((o1, o2) -> {
+            boolean u1 = o1.isUnlocked();
+            boolean u2 = o2.isUnlocked();
+            if (u1 && !u2) return -1;
+            else if (!u1 && u2) return 1;
             boolean m1 = o1.mod.equals("Minecraft");
             boolean m2 = o2.mod.equals("Minecraft");
             if (m1 && !m2) return -1;
@@ -216,6 +225,17 @@ public class MobHandler extends TemplateRecipeHandler {
         GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 192);
 
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
+
+        if (!currentrecipe.isUnlocked()) {
+            GL11.glPushMatrix();
+
+            GL11.glTranslatef(20.f, 20.f, 0.f);
+            GL11.glScalef(4.f, 4.f, 0.f);
+            GuiDraw.drawString("?", 0, 0, 0xFF555555, false);
+
+            GL11.glPopMatrix();
+            return;
+        }
 
         {
             int x = 6, y = 94, yshift = nextRowYShift;
@@ -338,6 +358,13 @@ public class MobHandler extends TemplateRecipeHandler {
         if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
             GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, 0xFF555555, false);
         GuiDraw.drawString(Translations.MOD.get() + currentrecipe.mod, x, y += yshift, 0xFF555555, false);
+        if (!currentrecipe.isUnlocked()) {
+            x = 6;
+            y = 83;
+            GuiDraw.drawStringC(Translations.LOCKED_1.get(), 168 / 2, y += yshift, 0xFF555555, false);
+            GuiDraw.drawStringC(Translations.LOCKED_2.get(), 168 / 2, y += yshift, 0xFF555555, false);
+            return;
+        }
         GuiDraw.drawString(Translations.MAX_HEALTH.get() + currentrecipe.maxHealth, x, y += yshift, 0xFF555555, false);
         switch (currentrecipe.infernaltype) {
             case -1:
@@ -422,8 +449,9 @@ public class MobHandler extends TemplateRecipeHandler {
         if (LoaderReference.Gregtech5) {
             List<ItemStack> results = GT5Helper.getAssociated(result);
             for (MobCachedRecipe r : cachedRecipes) if (results.stream()
-                .anyMatch(i -> r.contains(r.mOutputs, i))) arecipes.add(r);
-        } else for (MobCachedRecipe r : cachedRecipes) if (r.contains(r.mOutputs, result)) arecipes.add(r);
+                .anyMatch(i -> r.contains(r.mOutputs, i)) && r.isUnlocked()) arecipes.add(r);
+        } else for (MobCachedRecipe r : cachedRecipes)
+            if (r.contains(r.mOutputs, result) && r.isUnlocked()) arecipes.add(r);
     }
 
     @Override
@@ -608,6 +636,12 @@ public class MobHandler extends TemplateRecipeHandler {
             MinecraftForge.EVENT_BUS.post(new MobNEIRegistrationEvent(mobname, mob, this.additionalInformation));
         }
 
+        public boolean isUnlocked() {
+            if (!Config.MobHandler.hiddenMode) return true;
+            PlayerData localData = PlayerDataManager.getPlayer(null);
+            return localData.killedMobs.contains(mobname);
+        }
+
         @Override
         public PositionedStack getIngredient() {
             return ingredient;
@@ -620,6 +654,7 @@ public class MobHandler extends TemplateRecipeHandler {
 
         @Override
         public List<PositionedStack> getOtherStacks() {
+            if (!isUnlocked()) return Collections.emptyList();
             if (cycleTicksStatic % 10 == 0) mOutputs.forEach(p -> p.setPermutationToRender(0));
             return mOutputs;
         }
