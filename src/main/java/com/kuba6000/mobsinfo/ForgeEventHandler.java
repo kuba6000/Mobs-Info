@@ -34,6 +34,7 @@ public class ForgeEventHandler {
 
         if (!playerData.killedMobs.contains(entity)) {
             playerData.killedMobs.add(entity);
+            playerData.markDirty();
             MobsInfo.NETWORK.sendTo(new SaveDataPacket(playerData), (EntityPlayerMP) sourceEntity);
         }
     }
