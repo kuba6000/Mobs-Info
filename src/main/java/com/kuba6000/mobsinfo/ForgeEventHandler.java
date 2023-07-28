@@ -4,9 +4,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
+import com.kuba6000.mobsinfo.api.MobRecipe;
+import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.network.SaveDataPacket;
 import com.kuba6000.mobsinfo.savedata.PlayerData;
 import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
@@ -36,6 +40,10 @@ public class ForgeEventHandler {
             playerData.killedMobs.add(entity);
             playerData.markDirty();
             MobsInfo.NETWORK.sendTo(new SaveDataPacket(playerData), (EntityPlayerMP) sourceEntity);
+            if (Config.MobHandler.hiddenMode && MobRecipe.getRecipeByEntityName(entity) != null) {
+                ((EntityPlayerMP) sourceEntity).addChatMessage(
+                    new ChatComponentText(StatCollector.translateToLocal("mobsinfo.mobhandler.unlocked")));
+            }
         }
     }
 

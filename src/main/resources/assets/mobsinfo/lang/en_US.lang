@@ -19,6 +19,7 @@ mobsinfo.mobhandler.player_only=§7Hard player-only
 mobsinfo.mobhandler.peaceful_allowed=Allowed in peaceful
 mobsinfo.mobhandler.locked_1=To unlock more information,
 mobsinfo.mobhandler.locked_2=you have to kill the mob!
+mobsinfo.mobhandler.unlocked=§6You have unlocked new mob information!
 
 mobsinfo.mobhandlerinfernal.title=Infernal Mobs - Drop Table
 mobsinfo.mobhandlerinfernal.format=Format:
