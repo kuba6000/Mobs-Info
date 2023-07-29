@@ -85,9 +85,10 @@ public class CommandHidden extends CommandBase {
                 String entityName = args[2];
                 if (MobRecipe.getRecipeByEntityName(entityName) == null) {
                     sender.addChatMessage(new ChatComponentText(INVALID_MOB.get()));
-                    pData.markDirty();
+                    return;
                 }
                 pData.killedMobs.add(entityName);
+                pData.markDirty();
                 sender.addChatMessage(new ChatComponentText(SUCCESS.get()));
                 MobsInfo.NETWORK.sendTo(new SaveDataPacket(pData), player);
                 break;

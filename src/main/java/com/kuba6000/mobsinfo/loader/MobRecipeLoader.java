@@ -1199,9 +1199,6 @@ public class MobRecipeLoader {
             if (drops.isEmpty()) {
                 LOG.info("Entity " + k + " doesn't drop any items");
                 if (!Config.MobHandler.includeEmptyMobs) continue;
-                LoadConfigPacket.instance.mobsToLoad.add(k);
-                LOG.info("Registered " + k);
-                continue;
             }
             MobNameToRecipeMap.put(k, recipe);
             LoadConfigPacket.instance.mobsToLoad.add(k);
