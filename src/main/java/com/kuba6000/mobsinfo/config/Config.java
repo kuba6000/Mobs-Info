@@ -69,6 +69,7 @@ public class Config {
         public static _CacheRegenerationTrigger regenerationTrigger = _CacheRegenerationTrigger.ModAdditionRemovalChange;
         public static boolean includeEmptyMobs = true;
         public static String[] mobBlacklist;
+        public static boolean hiddenMode = false;
 
         private static void load(Configuration configuration) {
             Category category = Category.MOB_HANDLER;
@@ -103,6 +104,13 @@ public class Config {
                         "SpecialMobs.SpecialSilverfish", },
                     "These mobs will be skipped when generating recipe map")
                 .getStringList();
+            hiddenMode = configuration
+                .get(
+                    category.get(),
+                    "HiddenMode",
+                    false,
+                    "Hidden mode will make all mobs hidden in NEI until you kill them.")
+                .getBoolean();
         }
     }
 
