@@ -218,6 +218,8 @@ public class MobHandler extends TemplateRecipeHandler {
         return "mobsinfo:textures/gui/MobHandler.png";
     }
 
+    FloatBuffer buffer = BufferUtils.createFloatBuffer(65536);
+
     @Override
     public void drawBackground(int recipe) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
@@ -303,7 +305,8 @@ public class MobHandler extends TemplateRecipeHandler {
             EntityLiving e = currentrecipe.mob;
 
             float eheight = MobUtils.getMobHeight(e);
-            float scaled = MobUtils.getDesiredScale(eheight, 27);
+            float scaled = MobUtils.getDesiredScale(eheight, 100f);
+            //float scaled = 10.f;
             //
             // int maxwidth = 15;
             // scaled = (int) Math.min(scaled, maxwidth / ewidth);
@@ -314,14 +317,125 @@ public class MobHandler extends TemplateRecipeHandler {
             e.lastTickPosY = e.posY;
             e.lastTickPosZ = e.posZ;
 
+            buffer.clear();
+
+            GL11.glFeedbackBuffer(GL11.GL_3D, buffer);
+            GL11.glRenderMode(GL11.GL_FEEDBACK);
+
             // ARGS: x, y, scale, rot, rot, entity
             GuiInventory.func_147046_a(
                 mobx,
                 moby,
-                Math.round(scaled),
+                10,
                 (x + mobx) - mouseX,
-                y + moby - eheight * scaled - mouseZ,
+                y + moby - 20 - mouseZ,
                 e);
+
+            int entries = GL11.glRenderMode(GL11.GL_RENDER);
+
+            float miny = 999.f;
+            float maxy = -999.f;
+
+            if(entries > 0)
+                while(buffer.position() < entries)
+                {
+                    switch ((int) buffer.get())
+                    {
+                        case GL11.GL_POINT_TOKEN: {
+                            float[] pos = new float[3];
+                            buffer.get(pos);
+                            //LOG.info("POINT -> " + pos[0] + ", " + pos[1]);
+                            break;
+                        }
+                        case GL11.GL_LINE_TOKEN: {
+                            float[] pos = new float[3];
+                            float[] pos2 = new float[3];
+                            buffer.get(pos);
+                            buffer.get(pos2);
+                            //LOG.info("LINE -> " + pos[0] + ", " + pos[1] + " -> " + pos2[0] + ", " + pos2[1]);
+                            break;
+                        }
+                        case GL11.GL_LINE_RESET_TOKEN: {
+                            float[] pos = new float[3];
+                            float[] pos2 = new float[3];
+                            buffer.get(pos);
+                            buffer.get(pos2);
+                            //LOG.info("LINE_RESET -> " + pos[0] + ", " + pos[1] + " -> " + pos2[0] + ", " + pos2[1]);
+                            break;
+                        }
+                        case GL11.GL_POLYGON_TOKEN: {
+                            int len = (int)buffer.get();
+                            float[] pos = new float[len * 3];
+                            buffer.get(pos);
+                            StringBuilder b = new StringBuilder("POLYGON -> ");
+                            for (int i = 0; i < pos.length; i += 3) {
+                                b.append("[");
+                                b.append(pos[i]);
+                                b.append(", ");
+                                b.append(pos[i+1]);
+                                b.append(", ");
+                                b.append(pos[i+2]);
+                                b.append("], ");
+                                float pos_y = pos[i+1];
+                                if(pos_y < miny) miny = pos_y;
+                                if(pos_y > maxy) maxy = pos_y;
+                            }
+
+                            //LOG.info(b.toString());
+                            break;
+                        }
+                        case GL11.GL_BITMAP_TOKEN: {
+                            float[] pos = new float[3];
+                            buffer.get(pos);
+                            //LOG.info("BITMAP -> " + pos[0] + ", " + pos[1]);
+                            break;
+                        }
+                        case GL11.GL_DRAW_PIXEL_TOKEN: {
+                            float[] pos = new float[3];
+                            buffer.get(pos);
+                            //LOG.info("DRAW_PIXEL -> " + pos[0] + ", " + pos[1]);
+                            break;
+                        }
+                        case GL11.GL_COPY_PIXEL_TOKEN: {
+                            float[] pos = new float[3];
+                            buffer.get(pos);
+                            //LOG.info("COPY_PIXEL -> " + pos[0] + ", " + pos[1]);
+                            break;
+                        }
+                        case GL11.GL_PASS_THROUGH_TOKEN: {
+                            //LOG.info("PASS_THROUGH -> " + buffer.get());
+                            break;
+                        }
+                    }
+                }
+
+            float height_in_pixels = maxy - miny;
+            float height_in_game = height_in_pixels / scale.getScaleFactor();
+
+            // convert to local coordinate:
+            float ylocal = (((float)mc.displayHeight - miny) / scale.getScaleFactor()) - y;
+            float wantedy = 60.f;
+
+            float new_scale = (53.f / height_in_game);
+
+            GuiDraw.drawRect(mobx, (int)ylocal, 10, 2, 0xFFFF0000);
+
+            LOG.info("height_in_pixels: " + height_in_pixels);
+            LOG.info("height_in_game: " + height_in_game);
+            LOG.info("y_local: " + ylocal);
+
+            float a = moby - ylocal;
+            float aa = a - (a * new_scale);
+            float aaa = (wantedy - ylocal) - aa;
+
+            GuiInventory.func_147046_a(
+                mobx,
+                (int) (moby + aaa),
+                Math.round(10.f * new_scale),
+                (x + mobx) - mouseX,
+                y + moby - 20 - mouseZ,
+                e);
+
         } catch (Throwable ex) {
             Tessellator tes = Tessellator.instance;
             try {
