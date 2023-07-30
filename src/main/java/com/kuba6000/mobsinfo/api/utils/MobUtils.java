@@ -21,7 +21,6 @@
 package com.kuba6000.mobsinfo.api.utils;
 
 import java.nio.FloatBuffer;
-import java.util.HashMap;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -33,7 +32,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RendererLivingEntity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.BossStatus;
 
@@ -96,8 +94,8 @@ public class MobUtils {
         }
     }
 
-    private static final FloatBuffer buffer = BufferUtils.createFloatBuffer(65536);
-    private static final HashMap<String, Rectangle> sizeCache = new HashMap<>();
+    private static final FloatBuffer buffer = BufferUtils.createFloatBuffer(16384);
+    // private static final HashMap<String, Rectangle> sizeCache = new HashMap<>();
 
     @SideOnly(Side.CLIENT)
     public static Rectangle getMobSizeInGui(EntityLiving mob, int mobx, int moby, int scaled) {
@@ -106,12 +104,12 @@ public class MobUtils {
 
         ScaledResolution scale = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 
-        String mobSizeKey = EntityList.getEntityString(
-            mob) + mobx + "_" + moby + "_" + scaled + "_" + mc.displayHeight + "_" + scale.getScaleFactor();
-
-        Rectangle size = sizeCache.get(mobSizeKey);
-        if (size != null) return new Rectangle(size);
-
+        /*
+         * String mobSizeKey = EntityList.getEntityString(
+         * mob) + mobx + "_" + moby + "_" + scaled + "_" + mc.displayHeight + "_" + scale.getScaleFactor();
+         * Rectangle size = sizeCache.get(mobSizeKey);
+         * if (size != null) return new Rectangle(size);
+         */
         int stackdepth = GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
 
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
@@ -218,13 +216,13 @@ public class MobUtils {
         int err;
         while ((err = GL11.glGetError()) != GL11.GL_NO_ERROR);
 
-        size = new Rectangle(
+        return new Rectangle(
             (int) (minx / scale.getScaleFactor()),
             (int) ((mc.displayHeight - maxy) / scale.getScaleFactor()),
             (int) width_in_game,
             (int) height_in_game);
-        sizeCache.put(mobSizeKey, size);
+        // sizeCache.put(mobSizeKey, size);
 
-        return new Rectangle(size);
+        // return new Rectangle(size);
     }
 }
