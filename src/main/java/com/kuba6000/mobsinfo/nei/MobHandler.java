@@ -312,10 +312,10 @@ public class MobHandler extends TemplateRecipeHandler {
 
             // convert to local coordinate:
             float ylocal = (v.getY() + v.getHeight()) - y;
-            float wantedy = 56.f;
+            float wantedy = 54.f;
 
-            float new_scale = (48.f / v.getHeight());
-            float new_scale_x = (43.f / v.getWidth());
+            float new_scale = (40.f / v.getHeight());
+            float new_scale_x = (38.f / v.getWidth());
             if (new_scale_x < new_scale) new_scale = new_scale_x;
 
             new_scale = (float) Math.round(20.f * new_scale) / 20.f;
