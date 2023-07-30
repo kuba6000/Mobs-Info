@@ -94,7 +94,7 @@ public class MobUtils {
         }
     }
 
-    private static final FloatBuffer buffer = BufferUtils.createFloatBuffer(65536);
+    private static final FloatBuffer buffer = BufferUtils.createFloatBuffer(16384);
     // private static final HashMap<String, Rectangle> sizeCache = new HashMap<>();
 
     @SideOnly(Side.CLIENT)
