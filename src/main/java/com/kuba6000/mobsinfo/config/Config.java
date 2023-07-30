@@ -116,12 +116,31 @@ public class Config {
 
     public static class Debug {
 
+        public enum LoggingLevel {
+
+            Basic,
+            Detailed;
+
+            public static LoggingLevel get(int oridinal) {
+                return values()[oridinal];
+            }
+        }
+
+        public static LoggingLevel loggingLevel = LoggingLevel.Basic;
         public static boolean showRenderErrors = false;
 
         private static void load(Configuration configuration) {
             Category category = Category.DEBUG;
             showRenderErrors = configuration.get(category.get(), "ShowRenderErrors", false)
                 .getBoolean();
+            loggingLevel = LoggingLevel.get(
+                configuration
+                    .get(
+                        category.get(),
+                        "LoggingLevel",
+                        0,
+                        "0 - Default, log only basic, summary information. 1 - More detailed logs")
+                    .getInt());
         }
     }
 
