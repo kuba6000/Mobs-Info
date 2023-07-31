@@ -218,6 +218,8 @@ public class MobHandler extends TemplateRecipeHandler {
         return "mobsinfo:textures/gui/MobHandler.png";
     }
 
+    private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
+
     @Override
     public void drawBackground(int recipe) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
@@ -281,10 +283,10 @@ public class MobHandler extends TemplateRecipeHandler {
         int mouseZ = height - Mouse.getY() * height / mc.displayHeight - 1;
 
         // Get current x,y from matrix
-        FloatBuffer buf = BufferUtils.createFloatBuffer(16);
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, buf);
-        float x = buf.get(12);
-        float y = buf.get(13);
+        matrixBuffer.clear();
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, matrixBuffer);
+        float x = matrixBuffer.get(12);
+        float y = matrixBuffer.get(13);
 
         int stackdepth = GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
 
@@ -350,8 +352,10 @@ public class MobHandler extends TemplateRecipeHandler {
         GL11.glMatrixMode(GL11.GL_MODELVIEW_MATRIX);
         stackdepth -= GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
         if (stackdepth < 0) for (; stackdepth < 0; stackdepth++) GL11.glPopMatrix();
-        if (stackdepth > 0) for (; stackdepth > 0; stackdepth--) GL11.glPushMatrix();
-
+        if (stackdepth > 0) {
+            for (; stackdepth > 0; stackdepth--) GL11.glPushMatrix();
+            GL11.glLoadMatrix(matrixBuffer);
+        }
         GL11.glPopAttrib();
 
         int err;
