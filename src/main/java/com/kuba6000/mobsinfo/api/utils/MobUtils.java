@@ -222,8 +222,10 @@ public class MobUtils {
         GL11.glMatrixMode(GL11.GL_MODELVIEW_MATRIX);
         stackdepth -= GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
         if (stackdepth < 0) for (; stackdepth < 0; stackdepth++) GL11.glPopMatrix();
-        if (stackdepth > 0) for (; stackdepth > 0; stackdepth--) GL11.glPushMatrix();
-
+        if (stackdepth > 0) {
+            for (; stackdepth > 0; stackdepth--) GL11.glPushMatrix();
+            GL11.glLoadMatrix(matrixBuffer);
+        }
         GL11.glPopAttrib();
 
         int err;
