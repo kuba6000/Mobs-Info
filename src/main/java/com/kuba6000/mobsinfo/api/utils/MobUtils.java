@@ -94,7 +94,9 @@ public class MobUtils {
         }
     }
 
-    private static final FloatBuffer buffer = BufferUtils.createFloatBuffer(16384);
+    // This size allows all vanilla mobs to render
+    private static FloatBuffer buffer = BufferUtils.createFloatBuffer(16_384);
+    private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
     // private static final HashMap<String, Rectangle> sizeCache = new HashMap<>();
 
     @SideOnly(Side.CLIENT)
@@ -113,6 +115,9 @@ public class MobUtils {
         int stackdepth = GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
 
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+
+        matrixBuffer.clear();
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, matrixBuffer);
 
         GL11.glPushMatrix();
 
@@ -144,55 +149,63 @@ public class MobUtils {
         float miny = Float.MAX_VALUE;
         float maxy = Float.MIN_VALUE;
 
-        if (entries > 0) while (buffer.position() < entries) {
-            switch ((int) buffer.get()) {
-                case GL11.GL_POINT_TOKEN:
-                case GL11.GL_BITMAP_TOKEN:
-                case GL11.GL_DRAW_PIXEL_TOKEN:
-                case GL11.GL_COPY_PIXEL_TOKEN: {
-                    float[] pos = new float[2];
-                    buffer.get(pos);
-                    float pos_x = pos[0];
-                    if (pos_x < minx) minx = pos_x;
-                    if (pos_x > maxx) maxx = pos_x;
-                    float pos_y = pos[1];
-                    if (pos_y < miny) miny = pos_y;
-                    if (pos_y > maxy) maxy = pos_y;
-                    break;
-                }
-                case GL11.GL_LINE_TOKEN:
-                case GL11.GL_LINE_RESET_TOKEN: {
-                    float[] pos = new float[4];
-                    buffer.get(pos);
-                    for (int i = 0; i < pos.length; i += 2) {
-                        float pos_x = pos[i];
+        if (entries > 0) {
+            while (buffer.position() < entries) {
+                switch ((int) buffer.get()) {
+                    case GL11.GL_POINT_TOKEN:
+                    case GL11.GL_BITMAP_TOKEN:
+                    case GL11.GL_DRAW_PIXEL_TOKEN:
+                    case GL11.GL_COPY_PIXEL_TOKEN: {
+                        float[] pos = new float[2];
+                        buffer.get(pos);
+                        float pos_x = pos[0];
                         if (pos_x < minx) minx = pos_x;
                         if (pos_x > maxx) maxx = pos_x;
-                        float pos_y = pos[i + 1];
+                        float pos_y = pos[1];
                         if (pos_y < miny) miny = pos_y;
                         if (pos_y > maxy) maxy = pos_y;
+                        break;
                     }
-                    break;
-                }
-                case GL11.GL_POLYGON_TOKEN: {
-                    int len = (int) buffer.get();
-                    float[] pos = new float[len * 2];
-                    buffer.get(pos);
-                    for (int i = 0; i < pos.length; i += 2) {
-                        float pos_x = pos[i];
-                        if (pos_x < minx) minx = pos_x;
-                        if (pos_x > maxx) maxx = pos_x;
-                        float pos_y = pos[i + 1];
-                        if (pos_y < miny) miny = pos_y;
-                        if (pos_y > maxy) maxy = pos_y;
+                    case GL11.GL_LINE_TOKEN:
+                    case GL11.GL_LINE_RESET_TOKEN: {
+                        float[] pos = new float[4];
+                        buffer.get(pos);
+                        for (int i = 0; i < pos.length; i += 2) {
+                            float pos_x = pos[i];
+                            if (pos_x < minx) minx = pos_x;
+                            if (pos_x > maxx) maxx = pos_x;
+                            float pos_y = pos[i + 1];
+                            if (pos_y < miny) miny = pos_y;
+                            if (pos_y > maxy) maxy = pos_y;
+                        }
+                        break;
                     }
-                    break;
-                }
-                case GL11.GL_PASS_THROUGH_TOKEN: {
-                    buffer.get();
-                    break;
+                    case GL11.GL_POLYGON_TOKEN: {
+                        int len = (int) buffer.get();
+                        float[] pos = new float[len * 2];
+                        buffer.get(pos);
+                        for (int i = 0; i < pos.length; i += 2) {
+                            float pos_x = pos[i];
+                            if (pos_x < minx) minx = pos_x;
+                            if (pos_x > maxx) maxx = pos_x;
+                            float pos_y = pos[i + 1];
+                            if (pos_y < miny) miny = pos_y;
+                            if (pos_y > maxy) maxy = pos_y;
+                        }
+                        break;
+                    }
+                    case GL11.GL_PASS_THROUGH_TOKEN: {
+                        buffer.get();
+                        break;
+                    }
                 }
             }
+        } else if (entries == -1) {
+            buffer = BufferUtils.createFloatBuffer(buffer.capacity() << 2);
+            System.gc();
+            float x = matrixBuffer.get(12);
+            float y = matrixBuffer.get(13);
+            return new Rectangle((int) x, (int) y, 48, 54);
         }
 
         float height_in_pixels = maxy - miny;
