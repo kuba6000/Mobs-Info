@@ -1,4 +1,11 @@
-# MobsInfo 1.7.10
+<div align=center>
+  
+# Mobs Info 1.7.10
+  
+[![CF Downloads](https://cf.way2muchnoise.eu/full_879914_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/mobs-info) [![Modrinth Downloads](https://img.shields.io/modrinth/dt/ifG4OZxi?logo=modrinth)
+](https://modrinth.com/mod/mobsinfo)
+
+</div>
 
 ## About
 
