@@ -47,6 +47,7 @@ public class ExtraLoader {
         if (LoaderReference.GTPlusPlus) loaders.add(new GregtechPlusPlus());
         if (LoaderReference.DQRespect) loaders.add(new DQRespect());
         if (LoaderReference.ChocoCraft) loaders.add(new ChocoCraft());
+        if (LoaderReference.ExtraUtilities) loaders.add(new ExtraUtilities());
 
         // LAST
         if (LoaderReference.EditMobDrops) loaders.add(new EditMobDrops());
