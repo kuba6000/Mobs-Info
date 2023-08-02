@@ -34,5 +34,6 @@ public class LoaderReference {
     public static final boolean DQRespect = Loader.isModLoaded("DQMIIINext");
     public static final boolean EditMobDrops = Loader.isModLoaded("editmobdrops");
     public static final boolean ChocoCraft = Loader.isModLoaded("chococraft");
+    public static final boolean ExtraUtilities = Loader.isModLoaded("ExtraUtilities");
 
 }
