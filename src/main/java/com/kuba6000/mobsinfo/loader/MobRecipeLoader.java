@@ -103,7 +103,6 @@ import com.kuba6000.mobsinfo.network.LoadConfigPacket;
 import com.mojang.authlib.GameProfile;
 
 import atomicstryker.infernalmobs.common.InfernalMobsCore;
-import atomicstryker.infernalmobs.common.mods.api.ModifierLoader;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -1023,41 +1022,35 @@ public class MobRecipeLoader {
         InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
         droplist infernaldrops = new droplist();
         LOG.info("Generating Infernal drops");
-        @SuppressWarnings("unchecked")
-        ArrayList<ModifierLoader<?>> modifierLoaders = (ArrayList<ModifierLoader<?>>) infernalMobsCore
-            .getModifierLoaders()
-            .clone();
-        if (!modifierLoaders.isEmpty()) {
-            double chance = 1d / infernalMobsCore.getEliteRarity();
-            ArrayList<ItemStack> elitelist = infernalMobsCore.getDropIdListElite();
-            for (ItemStack stack : elitelist) {
-                dropinstance instance = infernaldrops
-                    .add(new dropinstance(stack.copy(), infernaldrops), chance / elitelist.size());
-                instance.isEnchatmentRandomized = true;
-                // noinspection ConstantConditions
-                instance.enchantmentLevel = stack.getItem()
-                    .getItemEnchantability();
-            }
-            ArrayList<ItemStack> ultralist = infernalMobsCore.getDropIdListUltra();
-            chance *= 1d / infernalMobsCore.getUltraRarity();
-            for (ItemStack stack : ultralist) {
-                dropinstance instance = infernaldrops
-                    .add(new dropinstance(stack.copy(), infernaldrops), chance / ultralist.size());
-                instance.isEnchatmentRandomized = true;
-                // noinspection ConstantConditions
-                instance.enchantmentLevel = stack.getItem()
-                    .getItemEnchantability();
-            }
-            ArrayList<ItemStack> infernallist = infernalMobsCore.getDropIdListInfernal();
-            chance *= 1d / infernalMobsCore.getInfernoRarity();
-            for (ItemStack stack : infernallist) {
-                dropinstance instance = infernaldrops
-                    .add(new dropinstance(stack.copy(), infernaldrops), chance / infernallist.size());
-                instance.isEnchatmentRandomized = true;
-                // noinspection ConstantConditions
-                instance.enchantmentLevel = stack.getItem()
-                    .getItemEnchantability();
-            }
+        double chance = 1d / infernalMobsCore.getEliteRarity();
+        ArrayList<ItemStack> elitelist = infernalMobsCore.getDropIdListElite();
+        for (ItemStack stack : elitelist) {
+            dropinstance instance = infernaldrops
+                .add(new dropinstance(stack.copy(), infernaldrops), chance / elitelist.size());
+            instance.isEnchatmentRandomized = true;
+            // noinspection ConstantConditions
+            instance.enchantmentLevel = stack.getItem()
+                .getItemEnchantability();
+        }
+        ArrayList<ItemStack> ultralist = infernalMobsCore.getDropIdListUltra();
+        chance *= 1d / infernalMobsCore.getUltraRarity();
+        for (ItemStack stack : ultralist) {
+            dropinstance instance = infernaldrops
+                .add(new dropinstance(stack.copy(), infernaldrops), chance / ultralist.size());
+            instance.isEnchatmentRandomized = true;
+            // noinspection ConstantConditions
+            instance.enchantmentLevel = stack.getItem()
+                .getItemEnchantability();
+        }
+        ArrayList<ItemStack> infernallist = infernalMobsCore.getDropIdListInfernal();
+        chance *= 1d / infernalMobsCore.getInfernoRarity();
+        for (ItemStack stack : infernallist) {
+            dropinstance instance = infernaldrops
+                .add(new dropinstance(stack.copy(), infernaldrops), chance / infernallist.size());
+            instance.isEnchatmentRandomized = true;
+            // noinspection ConstantConditions
+            instance.enchantmentLevel = stack.getItem()
+                .getItemEnchantability();
         }
         return infernaldrops;
     }

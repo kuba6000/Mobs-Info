@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
+import com.kuba6000.mobsinfo.api.helper.InfernalMobsCoreHelper;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 
@@ -66,7 +67,7 @@ public class MobRecipe {
             if (infernaldrops == null) {
                 infernaldrops = MobRecipeLoader.getInfernalDrops();
             }
-            infernalityAllowed = infernalMobsCore.callIsClassAllowed(e);
+            infernalityAllowed = InfernalMobsCoreHelper.callIsClassAllowed((InfernalMobsCore) infernalMobsCore, e);
             alwaysinfernal = infernalMobsCore.callCheckEntityClassForced(e);
         } else {
             infernalityAllowed = false;
@@ -128,10 +129,9 @@ public class MobRecipe {
 
         if (LoaderReference.InfernalMobs && includeInfernalDropsIfPossible) {
             InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
-            if (infernalityAllowed && !infernalMobsCore.getDimensionBlackList()
+            if (infernalityAllowed && !InfernalMobsCoreHelper.getDimensionBlackList((InfernalMobsCore) infernalMobsCore)
                 .contains(world.provider.dimensionId)) {
                 int p = 0;
-                int mods = 0;
                 if (alwaysinfernal || (rnd.nextInt(infernalMobsCore.getEliteRarity()) == 0)) {
                     p = 1;
                     if (rnd.nextInt(infernalMobsCore.getUltraRarity()) == 0) {
@@ -142,13 +142,10 @@ public class MobRecipe {
                 ArrayList<ItemStack> infernalstacks = null;
                 if (p > 0) if (p == 1) {
                     infernalstacks = infernalMobsCore.getDropIdListElite();
-                    mods = infernalMobsCore.getMinEliteModifiers();
                 } else if (p == 2) {
                     infernalstacks = infernalMobsCore.getDropIdListUltra();
-                    mods = infernalMobsCore.getMinUltraModifiers();
                 } else {
                     infernalstacks = infernalMobsCore.getDropIdListInfernal();
-                    mods = infernalMobsCore.getMinInfernoModifiers();
                 }
                 if (infernalstacks != null) {
                     ItemStack infernalstack = infernalstacks.get(rnd.nextInt(infernalstacks.size()))
