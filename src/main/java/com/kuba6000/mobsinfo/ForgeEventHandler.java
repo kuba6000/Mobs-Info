@@ -31,13 +31,16 @@ public class ForgeEventHandler {
 
         Entity sourceEntity = source.getEntity();
 
-        if (!(sourceEntity instanceof EntityPlayerMP) || sourceEntity instanceof FakePlayer) return;
+        if (!(sourceEntity instanceof EntityPlayerMP) || sourceEntity instanceof FakePlayer
+            || event.entityLiving instanceof EntityPlayer) return;
 
         PlayerData playerData = PlayerDataManager.getPlayer((EntityPlayer) sourceEntity);
 
         String entity = EntityList.getEntityString(event.entityLiving);
 
-        if (!playerData.killedMobs.contains(entity)) {
+        if (entity != null && !entity.isEmpty()
+            && MobRecipe.getRecipeByEntityName(entity) != null
+            && !playerData.killedMobs.contains(entity)) {
             playerData.killedMobs.add(entity);
             playerData.markDirty();
             MobsInfo.NETWORK.sendTo(new SaveDataPacket(playerData), (EntityPlayerMP) sourceEntity);
