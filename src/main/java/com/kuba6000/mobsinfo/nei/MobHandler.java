@@ -61,6 +61,7 @@ import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.event.MobNEIRegistrationEvent;
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
+import com.kuba6000.mobsinfo.api.helper.InfernalMobsCoreHelper;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
@@ -657,7 +658,8 @@ public class MobHandler extends TemplateRecipeHandler {
             if (!LoaderReference.InfernalMobs) infernaltype = -1; // not supported
             else {
                 InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
-                if (!infernalMobsCore.callIsClassAllowed(mob)) infernaltype = 0; // not allowed
+                if (!InfernalMobsCoreHelper.callIsClassAllowed((InfernalMobsCore) infernalMobsCore, mob))
+                    infernaltype = 0; // not allowed
                 else if (infernalMobsCore.callCheckEntityClassForced(mob)) infernaltype = 2; // forced
                 else infernaltype = 1; // normal
             }
