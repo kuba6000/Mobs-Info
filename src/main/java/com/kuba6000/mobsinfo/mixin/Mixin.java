@@ -5,6 +5,7 @@ import static com.kuba6000.mobsinfo.mixin.TargetedMod.CHOCO_CRAFT;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.DQ_RESPECT;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.DRACONIC_EVOLUTION;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.ENDER_IO;
+import static com.kuba6000.mobsinfo.mixin.TargetedMod.FORESTRY;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.HARDCORE_ENDER_EXPANSION;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.INFERNAL_MOBS;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.VANILLA;
@@ -48,7 +49,7 @@ public enum Mixin {
     EntityMobHomelandEndermanMixin("HardcoreEnderExpansion.EntityMobHomelandEndermanMixin", HARDCORE_ENDER_EXPANSION),
 
     // Forestry
-    EntityButterflyMixin("Forestry.EntityButterflyMixin"),
+    EntityButterflyMixin("Forestry.EntityButterflyMixin", FORESTRY),
 
     ;
 
