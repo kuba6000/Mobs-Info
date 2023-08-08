@@ -62,7 +62,7 @@ public class ExtraLoader {
             } catch (Exception ex) {
                 LOG.error(
                     "There was an error while loading " + loader.getClass()
-                        .getSimpleName());
+                        .getSimpleName() + " modifications on " + k);
                 ex.printStackTrace();
             }
         }

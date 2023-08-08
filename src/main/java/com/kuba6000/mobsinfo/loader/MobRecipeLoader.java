@@ -57,6 +57,7 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.StatCollector;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldSettings;
@@ -409,6 +410,7 @@ public class MobRecipeLoader {
     }
 
     public static final List<Double> DQRChances = new ArrayList<>();
+    private static EntityLiving currentEntity = null;
 
     @SuppressWarnings({ "unchecked", "UnstableApiUsage" })
     public static void generateMobRecipeMap() {
@@ -534,6 +536,24 @@ public class MobRecipeLoader {
                 }
                 return Blocks.air;
             }
+
+            @Override
+            public Explosion newExplosion(Entity p_72885_1_, double p_72885_2_, double p_72885_4_, double p_72885_6_,
+                float p_72885_8_, boolean p_72885_9_, boolean p_72885_10_) {
+                return null;
+            }
+
+            @Override
+            public boolean spawnEntityInWorld(Entity p_72838_1_) {
+                if (p_72838_1_ instanceof EntityItem) {
+                    if (isInGenerationProcess && currentEntity != null) {
+                        currentEntity.entityDropItem(((EntityItem) p_72838_1_).getEntityItem(), 0F);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         };
         f.isRemote = true; // quick hack to get around achievements
 
@@ -547,6 +567,8 @@ public class MobRecipeLoader {
         if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.ModAdditionRemoval)
             modlistversion = ModUtils.getModListVersionIgnoringModVersions();
         else modlistversion = ModUtils.getModListVersion();
+
+        isInGenerationProcess = true;
 
         if (Config.MobHandler.regenerationTrigger != Config.MobHandler._CacheRegenerationTrigger.Always
             && cache.exists()) {
@@ -579,6 +601,7 @@ public class MobRecipeLoader {
                     }
                     bar.end();
                     LOG.info("Parsed cached map, skipping generation");
+                    isInGenerationProcess = false;
                     return;
                 } else {
                     LOG.info("Cached map version mismatch, generating a new one");
@@ -593,8 +616,6 @@ public class MobRecipeLoader {
         } else {
             LOG.info("Cached map doesn't exist or config option forced, generating a new one");
         }
-
-        isInGenerationProcess = true;
 
         LOG.info("Generating Recipe Map for Mob Handler");
 
@@ -739,6 +760,8 @@ public class MobRecipeLoader {
                     DQRChances.clear();
                     e.capturedDrops.clear();
                 };
+
+                currentEntity = e;
 
                 if (v.getName()
                     .startsWith("dqr.entity.")
@@ -888,6 +911,8 @@ public class MobRecipeLoader {
                     collector.newRound();
                 }
 
+                currentEntity = null;
+
                 if (drops.isEmpty() && raredrops.isEmpty() && additionaldrops.isEmpty()) {
                     ArrayList<MobDrop> arr = new ArrayList<>();
                     GeneralMobList.put(k, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, k, arr), arr));
@@ -982,6 +1007,7 @@ public class MobRecipeLoader {
 
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + k);
             } catch (Exception ex) {
+                currentEntity = null;
                 LOG.error("Something went wrong while generating recipes for " + k + ", stacktrace: ");
                 ex.printStackTrace();
             }
