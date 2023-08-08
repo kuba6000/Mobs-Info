@@ -13,6 +13,8 @@ public enum TargetedMod {
     DQ_RESPECT("DQMIIINext", "[1.7.10]DQRmod", true),
     CHOCO_CRAFT("chococraft", "ChocoCraftPlus-", true),
     BATTLE_GEAR_2("battlegear2", "battlegear2-", true),
+    HARDCORE_ENDER_EXPANSION("HardcoreEnderExpansion", "HardcoreEnderExpansion-", true),
+    FORESTRY("Forestry", "Forestry-", true),
 
     ;
 
