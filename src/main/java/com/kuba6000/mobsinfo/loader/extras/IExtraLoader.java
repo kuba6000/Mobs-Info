@@ -53,7 +53,7 @@ public interface IExtraLoader {
         @Override
         public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
             EntityLiving victim) {
-            return chance;
+            return this.chance;
         }
 
         @Override
@@ -145,7 +145,7 @@ public interface IExtraLoader {
             if (!(attacker instanceof EntityPlayer)) return 0d;
             ItemStack weapon = ((EntityPlayer) attacker).getHeldItem();
             if (weapon == null) return 0d;
-            if (weapon.isItemEqual(this.weapon)) return chance;
+            if (weapon.getItem() == this.weapon.getItem()) return chance;
             return 0d;
         }
 
@@ -188,7 +188,7 @@ public interface IExtraLoader {
             if (!(attacker instanceof EntityPlayer)) return 0d;
             ItemStack weapon = ((EntityPlayer) attacker).getHeldItem();
             if (weapon == null) return chance;
-            if (weapon.isItemEqual(this.weapon)) return newChance;
+            if (weapon.getItem() == this.weapon.getItem()) return newChance;
             return chance;
         }
 
