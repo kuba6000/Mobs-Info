@@ -31,10 +31,10 @@ public class ExtraUtilities implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
+            drop.chanceModifiers.addAll(
                 Arrays.asList(
-                    Translations.CHANCE.get((1d / (double) prob) * 100d),
-                    Translations.OR_USING.get((1d / ((double) (prob / 10))) * 100d, "Kikoku")));
+                    new NormalChance((1d / (double) prob) * 100d),
+                    new OrUsing(ExtraUtils.lawSword, (1d / ((double) (prob / 10))) * 100d)));
             drops.add(drop);
         }
 

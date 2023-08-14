@@ -23,14 +23,13 @@ public class ThaumicTinkerer implements IExtraLoader {
                     1,
                     7),
                 MobDrop.DropType.Normal,
-                312,
+                0,
                 null,
                 null,
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(Translations.CHANCE.get(3.12d), "* " + Translations.DROPS_ONLY_IN_DIMENSION.get("END")));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(3.12d), new DropsOnlyInDimension(1)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityPigZombie) {
             MobDrop drop = new MobDrop(
@@ -39,15 +38,13 @@ public class ThaumicTinkerer implements IExtraLoader {
                     1,
                     6),
                 MobDrop.DropType.Normal,
-                625,
+                0,
                 null,
                 null,
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays
-                    .asList(Translations.CHANCE.get(6.25d), "* " + Translations.DROPS_ONLY_IN_DIMENSION.get("NETHER")));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(6.25d), new DropsOnlyInDimension(-1)));
             drops.add(drop);
         }
     }

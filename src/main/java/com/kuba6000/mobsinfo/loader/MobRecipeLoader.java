@@ -31,6 +31,7 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,6 +78,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.kuba6000.mobsinfo.Tags;
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobDropSimplified;
@@ -1215,6 +1217,11 @@ public class MobRecipeLoader {
 
             MinecraftForge.EVENT_BUS.post(new PostMobRegistrationEvent(k, drops, recipe));
 
+            for (MobDrop drop : drops) {
+                drop.chanceModifiers
+                    .sort(Collections.reverseOrder(Comparator.comparingInt(IChanceModifier::getPriority)));
+            }
+
             recipe.mOutputs.clear();
             recipe.mOutputs.addAll(drops);
 
@@ -1269,6 +1276,11 @@ public class MobRecipeLoader {
             }
 
             MinecraftForge.EVENT_BUS.post(new PostMobRegistrationEvent(k, drops, recipe));
+
+            for (MobDrop drop : drops) {
+                drop.chanceModifiers
+                    .sort(Collections.reverseOrder(Comparator.comparingInt(IChanceModifier::getPriority)));
+            }
 
             drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             recipe.refresh();

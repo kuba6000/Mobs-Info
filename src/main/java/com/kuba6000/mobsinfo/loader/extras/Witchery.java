@@ -2,8 +2,13 @@ package com.kuba6000.mobsinfo.loader.extras;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntityEnderman;
@@ -14,15 +19,19 @@ import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.passive.EntityWolf;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 import com.emoniph.witchery.brewing.potions.PotionParalysis;
+import com.emoniph.witchery.common.ExtendedPlayer;
 import com.emoniph.witchery.entity.EntityCovenWitch;
 import com.emoniph.witchery.entity.EntityDemon;
 import com.emoniph.witchery.entity.EntityOwl;
 import com.emoniph.witchery.entity.EntityToad;
 import com.emoniph.witchery.util.EntityUtil;
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
@@ -50,9 +59,7 @@ public class Witchery implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays
-                    .asList(Translations.CHANCE.get((chance * 100d)), "* " + Translations.WITCHERY_VAMPIRE_BOOK.get()));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance((chance * 100d)), new WitcheryVampireBook()));
             drops.add(drop);
         }
 
@@ -69,9 +76,10 @@ public class Witchery implements IExtraLoader {
                         true,
                         false);
                     drop2.variableChance = true;
-                    drop2.variableChanceInfo.addAll(
-                        Arrays
-                            .asList(Translations.CHANCE.get(5d), "* " + Translations.DROPS_ONLY_USING.get("Arthana")));
+                    drop2.chanceModifiers.addAll(
+                        Arrays.asList(
+                            new NormalChance(5d),
+                            new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                     drops.add(drop2);
                 }
                 MobDrop drop2 = new MobDrop(
@@ -83,8 +91,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo.addAll(
-                    Arrays.asList(Translations.CHANCE.get(4d), "* " + Translations.DROPS_ONLY_USING.get("Arthana")));
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(4d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityZombie) {
                 MobDrop drop2 = new MobDrop(
@@ -96,8 +105,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo.addAll(
-                    Arrays.asList(Translations.CHANCE.get(2d), "* " + Translations.DROPS_ONLY_USING.get("Arthana")));
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(2d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
                 MobDrop drop3 = new MobDrop(
                     com.emoniph.witchery.Witchery.Items.GENERIC.itemSpectralDust.createStack(),
@@ -108,8 +118,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop3.variableChance = true;
-                drop3.variableChanceInfo.addAll(
-                    Arrays.asList(Translations.CHANCE.get(3d), "* " + Translations.DROPS_ONLY_USING.get("Arthana")));
+                drop3.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(3d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop3);
             } else if (recipe.entity instanceof EntityCreeper) {
                 MobDrop drop2 = new MobDrop(
@@ -121,8 +132,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo.addAll(
-                    Arrays.asList(Translations.CHANCE.get(1d), "* " + Translations.DROPS_ONLY_USING.get("Arthana")));
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(1d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
                 MobDrop drop3 = new MobDrop(
                     com.emoniph.witchery.Witchery.Items.GENERIC.itemCreeperHeart.createStack(),
@@ -133,8 +145,8 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop3.variableChance = true;
-                drop3.variableChanceInfo
-                    .add(Translations.CHANCE.get(2d) + " (" + Translations.OR_USING.get(8d, "Arthana") + ")");
+                drop3.chanceModifiers.addAll(
+                    Arrays.asList(new NormalChance(2d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 8d)));
                 drops.add(drop3);
             } else if (recipe.entity instanceof EntityDemon) {
                 MobDrop drop2 = new MobDrop(
@@ -146,8 +158,10 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo
-                    .addAll(Arrays.asList("Chance: 33%", "* " + Translations.DROPS_ONLY_USING.get("Arthana")));
+                drop2.chanceModifiers.addAll(
+                    Arrays.asList(
+                        new NormalChance(33d),
+                        new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityBat) {
                 MobDrop drop2 = new MobDrop(
@@ -159,8 +173,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo
-                    .add(Translations.CHANCE.get(33d) + " (" + Translations.OR_USING.get(75d, "Arthana") + ")");
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(33d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityWolf) {
                 MobDrop drop2 = new MobDrop(
@@ -172,8 +187,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo
-                    .add(Translations.CHANCE.get(33d) + " (" + Translations.OR_USING.get(75d, "Arthana") + ")");
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(33d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                 drops.add(drop2);
                 MobDrop drop3 = new MobDrop(
                     new ItemStack(com.emoniph.witchery.Witchery.Blocks.WOLFHEAD, 1, 0),
@@ -194,8 +210,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo
-                    .add(Translations.CHANCE.get(20d) + " (" + Translations.OR_USING.get(50d, "Arthana") + ")");
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(20d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntitySheep) {
                 MobDrop drop2 = new MobDrop(
@@ -207,8 +224,7 @@ public class Witchery implements IExtraLoader {
                     false,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo
-                    .addAll(Arrays.asList(Translations.CHANCE.get(75d), "* " + Translations.WITCHERY_WAREWOLF));
+                drop2.chanceModifiers.addAll(Arrays.asList(new NormalChance(75d), new WitcheryWarewolf()));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityToad) {
                 MobDrop drop2 = new MobDrop(
@@ -220,8 +236,9 @@ public class Witchery implements IExtraLoader {
                     true,
                     false);
                 drop2.variableChance = true;
-                drop2.variableChanceInfo
-                    .add(Translations.CHANCE.get(20d) + " (" + Translations.OR_USING.get(50d, "Arthana") + ")");
+                drop2.chanceModifiers.addAll(
+                    Arrays
+                        .asList(new NormalChance(20d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
                 drops.add(drop2);
             } else {
                 Class<?> theClass = recipe.entity.getClass();
@@ -240,10 +257,10 @@ public class Witchery implements IExtraLoader {
                                     true,
                                     false);
                                 drop2.variableChance = true;
-                                drop2.variableChanceInfo.add(
-                                    Translations.CHANCE.get(33d) + " ("
-                                        + Translations.OR_USING.get(75d, "Arthana")
-                                        + ")");
+                                drop2.chanceModifiers.addAll(
+                                    Arrays.asList(
+                                        new NormalChance(33d),
+                                        new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                                 drops.add(drop2);
                             }
                         } else {
@@ -256,8 +273,10 @@ public class Witchery implements IExtraLoader {
                                 true,
                                 false);
                             drop2.variableChance = true;
-                            drop2.variableChanceInfo.add(
-                                Translations.CHANCE.get(33d) + " (" + Translations.OR_USING.get(75d, "Arthana") + ")");
+                            drop2.chanceModifiers.addAll(
+                                Arrays.asList(
+                                    new NormalChance(33d),
+                                    new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                             drops.add(drop2);
                             if ((upperName.contains("WOLF") || name.contains("Dog"))) {
                                 MobDrop drop3 = new MobDrop(
@@ -289,11 +308,43 @@ public class Witchery implements IExtraLoader {
                 true,
                 false);
             drop2.variableChance = true;
-            drop2.variableChanceInfo
-                .add(Translations.CHANCE.get(33d) + " (" + Translations.OR_USING.get(50d, "Arthana") + ")");
+            drop2.chanceModifiers.addAll(
+                Arrays.asList(new NormalChance(33d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
             drops.add(drop2);
         }
 
         // com.emoniph.witchery.common.GenericEvents.onLivingDrops // lets just ignore that
+    }
+
+    private static class WitcheryVampireBook implements IChanceModifier {
+
+        @Override
+        public String getDescription() {
+            return Translations.WITCHERY_VAMPIRE_BOOK.get();
+        }
+
+        @Override
+        public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
+            EntityLiving victim) {
+            if (chance == 0d) return 0d;
+            if (!(attacker instanceof EntityPlayer)) return 0d;
+            ExtendedPlayer playerEx = ExtendedPlayer.get((EntityPlayer) attacker);
+            if (playerEx.hasVampireBook()) return chance;
+            return 0d;
+        }
+    }
+
+    private static class WitcheryWarewolf implements IChanceModifier {
+
+        @Override
+        public String getDescription() {
+            return Translations.WITCHERY_WAREWOLF.get();
+        }
+
+        @Override
+        public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
+            EntityLiving victim) {
+            return 0;
+        }
     }
 }
