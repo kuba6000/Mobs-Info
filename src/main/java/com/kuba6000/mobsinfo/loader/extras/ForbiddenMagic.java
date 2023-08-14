@@ -2,7 +2,13 @@ package com.kuba6000.mobsinfo.loader.extras;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntitySilverfish;
@@ -10,14 +16,20 @@ import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
 import fox.spiteful.forbidden.Config;
+import fox.spiteful.forbidden.enchantments.DarkEnchantments;
 import fox.spiteful.forbidden.items.ForbiddenItems;
+import io.netty.buffer.ByteBuf;
 import thaumcraft.api.entities.ITaintedMob;
 
 public class ForbiddenMagic implements IExtraLoader {
@@ -36,8 +48,7 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo
-                .addAll(Arrays.asList(Translations.CHANCE.get(50d), Translations.DROPS_ONLY_WITH_WEAKNESS_2.get()));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(50d), new DropsOnlyWithWeaknessII()));
             drops.add(drop);
         }
 
@@ -51,8 +62,8 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo
-                .add(Translations.CHANCE.get(2.86d) + " (" + Translations.OR_BIOME.get(10d, "Extreme Hills") + ")");
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new NormalChance(2.86d), new OrBiome(BiomeGenBase.extremeHills, 10d)));
             drops.add(drop);
         }
 
@@ -68,10 +79,8 @@ public class ForbiddenMagic implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.variableChanceInfo.addAll(
-                    Arrays.asList(
-                        Translations.CHANCE.get(100d),
-                        "* " + Translations.DROPS_ONLY_WITH_ENCHANT.get("Greedy")));
+                drop.chanceModifiers
+                    .addAll(Arrays.asList(new NormalChance(100d), new DropsOnlyWithEnchant(DarkEnchantments.greedy)));
             } else {
                 drop = new MobDrop(
                     new ItemStack(ForbiddenItems.resource, 1, 0),
@@ -82,10 +91,8 @@ public class ForbiddenMagic implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.variableChanceInfo.addAll(
-                    Arrays.asList(
-                        Translations.CHANCE.get(8.57d),
-                        "* " + Translations.DROPS_ONLY_WITH_ENCHANT.get("Greedy")));
+                drop.chanceModifiers
+                    .addAll(Arrays.asList(new NormalChance(8.57d), new DropsOnlyWithEnchant(DarkEnchantments.greedy)));
             }
             drops.add(drop);
         }
@@ -100,8 +107,8 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(Translations.CHANCE.get(15.38d), "* " + Translations.DROPS_ONLY_USING.get("Skull Axe")));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new NormalChance(15.38d), new DropsOnlyUsing(ForbiddenItems.skullAxe)));
             drops.add(drop);
         }
 
@@ -115,8 +122,8 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(Translations.CHANCE.get(11.54d), "* " + Translations.DROPS_ONLY_USING.get("Skull Axe")));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new NormalChance(11.54d), new DropsOnlyUsing(ForbiddenItems.skullAxe)));
             drops.add(drop);
         }
         if (recipe.entity.getClass() == EntityCreeper.class) {
@@ -129,8 +136,8 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(Translations.CHANCE.get(11.54d), "* " + Translations.DROPS_ONLY_USING.get("Skull Axe")));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new NormalChance(11.54d), new DropsOnlyUsing(ForbiddenItems.skullAxe)));
             drops.add(drop);
         }
 
@@ -144,11 +151,11 @@ public class ForbiddenMagic implements IExtraLoader {
             false);
         drop.clampChance();
         drop.variableChance = true;
-        drop.variableChanceInfo.addAll(
+        drop.chanceModifiers.addAll(
             Arrays.asList(
-                Translations.CHANCE.get(((double) drop.chance / 100d)),
-                "* " + Translations.DROPS_ONLY_IN_DIMENSION.get("NETHER"),
-                "* " + Translations.FORBIDDEN_MAGIC_NON_PLAYER.get()));
+                new NormalChance(((double) drop.chance / 100d)),
+                new DropsOnlyInDimension(-1 /* NETHER */),
+                new NonPlayerEntity()));
         drop.chance = 0;
         drops.add(drop);
 
@@ -184,12 +191,65 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop3.variableChance = true;
-            drop3.variableChanceInfo.addAll(
+            drop3.chanceModifiers.addAll(
                 Arrays.asList(
-                    Translations.CHANCE.get(0d),
-                    "* " + Translations.EACH_LEVEL_OF_GIVES.get("looting", "+5%"),
-                    "* " + Translations.EACH_LEVEL_OF_GIVES.get("treasure focus on wand", "+5%")));
+                    new NormalChance(0d),
+                    new EachLevelOfGives(Enchantment.looting, 5d),
+                    new EachLevelOfGivesFocus()));
             drops.add(drop3);
+        }
+    }
+
+    private static class EachLevelOfGivesFocus extends EachLevelOfGives {
+
+        EachLevelOfGivesFocus() {}
+
+        @Override
+        public String getDescription() {
+            return Translations.EACH_LEVEL_OF_GIVES.get("treasure focus on wand", 5d + "%");
+        }
+
+        @Override
+        public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
+            EntityLiving victim) {
+            return chance;
+        }
+
+        @Override
+        public void writeToByteBuf(ByteBuf byteBuf) {}
+
+        @Override
+        public void readFromByteBuf(ByteBuf byteBuf) {}
+    }
+
+    private static class NonPlayerEntity implements IChanceModifier {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+        @Override
+        public String getDescription() {
+            return Translations.FORBIDDEN_MAGIC_NON_PLAYER.get();
+        }
+
+        @Override
+        public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
+            EntityLiving victim) {
+            if (chance == 0d) return 0d;
+            if (!(attacker instanceof EntityPlayer)) return chance;
+            return 0d;
+        }
+
+        @Override
+        public void writeToByteBuf(ByteBuf byteBuf) {
+
+        }
+
+        @Override
+        public void readFromByteBuf(ByteBuf byteBuf) {
+
         }
     }
 }

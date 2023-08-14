@@ -1,8 +1,10 @@
 package com.kuba6000.mobsinfo.loader.extras;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import net.minecraft.entity.monster.EntitySilverfish;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
 import com.kuba6000.mobsinfo.api.MobDrop;
@@ -24,8 +26,7 @@ public class HardcoreEnderExpansion implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo
-                .add(Translations.CHANCE.get(1.79d) + " (" + Translations.OR_USING.get(7.14d, "golden sword") + ")");
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(1.79d), new OrUsing(Items.golden_sword, 7.14d)));
             drops.add(drop);
         }
     }

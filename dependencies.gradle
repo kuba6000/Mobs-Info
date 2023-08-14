@@ -60,6 +60,7 @@ dependencies {
     compileOnly("com.github.GTNewHorizons:GT5-Unofficial:5.09.43.162:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:Hardcore-Ender-Expansion:1.9.7-GTNH:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:ForestryMC:4.6.13:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:ThaumicBases:1.5.4:dev") { transitive = false }
     compileOnly(rfg.deobf("curse.maven:witchery-69673:2234410"))
     compileOnly(rfg.deobf("curse.maven:Automagy-222153:2285272"))
     compileOnly(rfg.deobf("curse.maven:edit-mob-drops-348932:4458014"))

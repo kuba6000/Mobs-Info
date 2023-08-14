@@ -25,8 +25,7 @@ public class BloodMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(Translations.CHANCE.get(50d), "* " + Translations.DROPS_ONLY_WITH_WEAKNESS_2.get()));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(50d), new DropsOnlyWithWeaknessII()));
             drops.add(drop);
         }
     }

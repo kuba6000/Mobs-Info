@@ -2,8 +2,13 @@ package com.kuba6000.mobsinfo.loader.extras;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -11,14 +16,19 @@ import net.minecraft.entity.monster.EntityGhast;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 import com.kuba6000.mobsinfo.api.ConstructableItemStack;
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
+import io.netty.buffer.ByteBuf;
 import tconstruct.armor.TinkerArmor;
+import tconstruct.library.tools.ToolCore;
 import tconstruct.tools.TinkerTools;
 import tconstruct.util.config.PHConstruct;
 
@@ -60,11 +70,7 @@ public class TinkersConstruct implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.BASE_CHANCE.get(0d),
-                    Translations.TINKERS_CONSTRUCT_BEHEADING.get(10d),
-                    Translations.TINKERS_CONSTRUCT_BEHEADING_1.get(20d)));
+            drop.chanceModifiers.add(new BeheadingModifier(10d, 20d));
             drops.add(drop);
 
             if (((EntitySkeleton) recipe.entity).getSkeletonType() == 1) {
@@ -91,11 +97,7 @@ public class TinkersConstruct implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.BASE_CHANCE.get(0d),
-                    Translations.TINKERS_CONSTRUCT_BEHEADING.get(10d),
-                    Translations.TINKERS_CONSTRUCT_BEHEADING_1.get(20d)));
+            drop.chanceModifiers.add(new BeheadingModifier(10d, 20d));
             drops.add(drop);
 
             MobDrop drop2 = new MobDrop(
@@ -107,8 +109,7 @@ public class TinkersConstruct implements IExtraLoader {
                 true,
                 false);
             drop2.variableChance = true;
-            drop2.variableChanceInfo.addAll(
-                Arrays.asList(Translations.CHANCE.get(10d), "* " + Translations.DROPS_ONLY_USING.get("Cleaver")));
+            drop2.chanceModifiers.addAll(Arrays.asList(new NormalChance(10d), new DropsOnlyUsing(TinkerTools.cleaver)));
             drops.add(drop2);
         }
 
@@ -122,11 +123,7 @@ public class TinkersConstruct implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.BASE_CHANCE.get(0d),
-                    Translations.TINKERS_CONSTRUCT_BEHEADING.get(5d),
-                    Translations.TINKERS_CONSTRUCT_BEHEADING_1.get(10d)));
+            drop.chanceModifiers.add(new BeheadingModifier(5d, 10d));
             drops.add(drop);
         }
 
@@ -162,5 +159,58 @@ public class TinkersConstruct implements IExtraLoader {
             drops.add(drop);
         }
 
+    }
+
+    private static class BeheadingModifier implements IChanceModifier {
+
+        double m1, m2;
+
+        BeheadingModifier() {};
+
+        BeheadingModifier(double m1, double m2) {
+            this.m1 = m1;
+            this.m2 = m2;
+        }
+
+        @Override
+        public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void applyTooltip(List<String> currentTooltip) {
+            currentTooltip.addAll(
+                Arrays.asList(
+                    Translations.BASE_CHANCE.get(0d),
+                    Translations.TINKERS_CONSTRUCT_BEHEADING.get(m1),
+                    Translations.TINKERS_CONSTRUCT_BEHEADING_1.get(m2)));
+        }
+
+        @Override
+        public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
+            EntityLiving victim) {
+            if (!(attacker instanceof EntityPlayer)) return 0d;
+            ItemStack stack = ((EntityPlayer) attacker).getCurrentEquippedItem();
+            if (stack != null && stack.hasTagCompound() && stack.getItem() instanceof ToolCore) {
+                int beheading = stack.getTagCompound()
+                    .getCompoundTag("InfiTool")
+                    .getInteger("Beheading");
+                if (stack.getItem() == TinkerTools.cleaver) beheading += 2;
+                return m1 * beheading;
+            }
+            return 0d;
+        }
+
+        @Override
+        public void writeToByteBuf(ByteBuf byteBuf) {
+            byteBuf.writeDouble(m1);
+            byteBuf.writeDouble(m2);
+        }
+
+        @Override
+        public void readFromByteBuf(ByteBuf byteBuf) {
+            m1 = byteBuf.readDouble();
+            m2 = byteBuf.readDouble();
+        }
     }
 }

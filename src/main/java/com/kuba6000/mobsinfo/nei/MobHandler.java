@@ -57,6 +57,7 @@ import org.lwjgl.util.glu.GLU;
 
 import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.Tags;
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.event.MobNEIRegistrationEvent;
@@ -577,7 +578,9 @@ public class MobHandler extends TemplateRecipeHandler {
                     EnumChatFormatting.RESET
                         + Translations.CHANCE.get(chance == 0 ? "<0.01%" : (double) chance / 100d));
             } else {
-                extraTooltip.addAll(drop.variableChanceInfo);
+                for (IChanceModifier chanceModifier : drop.chanceModifiers) {
+                    chanceModifier.applyTooltip(extraTooltip);
+                }
             }
             if (drop.lootable) extraTooltip.add(EnumChatFormatting.RESET + Translations.LOOTABLE.get());
             if (drop.playerOnly) {
