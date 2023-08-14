@@ -53,7 +53,7 @@ public interface IExtraLoader {
         @Override
         public double apply(double chance, @Nonnull World world, @Nonnull List<ItemStack> drops, Entity attacker,
             EntityLiving victim) {
-            return chance;
+            return this.chance;
         }
 
         @Override
