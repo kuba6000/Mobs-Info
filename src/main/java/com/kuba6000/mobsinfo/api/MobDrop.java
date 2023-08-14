@@ -58,7 +58,7 @@ public class MobDrop {
     public boolean lootable = false;
     public boolean playerOnly = false;
     public boolean variableChance = false;
-    public ArrayList<String> variableChanceInfo = new ArrayList<>();
+    public ArrayList<IChanceModifier> chanceModifiers = new ArrayList<>();
     public ArrayList<String> additionalInfo = new ArrayList<>();
 
     private MobDrop() {}
@@ -87,7 +87,7 @@ public class MobDrop {
             this.playerOnly);
         copy.variableChance = this.variableChance;
         // noinspection unchecked
-        copy.variableChanceInfo = (ArrayList<String>) this.variableChanceInfo.clone();
+        copy.chanceModifiers = (ArrayList<IChanceModifier>) this.chanceModifiers.clone();
         // noinspection unchecked
         copy.additionalInfo = (ArrayList<String>) this.additionalInfo.clone();
         return copy;
@@ -127,8 +127,8 @@ public class MobDrop {
         BufHelper.writeBoolean(playerOnly);
         BufHelper.writeBoolean(variableChance);
         if (variableChance) {
-            BufHelper.writeInt(variableChanceInfo.size());
-            variableChanceInfo.forEach(i -> ByteBufHelper.writeString(BufHelper, i));
+            BufHelper.writeInt(chanceModifiers.size());
+            chanceModifiers.forEach(i -> IChanceModifier.saveToByteBuf(BufHelper, i));
         }
         if (additionalInfo == null) BufHelper.writeInt(0);
         else {
@@ -156,10 +156,11 @@ public class MobDrop {
         mobDrop.playerOnly = byteBuf.readBoolean();
         mobDrop.variableChance = byteBuf.readBoolean();
         if (mobDrop.variableChance) {
-            mobDrop.variableChanceInfo = new ArrayList<>();
-            int variableChanceInfoSize = byteBuf.readInt();
-            for (int i = 0; i < variableChanceInfoSize; i++)
-                mobDrop.variableChanceInfo.add(ByteBufHelper.readString(byteBuf));
+            mobDrop.chanceModifiers = new ArrayList<>();
+            int chanceModifiersSize = byteBuf.readInt();
+            for (int i = 0; i < chanceModifiersSize; i++) {
+                mobDrop.chanceModifiers.add(IChanceModifier.loadFromByteBuf(byteBuf));
+            }
         }
         int additionalInfoSize = byteBuf.readInt();
         for (int i = 0; i < additionalInfoSize; i++) mobDrop.additionalInfo.add(ByteBufHelper.readString(byteBuf));
