@@ -206,7 +206,7 @@ public class ForbiddenMagic implements IExtraLoader {
 
         @Override
         public String getDescription() {
-            return Translations.EACH_LEVEL_OF_GIVES.get("treasure focus on wand", "5%");
+            return Translations.EACH_LEVEL_OF_GIVES.get("treasure focus on wand", 5d + "%");
         }
 
         @Override
