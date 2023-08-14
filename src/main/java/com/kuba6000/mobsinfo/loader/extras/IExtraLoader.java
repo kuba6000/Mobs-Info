@@ -179,7 +179,7 @@ public interface IExtraLoader {
 
         @Override
         public String getDescription() {
-            return Translations.OR_USING.get(weapon.getDisplayName());
+            return Translations.OR_USING.get(newChance, weapon.getDisplayName());
         }
 
         @Override
@@ -224,7 +224,7 @@ public interface IExtraLoader {
 
         @Override
         public String getDescription() {
-            return Translations.OR_BIOME.get(biome.biomeName);
+            return Translations.OR_BIOME.get(newChance, biome.biomeName);
         }
 
         @Override
@@ -273,7 +273,8 @@ public interface IExtraLoader {
 
         @Override
         public String getDescription() {
-            return Translations.DROPS_ONLY_WITH_ENCHANT.get();
+            return Translations.DROPS_ONLY_WITH_ENCHANT
+                .get(StatCollector.translateToLocal(enchantmentData.enchantmentobj.getName()));
         }
 
         @Override
