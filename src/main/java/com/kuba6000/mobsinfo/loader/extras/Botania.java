@@ -1,5 +1,7 @@
 package com.kuba6000.mobsinfo.loader.extras;
 
+import static vazkii.botania.common.item.ModItems.elementiumAxe;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -30,10 +32,7 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.CHANCE.get(15.38d),
-                    "* " + Translations.DROPS_ONLY_USING.get("Elementium Axe")));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(15.38d), new DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityZombie && !(recipe.entity instanceof EntityPigZombie)) {
             MobDrop drop = new MobDrop(
@@ -45,10 +44,7 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.CHANCE.get(7.69d),
-                    "* " + Translations.DROPS_ONLY_USING.get("Elementium Axe")));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(7.69d), new DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityCreeper) {
             MobDrop drop = new MobDrop(
@@ -60,10 +56,7 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.CHANCE.get(7.69d),
-                    "* " + Translations.DROPS_ONLY_USING.get("Elementium Axe")));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(7.69d), new DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityDoppleganger) {
             MobDrop drop = new MobDrop(
@@ -75,10 +68,7 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.variableChanceInfo.addAll(
-                Arrays.asList(
-                    Translations.CHANCE.get(7.69d),
-                    "* " + Translations.DROPS_ONLY_USING.get("Elementium Axe")));
+            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(7.69d), new DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         }
     }

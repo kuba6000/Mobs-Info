@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
+import tb.init.TBEnchant;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.common.config.ConfigItems;
@@ -32,10 +33,10 @@ public class ThaumicBases implements IExtraLoader {
                 MobDrop drop = new MobDrop(stack, MobDrop.DropType.Normal, chance, null, null, false, false);
                 drop.clampChance();
                 drop.variableChance = true;
-                drop.variableChanceInfo.addAll(
+                drop.chanceModifiers.addAll(
                     Arrays.asList(
-                        Translations.CHANCE.get(((double) drop.chance / 100d)),
-                        "* " + Translations.DROPS_ONLY_WITH_ENCHANT.get("Vaporising")));
+                        new NormalChance(((double) drop.chance / 100d)),
+                        new DropsOnlyWithEnchant(TBEnchant.vaporising)));
                 drop.chance = 0;
                 drops.add(drop);
             }
