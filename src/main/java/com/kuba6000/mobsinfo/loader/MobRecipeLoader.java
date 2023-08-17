@@ -1008,7 +1008,7 @@ public class MobRecipeLoader {
                     .put(k, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, k, moboutputs), moboutputs));
 
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + k);
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 currentEntity = null;
                 LOG.error("Something went wrong while generating recipes for " + k + ", stacktrace: ");
                 ex.printStackTrace();
