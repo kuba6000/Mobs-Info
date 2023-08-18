@@ -62,6 +62,8 @@ mobsinfo.extras.tinkers_construct_beheading=Каждый уровень обез
 mobsinfo.extras.tinkers_construct_beheading_1=Если вы используете тесак, он дает еще %.2f%%
 mobsinfo.extras.witchery_vampire_book=Выпадает только если у игрока есть книга вампиров
 mobsinfo.extras.witchery_warewolf=Только когда убийца - оборотень
+mobsinfo.extras.bloodmagic_demon_shards=Выпадает только при создании с помощью портала демонов или при ударе кинжалом жертвоприношения.
+mobsinfo.extras.bloodmagic_demon_placer=Выпадает только при НЕ создании с помощью портала демонов или НЕ при ударе кинжалом жертвоприношения.
 
 
 #Commands
