@@ -62,6 +62,8 @@ mobsinfo.extras.tinkers_construct_beheading=Each level of beheading on your weap
 mobsinfo.extras.tinkers_construct_beheading_1=If you are using a Cleaver, it gives another %.2f%%
 mobsinfo.extras.witchery_vampire_book=Drops only when player has Vampire book
 mobsinfo.extras.witchery_warewolf=Only when killer is a Warewolf
+mobsinfo.extras.bloodmagic_demon_shards=Drops only when spawned using Demon Portal or hit with dagger of sacrifice
+mobsinfo.extras.bloodmagic_demon_placer=Drops only when NOT spawned using Demon Portal and NOT hit with dagger of sacrifice
 
 
 #Commands
