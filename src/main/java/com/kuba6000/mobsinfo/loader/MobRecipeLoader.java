@@ -50,6 +50,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntitySlime;
+import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -594,6 +595,15 @@ public class MobRecipeLoader {
                             } else e = (EntityLiving) ((Class<?>) EntityList.stringToClassMapping.get(mobName))
                                 .getConstructor(new Class[] { World.class })
                                 .newInstance(new Object[] { f });
+                            if (e instanceof EntitySlime) {
+                                if (e.getClass() == EntityMagmaCube.class)
+                                    // noinspection ConstantConditions
+                                    ((EntitySlimeAccessor) e).callSetSlimeSize(2);
+                                else((EntitySlimeAccessor) e).callSetSlimeSize(1);
+                            }
+                            if (e instanceof EntityBat) {
+                                ((EntityBat) e).setIsBatHanging(false);
+                            }
                             ArrayList<MobDrop> drops = entry.getValue();
                             drops.forEach(MobDrop::reconstructStack);
                             GeneralMobList.put(
@@ -666,11 +676,10 @@ public class MobRecipeLoader {
 
             if (registeringWitherSkeleton && e instanceof EntitySkeleton && k.equals("witherSkeleton"))
                 ((EntitySkeleton) e).setSkeletonType(1);
-            else if (StatCollector.translateToLocal("entity." + k + ".name")
-                .equals("entity." + k + ".name")) {
-                    LOG.warn("Entity " + k + " does't have localized name!");
-                    // return;
-                }
+            else if (!StatCollector.canTranslate("entity." + k + ".name")) {
+                LOG.warn("Entity " + k + " does't have localized name!");
+                // return;
+            }
 
             // POWERFULL GENERATION
 
@@ -681,6 +690,10 @@ public class MobRecipeLoader {
                 if (e instanceof EntitySlime) {
                     if (v == EntityMagmaCube.class) ((EntitySlimeAccessor) e).callSetSlimeSize(2);
                     else((EntitySlimeAccessor) e).callSetSlimeSize(1);
+                }
+
+                if (e instanceof EntityBat) {
+                    ((EntityBat) e).setIsBatHanging(false);
                 }
 
                 ((EntityAccessor) e).setRand(frand);
