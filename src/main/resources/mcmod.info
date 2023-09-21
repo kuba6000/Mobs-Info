@@ -6,7 +6,7 @@
 		"description": "Mod for 1.7.10 that adds info about mods in NEI",
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
-		"url": "https://github.com/kuba6000/MobsInfo",
+		"url": "https://github.com/kuba6000/Mobs-Info",
 		"updateUrl": "",
 		"authorList": ["kuba6000"],
 		"credits": "",
