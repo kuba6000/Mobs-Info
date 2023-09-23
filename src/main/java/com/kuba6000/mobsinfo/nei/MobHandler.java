@@ -22,7 +22,7 @@ package com.kuba6000.mobsinfo.nei;
 
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.BOSS;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
