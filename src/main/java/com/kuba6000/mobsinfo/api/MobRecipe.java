@@ -1,5 +1,6 @@
 package com.kuba6000.mobsinfo.api;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class MobRecipe {
     public final EntityLiving entity;
     public final float maxEntityHealth;
     public final boolean isUsableInVial;
+    public final String entityName;
 
     @SuppressWarnings("unchecked")
     public MobRecipe copy() {
@@ -40,12 +42,13 @@ public class MobRecipe {
             isPeacefulAllowed,
             entity,
             maxEntityHealth,
-            isUsableInVial);
+            isUsableInVial,
+            entityName);
     }
 
     private MobRecipe(ArrayList<MobDrop> mOutputs, int mMaxDamageChance, boolean infernalityAllowed,
-        boolean alwaysinfernal, boolean isPeacefulAllowed, EntityLiving entity, float maxEntityHealth,
-        boolean isUsable) {
+        boolean alwaysinfernal, boolean isPeacefulAllowed, EntityLiving entity, float maxEntityHealth, boolean isUsable,
+        String entityName) {
         this.mOutputs = mOutputs;
         this.mMaxDamageChance = mMaxDamageChance;
         this.infernalityAllowed = infernalityAllowed;
@@ -54,6 +57,7 @@ public class MobRecipe {
         this.entity = entity;
         this.maxEntityHealth = maxEntityHealth;
         this.isUsableInVial = isUsable;
+        this.entityName = entityName;
     }
 
     public static MobRecipe generateMobRecipe(EntityLiving e, String entityID, ArrayList<MobDrop> outputs) {
@@ -85,6 +89,7 @@ public class MobRecipe {
         maxEntityHealth = e.getMaxHealth();
         entity = e;
         isUsableInVial = EnderIOHelper.canEntityBeCapturedWithSoulVial(e, entityID);
+        entityName = entityID;
     }
 
     public void refresh() {
@@ -162,6 +167,15 @@ public class MobRecipe {
         }
 
         return stacks.toArray(new ItemStack[0]);
+    }
+
+    public EntityLiving createEntityCopy()
+        throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        EntityLiving entityCopy = this.entity.getClass()
+            .getConstructor(World.class)
+            .newInstance(this.entity.worldObj);
+        MobRecipeLoader.preGenerationEntityModifiers(entityCopy, this.entityName);
+        return entityCopy;
     }
 
     public static HashMap<String, MobRecipe> MobNameToRecipeMap = new HashMap<>();

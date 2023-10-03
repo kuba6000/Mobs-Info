@@ -415,6 +415,19 @@ public class MobRecipeLoader {
     public static final List<Double> DQRChances = new ArrayList<>();
     private static EntityLiving currentEntity = null;
 
+    public static void preGenerationEntityModifiers(EntityLiving entity, String mobName) {
+        if (entity instanceof EntitySkeleton && mobName.equals("witherSkeleton")) {
+            ((EntitySkeleton) entity).setSkeletonType(1);
+        } else if (entity instanceof EntitySlime) {
+            if (entity.getClass() == EntityMagmaCube.class)
+                // noinspection ConstantConditions
+                ((EntitySlimeAccessor) entity).callSetSlimeSize(2);
+            else((EntitySlimeAccessor) entity).callSetSlimeSize(1);
+        } else if (entity instanceof EntityBat) {
+            ((EntityBat) entity).setIsBatHanging(false);
+        }
+    }
+
     @SuppressWarnings({ "unchecked", "UnstableApiUsage" })
     public static void generateMobRecipeMap() {
 
@@ -464,6 +477,11 @@ public class MobRecipeLoader {
             @Override
             public File getWorldDirectory() {
                 return null;
+            }
+
+            @SuppressWarnings("unused") // for thermos compat
+            public UUID getUUID() {
+                return UUID.nameUUIDFromBytes("MobsInfoDummyWorld".getBytes(StandardCharsets.UTF_8));
             }
         }, "DUMMY_DIMENSION", new WorldSettings(new WorldInfo(new NBTTagCompound())), null, new Profiler()) {
 
@@ -591,19 +609,10 @@ public class MobRecipeLoader {
                             if (mobName.equals("witherSkeleton")
                                 && !EntityList.stringToClassMapping.containsKey("witherSkeleton")) {
                                 e = new EntitySkeleton(f);
-                                ((EntitySkeleton) e).setSkeletonType(1);
                             } else e = (EntityLiving) ((Class<?>) EntityList.stringToClassMapping.get(mobName))
                                 .getConstructor(new Class[] { World.class })
                                 .newInstance(new Object[] { f });
-                            if (e instanceof EntitySlime) {
-                                if (e.getClass() == EntityMagmaCube.class)
-                                    // noinspection ConstantConditions
-                                    ((EntitySlimeAccessor) e).callSetSlimeSize(2);
-                                else((EntitySlimeAccessor) e).callSetSlimeSize(1);
-                            }
-                            if (e instanceof EntityBat) {
-                                ((EntityBat) e).setIsBatHanging(false);
-                            }
+                            preGenerationEntityModifiers(e, mobName);
                             ArrayList<MobDrop> drops = entry.getValue();
                             drops.forEach(MobDrop::reconstructStack);
                             GeneralMobList.put(
@@ -674,9 +683,8 @@ public class MobRecipeLoader {
                 return;
             }
 
-            if (registeringWitherSkeleton && e instanceof EntitySkeleton && k.equals("witherSkeleton"))
-                ((EntitySkeleton) e).setSkeletonType(1);
-            else if (!StatCollector.canTranslate("entity." + k + ".name")) {
+            if (!(registeringWitherSkeleton && k.equals("witherSkeleton"))
+                && !StatCollector.canTranslate("entity." + k + ".name")) {
                 LOG.warn("Entity " + k + " does't have localized name!");
                 // return;
             }
@@ -687,14 +695,7 @@ public class MobRecipeLoader {
 
                 e.captureDrops = true;
 
-                if (e instanceof EntitySlime) {
-                    if (v == EntityMagmaCube.class) ((EntitySlimeAccessor) e).callSetSlimeSize(2);
-                    else((EntitySlimeAccessor) e).callSetSlimeSize(1);
-                }
-
-                if (e instanceof EntityBat) {
-                    ((EntityBat) e).setIsBatHanging(false);
-                }
+                preGenerationEntityModifiers(e, k);
 
                 ((EntityAccessor) e).setRand(frand);
 
