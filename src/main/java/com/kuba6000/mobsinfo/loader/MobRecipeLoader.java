@@ -478,6 +478,11 @@ public class MobRecipeLoader {
             public File getWorldDirectory() {
                 return null;
             }
+
+            @SuppressWarnings("unused") // for thermos compat
+            public UUID getUUID() {
+                return UUID.nameUUIDFromBytes("MobsInfoDummyWorld".getBytes(StandardCharsets.UTF_8));
+            }
         }, "DUMMY_DIMENSION", new WorldSettings(new WorldInfo(new NBTTagCompound())), null, new Profiler()) {
 
             @Override
