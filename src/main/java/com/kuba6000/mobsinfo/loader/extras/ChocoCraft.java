@@ -18,9 +18,13 @@ public class ChocoCraft implements IExtraLoader {
             .toString()
             .substring(6);
 
-        ArrayList<String> classPaths = (ArrayList) GeneralConfig.unpackMobDrops(GeneralConfig.mobDrops)[0];
-        ArrayList<String> chocoItems = (ArrayList) GeneralConfig.unpackMobDrops(GeneralConfig.mobDrops)[1];
-        ArrayList<Integer> classdropChances = (ArrayList) GeneralConfig.unpackMobDrops(GeneralConfig.mobDrops)[2];
+        @SuppressWarnings("unchecked")
+        ArrayList<String> classPaths = (ArrayList<String>) GeneralConfig.unpackMobDrops(GeneralConfig.mobDrops)[0];
+        @SuppressWarnings("unchecked")
+        ArrayList<String> chocoItems = (ArrayList<String>) GeneralConfig.unpackMobDrops(GeneralConfig.mobDrops)[1];
+        @SuppressWarnings("unchecked")
+        ArrayList<Integer> classdropChances = (ArrayList<Integer>) GeneralConfig
+            .unpackMobDrops(GeneralConfig.mobDrops)[2];
 
         for (int i = 0; i < classPaths.size(); i++) {
             if (classPaths.get(i)

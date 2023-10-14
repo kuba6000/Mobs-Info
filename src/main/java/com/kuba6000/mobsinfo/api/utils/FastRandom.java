@@ -25,6 +25,7 @@ import java.util.SplittableRandom;
 
 public class FastRandom extends Random {
 
+    private static final long serialVersionUID = -6330702242734689581L;
     private SplittableRandom realRandom;
 
     public FastRandom() {

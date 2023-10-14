@@ -165,7 +165,10 @@ public class TinkersConstruct implements IExtraLoader {
 
         double m1, m2;
 
-        BeheadingModifier() {};
+        @SuppressWarnings("unused")
+        BeheadingModifier() {
+            // Constructor is called via reflection in IChanceModifier.loadFromByteBuf()
+        }
 
         BeheadingModifier(double m1, double m2) {
             this.m1 = m1;
