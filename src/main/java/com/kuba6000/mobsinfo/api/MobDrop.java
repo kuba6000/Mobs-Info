@@ -75,8 +75,8 @@ public class MobDrop {
         this.playerOnly = playerOnly;
     }
 
+    @SuppressWarnings("unchecked")
     public MobDrop copy() {
-        @SuppressWarnings("unchecked")
         MobDrop copy = new MobDrop(
             this.stack.copy(),
             this.type,
@@ -86,9 +86,7 @@ public class MobDrop {
             this.lootable,
             this.playerOnly);
         copy.variableChance = this.variableChance;
-        // noinspection unchecked
         copy.chanceModifiers = (ArrayList<IChanceModifier>) this.chanceModifiers.clone();
-        // noinspection unchecked
         copy.additionalInfo = (ArrayList<String>) this.additionalInfo.clone();
         return copy;
     }

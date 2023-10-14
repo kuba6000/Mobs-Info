@@ -20,7 +20,7 @@ public class EntityButterflyMixin {
     private IButterfly contained;
 
     @Inject(method = "dropFewItems", at = @At("HEAD"))
-    private void dropFewItems(boolean playerKill, int lootLevel, CallbackInfo ci) {
+    private void mobsinfo$dropFewItems(boolean playerKill, int lootLevel, CallbackInfo ci) {
         if (MobRecipeLoader.isInGenerationProcess && contained == null) {
             contained = ButterflyManager.butterflyRoot
                 .templateAsIndividual(ButterflyManager.butterflyRoot.getDefaultTemplate());

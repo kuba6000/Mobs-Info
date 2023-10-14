@@ -125,20 +125,16 @@ public class MobRecipeLoader {
 
     public static class fakeRand extends Random {
 
+        private static final long serialVersionUID = 109358312784613473L;
+
         private static class nexter {
 
-            private final int type;
             private final int bound;
             private int next;
 
             public nexter(int type, int bound) {
                 this.next = 0;
                 this.bound = bound;
-                this.type = type;
-            }
-
-            private int getType() {
-                return type;
             }
 
             private boolean getBoolean() {
@@ -244,10 +240,8 @@ public class MobRecipeLoader {
         public final ItemID itemId;
         private double dropchance = 0d;
         private int dropcount = 1;
-        private final droplist owner;
 
         public dropinstance(ItemStack s, droplist owner) {
-            this.owner = owner;
             stack = s;
             itemId = ItemID.createNoCopy(stack);
         }

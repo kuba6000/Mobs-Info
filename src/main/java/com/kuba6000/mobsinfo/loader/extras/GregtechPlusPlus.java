@@ -70,7 +70,7 @@ public class GregtechPlusPlus implements IExtraLoader {
             try {
                 if (EnderDragonDeathHandlerClass_mHEE != null && (boolean) EnderDragonDeathHandlerClass_mHEE.get(null)
                     && EnderDragonDeathHandlerClass_mHardcoreDragonClass.get(null) != null
-                    && ((Class) EnderDragonDeathHandlerClass_mHardcoreDragonClass.get(null))
+                    && ((Class<?>) EnderDragonDeathHandlerClass_mHardcoreDragonClass.get(null))
                         .isInstance(recipe.entity)) {
                     MobDrop drop = new MobDrop(
                         ELEMENT.STANDALONE.DRAGON_METAL.getNugget(1),
@@ -85,38 +85,41 @@ public class GregtechPlusPlus implements IExtraLoader {
                     drop.clampChance();
 
                     drops.add(drop);
-                } else if (EnderDragonDeathHandlerClass_mDE != null
-                    && (boolean) EnderDragonDeathHandlerClass_mDE.get(null)
-                    && EnderDragonDeathHandlerClass_mChaoseDragonClass.get(null) != null
-                    && ((Class) EnderDragonDeathHandlerClass_mChaoseDragonClass.get(null)).isInstance(recipe.entity)) {
-                        MobDrop drop = new MobDrop(
-                            ELEMENT.STANDALONE.DRAGON_METAL.getIngot(1),
-                            MobDrop.DropType.Normal,
-                            (int) (MobDrop.getChanceBasedOnFromTo(100, 200) * MobDrop.getChanceBasedOnFromTo(1, 5)
-                                * 10000d),
-                            null,
-                            null,
-                            false,
-                            false);
+                } else
+                    if (EnderDragonDeathHandlerClass_mDE != null && (boolean) EnderDragonDeathHandlerClass_mDE.get(null)
+                        && EnderDragonDeathHandlerClass_mChaoseDragonClass.get(null) != null
+                        && ((Class<?>) EnderDragonDeathHandlerClass_mChaoseDragonClass.get(null))
+                            .isInstance(recipe.entity)) {
+                                MobDrop drop = new MobDrop(
+                                    ELEMENT.STANDALONE.DRAGON_METAL.getIngot(1),
+                                    MobDrop.DropType.Normal,
+                                    (int) (MobDrop.getChanceBasedOnFromTo(100, 200)
+                                        * MobDrop.getChanceBasedOnFromTo(1, 5)
+                                        * 10000d),
+                                    null,
+                                    null,
+                                    false,
+                                    false);
 
-                        drop.clampChance();
+                                drop.clampChance();
 
-                        drops.add(drop);
-                    } else if (recipe.entity instanceof EntityDragon) {
-                        MobDrop drop = new MobDrop(
-                            ELEMENT.STANDALONE.DRAGON_METAL.getNugget(1),
-                            MobDrop.DropType.Normal,
-                            (int) (MobDrop.getChanceBasedOnFromTo(25, 50) * MobDrop.getChanceBasedOnFromTo(1, 10)
-                                * 10000d),
-                            null,
-                            null,
-                            false,
-                            false);
+                                drops.add(drop);
+                            } else
+                        if (recipe.entity instanceof EntityDragon) {
+                            MobDrop drop = new MobDrop(
+                                ELEMENT.STANDALONE.DRAGON_METAL.getNugget(1),
+                                MobDrop.DropType.Normal,
+                                (int) (MobDrop.getChanceBasedOnFromTo(25, 50) * MobDrop.getChanceBasedOnFromTo(1, 10)
+                                    * 10000d),
+                                null,
+                                null,
+                                false,
+                                false);
 
-                        drop.clampChance();
+                            drop.clampChance();
 
-                        drops.add(drop);
-                    }
+                            drops.add(drop);
+                        }
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
