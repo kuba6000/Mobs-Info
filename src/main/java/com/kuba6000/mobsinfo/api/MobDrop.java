@@ -75,8 +75,8 @@ public class MobDrop {
         this.playerOnly = playerOnly;
     }
 
+    @SuppressWarnings("unchecked")
     public MobDrop copy() {
-        @SuppressWarnings("unchecked")
         MobDrop copy = new MobDrop(
             this.stack.copy(),
             this.type,

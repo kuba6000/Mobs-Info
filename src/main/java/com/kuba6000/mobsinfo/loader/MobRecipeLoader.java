@@ -125,6 +125,8 @@ public class MobRecipeLoader {
 
     public static class fakeRand extends Random {
 
+        private static final long serialVersionUID = 109358312784613473L;
+
         private static class nexter {
 
             private final int type;
