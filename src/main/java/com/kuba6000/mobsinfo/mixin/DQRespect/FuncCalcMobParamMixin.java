@@ -13,7 +13,7 @@ import dqr.functions.FuncCalcMobParam;
 public class FuncCalcMobParamMixin {
 
     @ModifyReturnValue(method = "getCalcDROP", at = @At(value = "RETURN"))
-    boolean getCalcDROP(boolean original, int base, int per) {
+    boolean mobsinfo$getCalcDROP(boolean original, int base, int per) {
         if (MobRecipeLoader.isInGenerationProcess) {
             double chance = (double) per / (double) base;
             MobRecipeLoader.DQRChances.add(chance);

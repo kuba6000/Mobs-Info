@@ -22,7 +22,7 @@ public class EntityMobLouseMixin {
     private LouseRavagedSpawnerLogic.LouseSpawnData louseData;
 
     @Inject(method = "dropRareDrop", at = @At("HEAD"))
-    private void dropRareDrop(int lootingExtraLuck, CallbackInfo ci) {
+    private void mobsinfo$dropRareDrop(int lootingExtraLuck, CallbackInfo ci) {
         if (MobRecipeLoader.isInGenerationProcess) {
             Random random = ((EntityAccessor) this).getRand();
             louseData = new LouseRavagedSpawnerLogic.LouseSpawnData(

@@ -19,7 +19,7 @@ public class EntityMobHomelandEndermanMixin {
     private HomelandEndermen.HomelandRole homelandRole;
 
     @Inject(method = "entityInit", at = @At("RETURN"))
-    private void entityInit(CallbackInfo ci) {
+    private void mobsinfo$entityInit(CallbackInfo ci) {
         if (MobRecipeLoader.isInGenerationProcess) homelandRole = HomelandEndermen.HomelandRole.GUARD;
     }
 

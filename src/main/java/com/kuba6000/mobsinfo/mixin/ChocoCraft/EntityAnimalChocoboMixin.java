@@ -13,7 +13,7 @@ import chococraft.common.entities.EntityAnimalChocobo;
 public class EntityAnimalChocoboMixin {
 
     @ModifyReturnValue(method = "isServer", at = @At("RETURN"))
-    boolean modifyIsServer(boolean original) {
+    boolean mobsinfo$modifyIsServer(boolean original) {
         if (MobRecipeLoader.isInGenerationProcess) return true;
         return original;
     }
