@@ -54,20 +54,6 @@ public class IMCForNEI {
         FMLInterModComms.sendMessage("NotEnoughItems", "registerHandlerInfo", aNBT);
     }
 
-    private static void sendGTStyledHandler(String aName, String aBlock) {
-        NBTTagCompound aNBT = new NBTTagCompound();
-        aNBT.setString("handler", aName);
-        aNBT.setString("modName", Tags.MODNAME);
-        aNBT.setString("modId", Tags.MODID);
-        aNBT.setBoolean("modRequired", true);
-        aNBT.setString("itemName", aBlock);
-        aNBT.setInteger("handlerHeight", 135);
-        aNBT.setInteger("handlerWidth", 166);
-        aNBT.setInteger("maxRecipesPerPage", 2);
-        aNBT.setInteger("yShift", 6);
-        FMLInterModComms.sendMessage("NotEnoughItems", "registerHandlerInfo", aNBT);
-    }
-
     private static void sendCatalyst(String aName, String aStack, int aPriority) {
         NBTTagCompound aNBT = new NBTTagCompound();
         aNBT.setString("handlerID", aName);

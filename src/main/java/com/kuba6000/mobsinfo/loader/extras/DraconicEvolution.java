@@ -79,8 +79,6 @@ public class DraconicEvolution implements IExtraLoader {
 
         double baseChance;
 
-        DraconicEvolutionSoulChanceModifier() {}
-
         DraconicEvolutionSoulChanceModifier(double baseChance) {
             this.baseChance = baseChance;
         }
