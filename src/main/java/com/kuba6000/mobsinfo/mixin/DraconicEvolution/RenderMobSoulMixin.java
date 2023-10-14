@@ -25,8 +25,8 @@ public class RenderMobSoulMixin {
             ordinal = 0,
             shift = At.Shift.AFTER),
         locals = LocalCapture.CAPTURE_FAILHARD)
-    private void mobsinfo$renderItemFix(IItemRenderer.ItemRenderType type, ItemStack item, Object[] data, CallbackInfo ci,
-        Entity mob) {
+    private void mobsinfo$renderItemFix(IItemRenderer.ItemRenderType type, ItemStack item, Object[] data,
+        CallbackInfo ci, Entity mob) {
         Minecraft mc = Minecraft.getMinecraft();
         mob.setPosition(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
         mob.lastTickPosX = mob.posX;

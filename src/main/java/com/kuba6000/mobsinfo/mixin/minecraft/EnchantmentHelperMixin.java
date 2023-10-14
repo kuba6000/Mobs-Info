@@ -24,8 +24,8 @@ public class EnchantmentHelperMixin {
     private static final Random rnd = new FastRandom();
 
     @Inject(method = "addRandomEnchantment", at = @At("HEAD"), require = 1)
-    private static void mobsinfo$addRandomEnchantmentDetector(Random random, ItemStack itemStack, int enchantabilityLevel,
-        CallbackInfoReturnable<ItemStack> callbackInfoReturnable) {
+    private static void mobsinfo$addRandomEnchantmentDetector(Random random, ItemStack itemStack,
+        int enchantabilityLevel, CallbackInfoReturnable<ItemStack> callbackInfoReturnable) {
         if (MobRecipeLoader.isInGenerationProcess && random instanceof MobRecipeLoader.fakeRand) {
             itemStack.setTagInfo(randomEnchantmentDetectedString, new NBTTagInt(enchantabilityLevel));
         }
