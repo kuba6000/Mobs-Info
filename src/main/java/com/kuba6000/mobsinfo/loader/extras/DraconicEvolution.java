@@ -79,7 +79,10 @@ public class DraconicEvolution implements IExtraLoader {
 
         double baseChance;
 
-        DraconicEvolutionSoulChanceModifier() {}
+        @SuppressWarnings("unused")
+        DraconicEvolutionSoulChanceModifier() {
+            // Constructor is called via reflection in IChanceModifier.loadFromByteBuf()
+        }
 
         DraconicEvolutionSoulChanceModifier(double baseChance) {
             this.baseChance = baseChance;

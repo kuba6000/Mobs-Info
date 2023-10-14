@@ -228,8 +228,7 @@ public class MobUtils {
         }
         GL11.glPopAttrib();
 
-        int err;
-        while ((err = GL11.glGetError()) != GL11.GL_NO_ERROR);
+        while ((GL11.glGetError()) != GL11.GL_NO_ERROR);
 
         return new Rectangle(
             (int) (minx / scale.getScaleFactor()),

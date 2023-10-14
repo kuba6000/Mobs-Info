@@ -20,6 +20,7 @@ public class InfernalMobsCoreHelper {
     private static boolean isDimensionBlacklistInitialized = false;
     private static Field dimensionBlackListField = null;
 
+    @SuppressWarnings("unchecked")
     public static List<Integer> getDimensionBlackList(InfernalMobsCore infernalMobsCore) {
         if (!isDimensionBlacklistInitialized) {
             isDimensionBlacklistInitialized = true;

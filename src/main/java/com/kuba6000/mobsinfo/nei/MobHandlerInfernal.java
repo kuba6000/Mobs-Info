@@ -12,12 +12,9 @@ import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import com.kuba6000.mobsinfo.MobsInfo;
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
@@ -76,7 +73,6 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
         }
     }
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Mob Handler - Infernal drops]");
     private static InfernalRecipe recipe = null;
     private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35, itemsYStart = 80;
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());

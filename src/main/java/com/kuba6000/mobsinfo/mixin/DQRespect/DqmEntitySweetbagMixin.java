@@ -15,7 +15,7 @@ import dqr.entity.mobEntity.monsterTensei.DqmEntitySweetbag;
 public class DqmEntitySweetbagMixin {
 
     @ModifyVariable(method = "dropFewItems", at = @At("STORE"), ordinal = 0)
-    Random randomModifier(Random original) {
+    Random mobsinfo$randomModifier(Random original) {
         return ((EntityAccessor) this).getRand();
     }
 
