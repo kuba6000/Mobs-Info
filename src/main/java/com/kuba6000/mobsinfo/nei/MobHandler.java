@@ -487,20 +487,15 @@ public class MobHandler extends TemplateRecipeHandler {
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
         if (LoaderReference.EnderIO) {
-            if (ingredient.getItem() == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())) {
-                if (!ingredient.hasTagCompound() || !ingredient.getTagCompound()
-                    .hasKey("mobType")) {
+            Item item = ingredient.getItem();
+            if (item == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())
+                || item == EnderIOGetter.itemSoulVessel()) {
+                String mobType = EnderIOGetter.getContainedMobOrNull(ingredient);
+                if (mobType == null) {
                     loadCraftingRecipes(getOverlayIdentifier(), (Object) null);
                     return;
                 }
-                for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
-                    .anyMatch(
-                        s -> s.getItem() == ingredient.getItem() && Objects.equals(
-                            s.getTagCompound()
-                                .getString("mobType"),
-                            ingredient.getTagCompound()
-                                .getString("mobType"))))
-                    arecipes.add(r);
+                for (MobCachedRecipe r : cachedRecipes) if (r.mobname.equals(mobType)) arecipes.add(r);
                 return;
             }
         }
@@ -655,6 +650,7 @@ public class MobHandler extends TemplateRecipeHandler {
             }
             if (LoaderReference.EnderIO) {
                 this.mInput.add(0, EnderIOGetter.BlockPoweredSpawner$createItemStackForMob(mobname));
+                this.mInput.add(1, EnderIOGetter.ItemSoulVessel$createVesselWithEntityStub(mobname));
             } // else if (id == 0) this.mInput.add(new ItemStack(Items.spawn_egg, 1, 0)); // ???
             if (!this.mInput.isEmpty()) ingredient = new PositionedStack(this.mInput.get(0), 38, 44, false);
             else ingredient = null;
