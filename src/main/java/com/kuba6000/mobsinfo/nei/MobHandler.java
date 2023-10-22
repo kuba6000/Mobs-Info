@@ -652,7 +652,7 @@ public class MobHandler extends TemplateRecipeHandler {
                 this.mInput.add(0, EnderIOGetter.BlockPoweredSpawner$createItemStackForMob(mobname));
                 this.mInput.add(1, EnderIOGetter.ItemSoulVessel$createVesselWithEntityStub(mobname));
             } // else if (id == 0) this.mInput.add(new ItemStack(Items.spawn_egg, 1, 0)); // ???
-            if (!this.mInput.isEmpty()) ingredient = new PositionedStack(this.mInput.get(0), 38, 44, false);
+            if (!this.mInput.isEmpty()) ingredient = new PositionedStack(this.mInput, 38, 44, true);
             else ingredient = null;
             this.isUsableInVial = EnderIOHelper.canEntityBeCapturedWithSoulVial(mob, mobname);
 
@@ -676,6 +676,9 @@ public class MobHandler extends TemplateRecipeHandler {
 
         @Override
         public PositionedStack getIngredient() {
+            if (!NEIClientUtils.shiftKey() && ingredient != null) {
+                ingredient.setPermutationToRender((cycleTicksStatic / 10) % ingredient.items.length);
+            }
             return ingredient;
         }
 
@@ -687,7 +690,8 @@ public class MobHandler extends TemplateRecipeHandler {
         @Override
         public List<PositionedStack> getOtherStacks() {
             if (!isUnlocked()) return Collections.emptyList();
-            if (cycleTicksStatic % 10 == 0) mOutputs.forEach(p -> p.setPermutationToRender(0));
+            if (!NEIClientUtils.shiftKey() && cycleTicksStatic % 10 == 0)
+                mOutputs.forEach(p -> p.setPermutationToRender(0));
             return mOutputs;
         }
     }
