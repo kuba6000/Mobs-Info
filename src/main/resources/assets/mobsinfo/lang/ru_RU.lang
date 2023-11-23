@@ -17,8 +17,8 @@ mobsinfo.mobhandler.average_reminder=§7§oПожалуйста, помните,
 mobsinfo.mobhandler.lootable=Зачарование "Добыча" применяется
 mobsinfo.mobhandler.player_only=§7Только игрок
 mobsinfo.mobhandler.peaceful_allowed=Может появится на мирной сложности
-mobsinfo.mobhandler.locked_1=Чтобы разблокировать больше информации,
-mobsinfo.mobhandler.locked_2=вы должны убить этого моба!
+mobsinfo.mobhandler.locked=Чтобы разблокировать больше информации,
+mobsinfo.mobhandler.locked_1=вы должны убить этого моба!
 mobsinfo.mobhandler.unlocked=§6Вы разблокировали новую информацию о мобе!
 
 mobsinfo.mobhandlerinfernal.title=Infernal Mobs - Таблица добычи
