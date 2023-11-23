@@ -17,9 +17,15 @@ mobsinfo.mobhandler.average_reminder=§7§oPlease remember that these are averag
 mobsinfo.mobhandler.lootable=Looting is applied
 mobsinfo.mobhandler.player_only=§7Hard player-only
 mobsinfo.mobhandler.peaceful_allowed=Allowed in peaceful
-mobsinfo.mobhandler.locked_1=To unlock more information,
-mobsinfo.mobhandler.locked_2=you have to kill the mob!
+mobsinfo.mobhandler.locked=To unlock more information,
+mobsinfo.mobhandler.locked_1=you have to kill the mob!
 mobsinfo.mobhandler.unlocked=§6You have unlocked new mob information!
+mobsinfo.mobhandler.extended_info=Please remember that drop chances and sizes are
+mobsinfo.mobhandler.extended_info_1=average based on all possibilities
+mobsinfo.mobhandler.extended_info_2=That means that 100% doesn't always mean that it will always drop!
+mobsinfo.mobhandler.extended_info_3=As for example it could mean that there is
+mobsinfo.mobhandler.extended_info_4=equal chances to drop 0 or 1 or 2 items,
+mobsinfo.mobhandler.extended_info_5=which averages at 1 drop every time (100%)
 
 mobsinfo.mobhandlerinfernal.title=Infernal Mobs - Drop Table
 mobsinfo.mobhandlerinfernal.format=Format:

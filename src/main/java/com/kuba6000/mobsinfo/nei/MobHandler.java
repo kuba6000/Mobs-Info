@@ -22,6 +22,7 @@ package com.kuba6000.mobsinfo.nei;
 
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.BOSS;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ import com.kuba6000.mobsinfo.api.utils.MobUtils;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
+import com.kuba6000.mobsinfo.mixin.minecraft.GuiContainerAccessor;
 import com.kuba6000.mobsinfo.savedata.PlayerData;
 import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 
@@ -106,8 +108,11 @@ public class MobHandler extends TemplateRecipeHandler {
         LOOTABLE,
         PLAYER_ONLY,
         PEACEFUL_ALLOWED,
+        LOCKED,
         LOCKED_1,
-        LOCKED_2;
+        EXTENDED_INFO,
+
+        ;
 
         final String key;
 
@@ -118,6 +123,14 @@ public class MobHandler extends TemplateRecipeHandler {
 
         public String get() {
             return StatCollector.translateToLocal(key);
+        }
+
+        public List<String> getAllLines() {
+            ArrayList<String> lines = new ArrayList<>(Collections.singletonList(StatCollector.translateToLocal(key)));
+            int i = 1;
+            while (StatCollector.canTranslate(key + "_" + i))
+                lines.add(StatCollector.translateToLocal(key + "_" + (i++)));
+            return lines;
         }
 
         public String get(Object... args) {
@@ -390,8 +403,8 @@ public class MobHandler extends TemplateRecipeHandler {
         if (!currentrecipe.isUnlocked()) {
             x = 6;
             y = 83;
+            GuiDraw.drawStringC(Translations.LOCKED.get(), 168 / 2, y += yshift, 0xFF555555, false);
             GuiDraw.drawStringC(Translations.LOCKED_1.get(), 168 / 2, y += yshift, 0xFF555555, false);
-            GuiDraw.drawStringC(Translations.LOCKED_2.get(), 168 / 2, y += yshift, 0xFF555555, false);
             return;
         }
         GuiDraw.drawString(Translations.MAX_HEALTH.get() + currentrecipe.maxHealth, x, y += yshift, 0xFF555555, false);
@@ -521,6 +534,22 @@ public class MobHandler extends TemplateRecipeHandler {
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
+    }
+
+    private static final Rectangle extendedTooltipRect = new Rectangle(28, 62, 8, 16);
+
+    @Override
+    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe) {
+        currenttip = super.handleTooltip(gui, currenttip, recipe);
+        Point pos = GuiDraw.getMousePosition();
+        Point offset = gui.getRecipePosition(recipe);
+        Point relMouse = new Point(
+            pos.x - ((GuiContainerAccessor) gui).getGuiLeft() - offset.x,
+            pos.y - ((GuiContainerAccessor) gui).getGuiTop() - offset.y);
+        if (extendedTooltipRect.contains(relMouse)) {
+            currenttip.addAll(Translations.EXTENDED_INFO.getAllLines());
+        }
+        return currenttip;
     }
 
     @Override
