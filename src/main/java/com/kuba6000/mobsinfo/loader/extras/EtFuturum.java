@@ -23,7 +23,6 @@ import com.kuba6000.mobsinfo.api.MobRecipe;
 
 import ganymedes01.etfuturum.ModBlocks;
 import ganymedes01.etfuturum.ModItems;
-import ganymedes01.etfuturum.configuration.configs.ConfigBlocksItems;
 import ganymedes01.etfuturum.configuration.configs.ConfigFunctions;
 
 public class EtFuturum implements IExtraLoader {
@@ -50,7 +49,8 @@ public class EtFuturum implements IExtraLoader {
         }
 
         // mutton
-        if (ModItems.MUTTON_RAW.isEnabled() && ModItems.MUTTON_COOKED.isEnabled() && recipe.entity instanceof EntitySheep) {
+        if (ModItems.MUTTON_RAW.isEnabled() && ModItems.MUTTON_COOKED.isEnabled()
+            && recipe.entity instanceof EntitySheep) {
             MobDrop drop = new MobDrop(
                 new ItemStack(ModItems.MUTTON_RAW.get()),
                 MobDrop.DropType.Normal,
