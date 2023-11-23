@@ -27,7 +27,6 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
@@ -505,19 +504,12 @@ public class MobHandler extends TemplateRecipeHandler {
 
     public static boolean isUsageInfernalMob(ItemStack ingredient) {
         if (LoaderReference.EnderIO) {
-            if (ingredient.getItem() == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())) {
-                if (!ingredient.hasTagCompound() || !ingredient.getTagCompound()
-                    .hasKey("mobType")) {
-                    return true;
-                }
-                for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
-                    .anyMatch(
-                        s -> s.getItem() == ingredient.getItem() && Objects.equals(
-                            s.getTagCompound()
-                                .getString("mobType"),
-                            ingredient.getTagCompound()
-                                .getString("mobType")))
-                    && r.infernaltype > 0) return true;
+            Item item = ingredient.getItem();
+            if (item == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())
+                || item == EnderIOGetter.itemSoulVessel()) {
+                String mobType = EnderIOGetter.getContainedMobOrNull(ingredient);
+                if (mobType == null) return false;
+                for (MobCachedRecipe r : cachedRecipes) if (r.mobname.equals(mobType)) return r.infernaltype > 0;
                 return false;
             }
         }
