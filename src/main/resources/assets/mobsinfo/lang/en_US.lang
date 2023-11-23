@@ -64,6 +64,9 @@ mobsinfo.extras.witchery_vampire_book=Drops only when player has Vampire book
 mobsinfo.extras.witchery_warewolf=Only when killer is a Warewolf
 mobsinfo.extras.bloodmagic_demon_shards=Drops only when spawned using Demon Portal or hit with dagger of sacrifice
 mobsinfo.extras.bloodmagic_demon_placer=Drops only when NOT spawned using Demon Portal and NOT hit with dagger of sacrifice
+mobsinfo.extras.etfuturum_powered_creeper=Drops only when killed by powered creeper
+mobsinfo.extras.etfuturum_wither_rose=Dropped or placed* only when killed by the Wither
+mobsinfo.extras.etfuturum_wither_rose_1=*Placed on the ground (in place of the mob) only if it is possible
 
 
 #Commands

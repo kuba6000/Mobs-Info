@@ -48,6 +48,7 @@ public class ExtraLoader {
         if (LoaderReference.DQRespect) loaders.add(new DQRespect());
         if (LoaderReference.ChocoCraft) loaders.add(new ChocoCraft());
         if (LoaderReference.ExtraUtilities) loaders.add(new ExtraUtilities());
+        if (LoaderReference.EtFuturumRequiem) loaders.add(new EtFuturum());
 
         // LAST
         if (LoaderReference.EditMobDrops) loaders.add(new EditMobDrops());
