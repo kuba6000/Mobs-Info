@@ -50,7 +50,7 @@ public class EtFuturum implements IExtraLoader {
         }
 
         // mutton
-        if (ConfigBlocksItems.enableMutton && recipe.entity instanceof EntitySheep) {
+        if (ModItems.MUTTON_RAW.isEnabled() && ModItems.MUTTON_COOKED.isEnabled() && recipe.entity instanceof EntitySheep) {
             MobDrop drop = new MobDrop(
                 new ItemStack(ModItems.MUTTON_RAW.get()),
                 MobDrop.DropType.Normal,
@@ -64,7 +64,7 @@ public class EtFuturum implements IExtraLoader {
         }
 
         // wither rose
-        if (ConfigBlocksItems.enableWitherRose) {
+        if (ModBlocks.WITHER_ROSE.isEnabled()) {
             MobDrop drop = new MobDrop(
                 ModBlocks.WITHER_ROSE.newItemStack(1, 0),
                 MobDrop.DropType.Additional,
