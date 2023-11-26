@@ -20,6 +20,12 @@ mobsinfo.mobhandler.peaceful_allowed=Может появится на мирно
 mobsinfo.mobhandler.locked=Чтобы разблокировать больше информации,
 mobsinfo.mobhandler.locked_1=вы должны убить этого моба!
 mobsinfo.mobhandler.unlocked=§6Вы разблокировали новую информацию о мобе!
+mobsinfo.mobhandler.extended_info=Пожалуйста, помните, что вероятность выпадения и размеры являются
+mobsinfo.mobhandler.extended_info_1=средними, исходя из всех возможностей.
+mobsinfo.mobhandler.extended_info_2=Это означает, что 100% не всегда означает, что оно всегда будет выпадать!
+mobsinfo.mobhandler.extended_info_3=Например, это может означать, что есть
+mobsinfo.mobhandler.extended_info_4=равные шансы выбросить 0, 1 или 2 предмета,
+mobsinfo.mobhandler.extended_info_5=что в среднем составляет 1 выпадение каждый раз (100%).
 
 mobsinfo.mobhandlerinfernal.title=Infernal Mobs - Таблица добычи
 mobsinfo.mobhandlerinfernal.format=Формат:
@@ -62,9 +68,11 @@ mobsinfo.extras.tinkers_construct_beheading=Каждый уровень обез
 mobsinfo.extras.tinkers_construct_beheading_1=Если вы используете тесак, он дает еще %.2f%%
 mobsinfo.extras.witchery_vampire_book=Выпадает только если у игрока есть книга вампиров
 mobsinfo.extras.witchery_warewolf=Только когда убийца - оборотень
-mobsinfo.extras.bloodmagic_demon_shards=Выпадает только при создании с помощью портала демонов или при ударе кинжалом жертвоприношения.
-mobsinfo.extras.bloodmagic_demon_placer=Выпадает только при НЕ создании с помощью портала демонов или НЕ при ударе кинжалом жертвоприношения.
-
+mobsinfo.extras.bloodmagic_demon_shards=Выпадает только при создании с помощью демонического портала или при ударе кинжалом жертвоприношения.
+mobsinfo.extras.bloodmagic_demon_placer=НЕ Выпадает при создании с помощью демонического портала или при ударе кинжалом жертвоприношения.
+mobsinfo.extras.etfuturum_powered_creeper=Выпадает только при убийстве заряженным крипером.
+mobsinfo.extras.etfuturum_wither_rose=Выпадает или размещается* только при убийстве иссушителем.
+mobsinfo.extras.etfuturum_wither_rose_1=*Размещается на земле (вместо моба) только если это возможно.
 
 #Commands
 mobsinfo.commandhandler.invalid=§cНедопустимое использование ! Правильное использование этой команды /%s
