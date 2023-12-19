@@ -678,7 +678,7 @@ public class MobRecipeLoader {
 
             if (!(registeringWitherSkeleton && k.equals("witherSkeleton")) && e.getCommandSenderName()
                 .startsWith("entity.")) {
-                LOG.warn("Entity " + k + " does't have localized name!");
+                LOG.warn("Entity " + k + " doesn't have localized name!");
                 // return;
             }
 
