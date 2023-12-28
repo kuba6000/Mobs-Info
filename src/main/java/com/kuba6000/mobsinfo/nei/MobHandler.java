@@ -363,7 +363,7 @@ public class MobHandler extends TemplateRecipeHandler {
         BossStatus.bossName = bossName;
         BossStatus.hasColorModifier = hasColorModifier;
 
-        GL11.glMatrixMode(GL11.GL_MODELVIEW_MATRIX);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
         stackdepth -= GL11.glGetInteger(GL11.GL_MODELVIEW_STACK_DEPTH);
         if (stackdepth < 0) for (; stackdepth < 0; stackdepth++) GL11.glPopMatrix();
         if (stackdepth > 0) {
