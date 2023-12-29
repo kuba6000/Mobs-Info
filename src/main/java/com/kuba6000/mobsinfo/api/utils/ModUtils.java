@@ -23,20 +23,27 @@ package com.kuba6000.mobsinfo.api.utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 import com.kuba6000.mobsinfo.MobsInfo;
+import com.kuba6000.mobsinfo.mixin.minecraft.ASMEventHandlerAccessor;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.eventhandler.ASMEventHandler;
+import cpw.mods.fml.common.eventhandler.IEventListener;
 
 public class ModUtils {
 
@@ -56,12 +63,15 @@ public class ModUtils {
         void accept(T t, U u, V v);
     }
 
-    private static final HashMap<String, String> classNamesToModIDs = new HashMap<>();
-    private static final Map.Entry<String, String> emptyEntry = new AbstractMap.SimpleEntry<>("", "");
+    private static final HashMap<String, ModContainer> classNamesToModContainer = new HashMap<>();
+    private static final Map.Entry<String, ModContainer> nullEntry = new AbstractMap.SimpleEntry<>("", null);
 
-    public static String getModNameFromClassName(String classname) {
-        if (classNamesToModIDs.size() == 0) {
-            classNamesToModIDs.put("net.minecraft", "Minecraft");
+    private static void initClassNamesToMods() {
+        if (classNamesToModContainer.size() == 0) {
+            classNamesToModContainer.put(
+                "net.minecraft",
+                Loader.instance()
+                    .getMinecraftModContainer());
             Loader.instance()
                 .getActiveModList()
                 .forEach(m -> {
@@ -73,15 +83,32 @@ public class ModUtils {
                             MobsInfo.warn("Mod " + m.getModId() + " package is not loaded yet!");
                             return;
                         }
-                        classNamesToModIDs.put(modPackage.getName(), m.getName());
+                        classNamesToModContainer.put(modPackage.getName(), m);
                     }
                 });
         }
-        return classNamesToModIDs.entrySet()
+    }
+
+    public static String getModNameFromClassName(String classname) {
+        initClassNamesToMods();
+        Map.Entry<String, ModContainer> entry = classNamesToModContainer.entrySet()
             .stream()
             .filter(e -> classname.startsWith(e.getKey()))
             .findAny()
-            .orElse(emptyEntry)
+            .orElse(null);
+
+        if (entry == null) return "Unknown";
+        else return entry.getValue()
+            .getName();
+    }
+
+    public static ModContainer getModContainerFromClassName(String classname) {
+        initClassNamesToMods();
+        return classNamesToModContainer.entrySet()
+            .stream()
+            .filter(e -> classname.startsWith(e.getKey()))
+            .findAny()
+            .orElse(nullEntry)
             .getValue();
     }
 
@@ -89,10 +116,32 @@ public class ModUtils {
 
     public static String getModListVersion() {
         if (modListVersion != null) return modListVersion;
-        @SuppressWarnings("unchecked")
-        ArrayList<ModContainer> modlist = (ArrayList<ModContainer>) ((ArrayList<ModContainer>) Loader.instance()
-            .getActiveModList()).clone();
-        String sortedList = modlist.stream()
+
+        HashSet<ModContainer> modsWithEntities = new HashSet<>();
+        // noinspection unchecked
+        for (Class<? extends Entity> value : ((Map<String, Class<? extends Entity>>) EntityList.stringToClassMapping)
+            .values()) {
+            ModContainer mod = getModContainerFromClassName(value.getName());
+            if (mod != null) modsWithEntities.add(mod);
+        }
+
+        IEventListener[] listeners = new LivingDeathEvent(null, null).getListenerList()
+            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+        for (IEventListener listener : listeners) {
+            if (listener instanceof ASMEventHandler) {
+                modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
+            }
+        }
+
+        listeners = new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()
+            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+        for (IEventListener listener : listeners) {
+            if (listener instanceof ASMEventHandler) {
+                modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
+            }
+        }
+
+        String sortedList = modsWithEntities.stream()
             .filter(m -> m.getMod() != null)
             .sorted(Comparator.comparing(ModContainer::getModId))
             .collect(
@@ -117,10 +166,32 @@ public class ModUtils {
 
     public static String getModListVersionIgnoringModVersions() {
         if (modListVersionIgnoringModVersions != null) return modListVersionIgnoringModVersions;
-        @SuppressWarnings("unchecked")
-        ArrayList<ModContainer> modlist = (ArrayList<ModContainer>) ((ArrayList<ModContainer>) Loader.instance()
-            .getActiveModList()).clone();
-        String sortedList = modlist.stream()
+
+        HashSet<ModContainer> modsWithEntities = new HashSet<>();
+        // noinspection unchecked
+        for (Class<? extends Entity> value : ((Map<String, Class<? extends Entity>>) EntityList.stringToClassMapping)
+            .values()) {
+            ModContainer mod = getModContainerFromClassName(value.getName());
+            if (mod != null) modsWithEntities.add(mod);
+        }
+
+        IEventListener[] listeners = new LivingDeathEvent(null, null).getListenerList()
+            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+        for (IEventListener listener : listeners) {
+            if (listener instanceof ASMEventHandler) {
+                modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
+            }
+        }
+
+        listeners = new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()
+            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+        for (IEventListener listener : listeners) {
+            if (listener instanceof ASMEventHandler) {
+                modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
+            }
+        }
+
+        String sortedList = modsWithEntities.stream()
             .filter(m -> m.getMod() != null)
             .sorted(Comparator.comparing(ModContainer::getModId))
             .collect(
