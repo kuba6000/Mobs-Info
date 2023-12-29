@@ -18,6 +18,7 @@ public enum Mixin {
     EntitySlimeAccessor("minecraft.EntitySlimeAccessor", VANILLA),
     RendererLivingEntityAccessor("minecraft.RendererLivingEntityAccessor", VANILLA),
     GuiContainerAccessor("minecraft.GuiContainerAccessor", VANILLA),
+    ASMEventHandlerAccessor("minecraft.ASMEventHandlerAccessor", VANILLA),
 
     // Infernal Mobs
     InfernalMobsCoreAccessor("InfernalMobs.InfernalMobsCoreAccessor", INFERNAL_MOBS),
