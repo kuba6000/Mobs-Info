@@ -26,9 +26,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -46,8 +49,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
@@ -60,6 +65,7 @@ import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
+import com.kuba6000.mobsinfo.api.MobRecipe;
 import com.kuba6000.mobsinfo.api.event.MobNEIRegistrationEvent;
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
 import com.kuba6000.mobsinfo.api.helper.InfernalMobsCoreHelper;
@@ -152,6 +158,7 @@ public class MobHandler extends TemplateRecipeHandler {
     private static final List<MobCachedRecipe> cachedRecipes = new ArrayList<>();
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
     private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35;
+    private static int biomeCount = -1;
 
     public static void addRecipe(EntityLiving e, List<MobDrop> drop) {
         List<MobPositionedStack> positionedStacks = new ArrayList<>();
@@ -391,6 +398,25 @@ public class MobHandler extends TemplateRecipeHandler {
         return yshift * s.size();
     }
 
+    private boolean biomeTooltip = false;
+    private int biomeTooltipX = 0;
+    private int biomeTooltipY = 0;
+    private int biomeTooltipWidth = 0;
+    private int biomeTooltipHeight = 0;
+    private boolean shouldDisplayExceptionList = false;
+    private List<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>> biomeTooltipList = null;
+
+    private void setBiomeSpawnTooltip(boolean enabled, int x, int y, int width, int height, boolean but,
+        List<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>> tip) {
+        biomeTooltip = enabled;
+        biomeTooltipX = x;
+        biomeTooltipY = y;
+        biomeTooltipWidth = width;
+        biomeTooltipHeight = height;
+        shouldDisplayExceptionList = but;
+        biomeTooltipList = tip;
+    }
+
     @Override
     public void drawForeground(int recipe) {
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
@@ -435,6 +461,49 @@ public class MobHandler extends TemplateRecipeHandler {
             for (String s : currentrecipe.additionalInformation) {
                 GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
             }
+        }
+
+        if (currentrecipe.spawnList != null) {
+            if (biomeCount == -1) {
+                biomeCount = 0;
+                for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray()) {
+                    if (biome != null) biomeCount++;
+                }
+            }
+            if (currentrecipe.spawnList.size() >= biomeCount && !NEIClientUtils.shiftKey()) {
+                GuiDraw.drawString("Spawns everywhere", x, y += yshift, 0xFF555555, false);
+                setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
+            } else if (currentrecipe.spawnList.size() < biomeCount / 2 || NEIClientUtils.shiftKey()) {
+                GuiDraw.drawString(
+                    EnumChatFormatting.UNDERLINE + "Spawns in " + currentrecipe.spawnList.size() + " biomes...",
+                    x,
+                    y += yshift,
+                    0xFF555555,
+                    false);
+                setBiomeSpawnTooltip(
+                    true,
+                    x,
+                    y,
+                    GuiDraw.getStringWidth("Spawns in " + currentrecipe.spawnList.size() + " biomes..."),
+                    8,
+                    false,
+                    currentrecipe.spawnList);
+            } else {
+                y += drawStringWithWordWrap(
+                    EnumChatFormatting.UNDERLINE + "Spawns everywhere but "
+                        + (biomeCount - currentrecipe.spawnList.size())
+                        + " biomes...",
+                    x,
+                    y + yshift,
+                    yshift,
+                    168 - x,
+                    0xFF555555,
+                    false) - yshift;
+                setBiomeSpawnTooltip(true, x, y, 168 - x, 18, true, currentrecipe.spawnList);
+            }
+        } else {
+            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, 0xFF555555, false);
+            setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
         }
 
         x = 6;
@@ -551,6 +620,27 @@ public class MobHandler extends TemplateRecipeHandler {
         if (extendedTooltipRect.contains(relMouse)) {
             currenttip.addAll(Translations.EXTENDED_INFO.getAllLines());
         }
+        if (biomeTooltip
+            && new Rectangle(biomeTooltipX, biomeTooltipY, biomeTooltipWidth, biomeTooltipHeight).contains(relMouse)) {
+            if (shouldDisplayExceptionList) {
+                for (BiomeGenBase biome : Arrays.stream(BiomeGenBase.getBiomeGenArray())
+                    .filter(Objects::nonNull)
+                    .filter(
+                        biome -> biomeTooltipList.stream()
+                            .noneMatch(p -> p.getKey() == biome))
+                    .collect(Collectors.toList())) {
+                    currenttip.add(biome.biomeName);
+                }
+            } else for (Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry> entry : biomeTooltipList) {
+                currenttip.add(
+                    entry.getKey().biomeName + " | "
+                        + entry.getValue().itemWeight
+                        + " | "
+                        + entry.getValue().minGroupCount
+                        + " - "
+                        + entry.getValue().maxGroupCount);
+            }
+        }
         return currenttip;
     }
 
@@ -641,6 +731,7 @@ public class MobHandler extends TemplateRecipeHandler {
         public final boolean isUsableInVial;
         public final boolean isPeacefulAllowed;
         public final List<String> additionalInformation;
+        public final List<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>> spawnList;
         public String isBoss = "";
 
         public MobCachedRecipe(EntityLiving mob, List<MobPositionedStack> mOutputs, int normalOutputsCount,
@@ -688,6 +779,7 @@ public class MobHandler extends TemplateRecipeHandler {
                 else infernaltype = 1; // normal
             }
             this.additionalInformation = new ArrayList<>();
+            this.spawnList = MobRecipe.getSpawnListByMobName(mobname);
             MinecraftForge.EVENT_BUS.post(new MobNEIRegistrationEvent(mobname, mob, this.additionalInformation));
         }
 

@@ -3,14 +3,20 @@ package com.kuba6000.mobsinfo.api;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
 import com.kuba6000.mobsinfo.api.helper.InfernalMobsCoreHelper;
@@ -31,6 +37,7 @@ public class MobRecipe {
     public final float maxEntityHealth;
     public final boolean isUsableInVial;
     public final String entityName;
+    public final ArrayList<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>> spawnList;
 
     @SuppressWarnings("unchecked")
     public MobRecipe copy() {
@@ -43,12 +50,13 @@ public class MobRecipe {
             entity,
             maxEntityHealth,
             isUsableInVial,
-            entityName);
+            entityName,
+            spawnList == null ? null : (ArrayList<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>>) spawnList.clone());
     }
 
     private MobRecipe(ArrayList<MobDrop> mOutputs, int mMaxDamageChance, boolean infernalityAllowed,
         boolean alwaysinfernal, boolean isPeacefulAllowed, EntityLiving entity, float maxEntityHealth, boolean isUsable,
-        String entityName) {
+        String entityName, ArrayList<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>> spawnList) {
         this.mOutputs = mOutputs;
         this.mMaxDamageChance = mMaxDamageChance;
         this.infernalityAllowed = infernalityAllowed;
@@ -58,6 +66,7 @@ public class MobRecipe {
         this.maxEntityHealth = maxEntityHealth;
         this.isUsableInVial = isUsable;
         this.entityName = entityName;
+        this.spawnList = spawnList;
     }
 
     public static MobRecipe generateMobRecipe(EntityLiving e, String entityID, ArrayList<MobDrop> outputs) {
@@ -90,6 +99,26 @@ public class MobRecipe {
         entity = e;
         isUsableInVial = EnderIOHelper.canEntityBeCapturedWithSoulVial(e, entityID);
         entityName = entityID;
+
+        if (MobNameToSpawnList == null) {
+            MobNameToSpawnList = new HashMap<>();
+            BiomeGenBase[] biomeList = BiomeGenBase.getBiomeGenArray();
+            for (BiomeGenBase biome : biomeList) {
+                if (biome == null) continue;
+                for (EnumCreatureType type : EnumCreatureType.values()) {
+                    for (BiomeGenBase.SpawnListEntry entry : ((List<BiomeGenBase.SpawnListEntry>) biome
+                        .getSpawnableList(type))) {
+                        MobNameToSpawnList
+                            .computeIfAbsent(
+                                (String) EntityList.classToStringMapping.get(entry.entityClass),
+                                s -> new ArrayList<>())
+                            .add(Pair.of(biome, entry));
+                    }
+                }
+            }
+        }
+
+        spawnList = MobNameToSpawnList.get(entityID);
     }
 
     public void refresh() {
@@ -179,8 +208,13 @@ public class MobRecipe {
     }
 
     public static HashMap<String, MobRecipe> MobNameToRecipeMap = new HashMap<>();
+    public static HashMap<String, ArrayList<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>>> MobNameToSpawnList = null;
 
     public static MobRecipe getRecipeByEntityName(String mobName) {
         return MobNameToRecipeMap.get(mobName);
+    }
+
+    public static ArrayList<Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry>> getSpawnListByMobName(String mobName) {
+        return MobNameToSpawnList.get(mobName);
     }
 }
