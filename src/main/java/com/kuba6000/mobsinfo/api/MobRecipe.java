@@ -106,8 +106,9 @@ public class MobRecipe {
             for (BiomeGenBase biome : biomeList) {
                 if (biome == null) continue;
                 for (EnumCreatureType type : EnumCreatureType.values()) {
-                    for (BiomeGenBase.SpawnListEntry entry : ((List<BiomeGenBase.SpawnListEntry>) biome
-                        .getSpawnableList(type))) {
+                    List<BiomeGenBase.SpawnListEntry> spawnableList = (List<BiomeGenBase.SpawnListEntry>) biome
+                        .getSpawnableList(type);
+                    if (spawnableList != null) for (BiomeGenBase.SpawnListEntry entry : spawnableList) {
                         MobNameToSpawnList
                             .computeIfAbsent(
                                 (String) EntityList.classToStringMapping.get(entry.entityClass),
