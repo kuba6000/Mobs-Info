@@ -10,12 +10,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySlime;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
+import com.kuba6000.mobsinfo.api.SpawnInfo;
 
 import io.netty.buffer.ByteBuf;
 
@@ -31,6 +33,8 @@ public class Minecraft implements IExtraLoader {
             drops.get(0).variableChance = true;
             drops.get(0).chanceModifiers
                 .addAll(Arrays.asList(new NormalChance((double) drops.get(0).chance / 100d), new MinecraftMagmaCube()));
+        } else if (recipe.entity.getClass() == EntityVillager.class) {
+            recipe.spawnList.add(new SpawnInfo("Structure: Village"));
         }
     }
 

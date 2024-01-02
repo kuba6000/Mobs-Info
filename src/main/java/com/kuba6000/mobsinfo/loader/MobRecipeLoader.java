@@ -1292,8 +1292,8 @@ public class MobRecipeLoader {
             drops.sort(Comparator.comparing(d -> d.type)); // Fix GUI
             recipe.refresh();
 
-            MobHandler.addRecipe(v.mob, drops);
             MobNameToRecipeMap.put(k, recipe);
+            MobHandler.addRecipe(v.mob, drops);
             if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Registered " + k);
         });
         MinecraftForge.EVENT_BUS.post(new PostMobsRegistrationEvent());
