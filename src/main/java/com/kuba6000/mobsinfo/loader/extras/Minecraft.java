@@ -8,6 +8,8 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.boss.EntityDragon;
+import net.minecraft.entity.monster.EntityIronGolem;
 import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.passive.EntityVillager;
@@ -33,9 +35,14 @@ public class Minecraft implements IExtraLoader {
             drops.get(0).variableChance = true;
             drops.get(0).chanceModifiers
                 .addAll(Arrays.asList(new NormalChance((double) drops.get(0).chance / 100d), new MinecraftMagmaCube()));
-        } else if (recipe.entity.getClass() == EntityVillager.class) {
-            recipe.spawnList.add(new SpawnInfo("Structure: Village"));
-        }
+        } else
+            if (recipe.entity.getClass() == EntityVillager.class || recipe.entity.getClass() == EntityIronGolem.class) {
+                recipe.spawnList.add(new SpawnInfo.SpawnInfoStructure("Village"));
+            } else if (k.equals("witherSkeleton")) {
+                recipe.spawnList.add(new SpawnInfo.SpawnInfoStructure("Nether Fortress"));
+            } else if (recipe.entity.getClass() == EntityDragon.class) {
+                recipe.spawnList.add(new SpawnInfo.SpawnInfoEvent("Enter END"));
+            }
     }
 
     private static class MinecraftSlime implements IChanceModifier {

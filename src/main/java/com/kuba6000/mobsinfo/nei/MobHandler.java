@@ -21,6 +21,9 @@
 package com.kuba6000.mobsinfo.nei;
 
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.BOSS;
+import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_EVERYWHERE;
+import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_IN;
+import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_NOT_IN;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -116,6 +119,9 @@ public class MobHandler extends TemplateRecipeHandler {
         LOCKED,
         LOCKED_1,
         EXTENDED_INFO,
+        SPAWNS_EVERYWHERE,
+        SPAWNS_IN,
+        SPAWNS_NOT_IN,
 
         ;
 
@@ -461,15 +467,15 @@ public class MobHandler extends TemplateRecipeHandler {
             }
         }
 
-        if (currentrecipe.spawnList != null) {
+        if (currentrecipe.spawnList != null && !currentrecipe.spawnList.isEmpty()) {
             int possiblePlaces = SpawnInfo.getAllKnownInfos()
                 .size();
             if (currentrecipe.spawnList.size() >= possiblePlaces && !NEIClientUtils.shiftKey()) {
-                GuiDraw.drawString("Spawns everywhere", x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, 0xFF555555, false);
                 setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
             } else if (currentrecipe.spawnList.size() < possiblePlaces / 2 || NEIClientUtils.shiftKey()) {
                 GuiDraw.drawString(
-                    EnumChatFormatting.UNDERLINE + "Spawns in " + currentrecipe.spawnList.size() + " places...",
+                    EnumChatFormatting.UNDERLINE + SPAWNS_IN.get(currentrecipe.spawnList.size()),
                     x,
                     y += yshift,
                     0xFF555555,
@@ -478,15 +484,13 @@ public class MobHandler extends TemplateRecipeHandler {
                     true,
                     x,
                     y,
-                    GuiDraw.getStringWidth("Spawns in " + currentrecipe.spawnList.size() + " places..."),
+                    GuiDraw.getStringWidth(SPAWNS_IN.get(currentrecipe.spawnList.size())),
                     8,
                     false,
                     currentrecipe.spawnList);
             } else {
                 y += drawStringWithWordWrap(
-                    EnumChatFormatting.UNDERLINE + "Spawns everywhere but "
-                        + (possiblePlaces - currentrecipe.spawnList.size())
-                        + " places...",
+                    EnumChatFormatting.UNDERLINE + SPAWNS_NOT_IN.get(possiblePlaces - currentrecipe.spawnList.size()),
                     x,
                     y + yshift,
                     yshift,
