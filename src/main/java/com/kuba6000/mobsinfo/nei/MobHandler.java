@@ -162,11 +162,12 @@ public class MobHandler extends TemplateRecipeHandler {
     private static final MobHandler instance = new MobHandler();
     private static final List<MobCachedRecipe> cachedRecipes = new ArrayList<>();
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
-    private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35;
+    private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35, itemsYStartMin = 83;
+    private static int itemsYStart = itemsYStartMin;
 
     public static void addRecipe(EntityLiving e, List<MobDrop> drop) {
         List<MobPositionedStack> positionedStacks = new ArrayList<>();
-        int xorigin = 7, xoffset = xorigin, yoffset = 95, normaldrops = 0, raredrops = 0, additionaldrops = 0,
+        int xorigin = 7, xoffset = xorigin, yoffset = 12, normaldrops = 0, raredrops = 0, additionaldrops = 0,
             infernaldrops = 0;
         MobDrop.DropType i = null;
         for (MobDrop d : drop) {
@@ -265,7 +266,7 @@ public class MobHandler extends TemplateRecipeHandler {
         }
 
         {
-            int x = 6, y = 94, yshift = nextRowYShift;
+            int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
                 for (int i = 0; i < ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) + 1; i++) {
                     GuiDraw.drawTexturedModalRect(x, y + (18 * i), 0, 192, 144, 18);
@@ -461,12 +462,6 @@ public class MobHandler extends TemplateRecipeHandler {
         if (!currentrecipe.isUsableInVial)
             GuiDraw.drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, 0xFF555555, false);
 
-        if (!currentrecipe.additionalInformation.isEmpty()) {
-            for (String s : currentrecipe.additionalInformation) {
-                GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
-            }
-        }
-
         if (currentrecipe.spawnList != null && !currentrecipe.spawnList.isEmpty()) {
             int possiblePlaces = SpawnInfo.getAllKnownInfos()
                 .size();
@@ -496,16 +491,29 @@ public class MobHandler extends TemplateRecipeHandler {
                     yshift,
                     168 - x,
                     0xFF555555,
-                    false) - yshift;
-                setBiomeSpawnTooltip(true, x, y, 168 - x, 18, true, currentrecipe.spawnList);
+                    false);
+                setBiomeSpawnTooltip(true, x, y - yshift, 168 - x, 18, true, currentrecipe.spawnList);
             }
         } else {
             // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, 0xFF555555, false);
             setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
         }
 
+        if (!currentrecipe.additionalInformation.isEmpty()) {
+            for (String s : currentrecipe.additionalInformation) {
+                GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
+            }
+        }
+
+        y += yshift;
+
+        itemsYStart = Math.max(y, itemsYStartMin);
+
+        currentrecipe.mOutputs
+            .forEach(o -> { if (o instanceof MobPositionedStack) ((MobPositionedStack) o).setYStart(itemsYStart); });
+
         x = 6;
-        y = 83;
+        y = itemsYStart;
         yshift = nextRowYShift;
         if (currentrecipe.normalOutputsCount > 0) {
             GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, 0xFF555555, false);
@@ -657,10 +665,11 @@ public class MobHandler extends TemplateRecipeHandler {
         public final int enchantmentLevel;
         private final Random rand;
         public final List<String> extraTooltip;
+        public final int yoffset;
 
-        public MobPositionedStack(Object object, int x, int y, MobDrop drop) {
-            super(object, x, y, false);
-
+        public MobPositionedStack(Object object, int x, int yoffset, MobDrop drop) {
+            super(object, x, yoffset + itemsYStart, false);
+            this.yoffset = yoffset;
             rand = new FastRandom();
             this.type = drop.type;
             this.chance = drop.chance;
@@ -701,6 +710,10 @@ public class MobHandler extends TemplateRecipeHandler {
                 EnchantmentHelper.addRandomEnchantment(rand, this.item, enchantmentLevel);
             }
             if (randomdamage) this.item.setItemDamage(damages.get(rand.nextInt(damages.size())));
+        }
+
+        public void setYStart(int ystart) {
+            rely = ystart + yoffset;
         }
     }
 
