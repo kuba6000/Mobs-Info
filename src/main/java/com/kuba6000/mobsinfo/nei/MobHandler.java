@@ -21,6 +21,9 @@
 package com.kuba6000.mobsinfo.nei;
 
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.BOSS;
+import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_EVERYWHERE;
+import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_IN;
+import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_NOT_IN;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -28,7 +31,10 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -60,6 +66,8 @@ import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
+import com.kuba6000.mobsinfo.api.MobRecipe;
+import com.kuba6000.mobsinfo.api.SpawnInfo;
 import com.kuba6000.mobsinfo.api.event.MobNEIRegistrationEvent;
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
 import com.kuba6000.mobsinfo.api.helper.InfernalMobsCoreHelper;
@@ -111,6 +119,9 @@ public class MobHandler extends TemplateRecipeHandler {
         LOCKED,
         LOCKED_1,
         EXTENDED_INFO,
+        SPAWNS_EVERYWHERE,
+        SPAWNS_IN,
+        SPAWNS_NOT_IN,
 
         ;
 
@@ -151,11 +162,12 @@ public class MobHandler extends TemplateRecipeHandler {
     private static final MobHandler instance = new MobHandler();
     private static final List<MobCachedRecipe> cachedRecipes = new ArrayList<>();
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
-    private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35;
+    private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35, itemsYStartMin = 83;
+    private static int itemsYStart = itemsYStartMin;
 
     public static void addRecipe(EntityLiving e, List<MobDrop> drop) {
         List<MobPositionedStack> positionedStacks = new ArrayList<>();
-        int xorigin = 7, xoffset = xorigin, yoffset = 95, normaldrops = 0, raredrops = 0, additionaldrops = 0,
+        int xorigin = 7, xoffset = xorigin, yoffset = 12, normaldrops = 0, raredrops = 0, additionaldrops = 0,
             infernaldrops = 0;
         MobDrop.DropType i = null;
         for (MobDrop d : drop) {
@@ -254,7 +266,7 @@ public class MobHandler extends TemplateRecipeHandler {
         }
 
         {
-            int x = 6, y = 94, yshift = nextRowYShift;
+            int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
                 for (int i = 0; i < ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) + 1; i++) {
                     GuiDraw.drawTexturedModalRect(x, y + (18 * i), 0, 192, 144, 18);
@@ -391,6 +403,25 @@ public class MobHandler extends TemplateRecipeHandler {
         return yshift * s.size();
     }
 
+    private boolean biomeTooltip = false;
+    private int biomeTooltipX = 0;
+    private int biomeTooltipY = 0;
+    private int biomeTooltipWidth = 0;
+    private int biomeTooltipHeight = 0;
+    private boolean shouldDisplayExceptionList = false;
+    private Set<SpawnInfo> biomeTooltipList = null;
+
+    private void setBiomeSpawnTooltip(boolean enabled, int x, int y, int width, int height, boolean but,
+        Set<SpawnInfo> tip) {
+        biomeTooltip = enabled;
+        biomeTooltipX = x;
+        biomeTooltipY = y;
+        biomeTooltipWidth = width;
+        biomeTooltipHeight = height;
+        shouldDisplayExceptionList = but;
+        biomeTooltipList = tip;
+    }
+
     @Override
     public void drawForeground(int recipe) {
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
@@ -431,14 +462,58 @@ public class MobHandler extends TemplateRecipeHandler {
         if (!currentrecipe.isUsableInVial)
             GuiDraw.drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, 0xFF555555, false);
 
+        if (currentrecipe.spawnList != null && !currentrecipe.spawnList.isEmpty()) {
+            int possiblePlaces = SpawnInfo.getAllKnownInfos()
+                .size();
+            if (currentrecipe.spawnList.size() >= possiblePlaces && !NEIClientUtils.shiftKey()) {
+                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, 0xFF555555, false);
+                setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
+            } else if (currentrecipe.spawnList.size() < possiblePlaces / 2 || NEIClientUtils.shiftKey()) {
+                GuiDraw.drawString(
+                    EnumChatFormatting.UNDERLINE + SPAWNS_IN.get(currentrecipe.spawnList.size()),
+                    x,
+                    y += yshift,
+                    0xFF555555,
+                    false);
+                setBiomeSpawnTooltip(
+                    true,
+                    x,
+                    y,
+                    GuiDraw.getStringWidth(SPAWNS_IN.get(currentrecipe.spawnList.size())),
+                    8,
+                    false,
+                    currentrecipe.spawnList);
+            } else {
+                y += drawStringWithWordWrap(
+                    EnumChatFormatting.UNDERLINE + SPAWNS_NOT_IN.get(possiblePlaces - currentrecipe.spawnList.size()),
+                    x,
+                    y + yshift,
+                    yshift,
+                    168 - x,
+                    0xFF555555,
+                    false);
+                setBiomeSpawnTooltip(true, x, y - yshift, 168 - x, 18, true, currentrecipe.spawnList);
+            }
+        } else {
+            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, 0xFF555555, false);
+            setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
+        }
+
         if (!currentrecipe.additionalInformation.isEmpty()) {
             for (String s : currentrecipe.additionalInformation) {
                 GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
             }
         }
 
+        y += yshift;
+
+        itemsYStart = Math.max(y, itemsYStartMin);
+
+        currentrecipe.mOutputs
+            .forEach(o -> { if (o instanceof MobPositionedStack) ((MobPositionedStack) o).setYStart(itemsYStart); });
+
         x = 6;
-        y = 83;
+        y = itemsYStart;
         yshift = nextRowYShift;
         if (currentrecipe.normalOutputsCount > 0) {
             GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, 0xFF555555, false);
@@ -551,6 +626,20 @@ public class MobHandler extends TemplateRecipeHandler {
         if (extendedTooltipRect.contains(relMouse)) {
             currenttip.addAll(Translations.EXTENDED_INFO.getAllLines());
         }
+        if (biomeTooltip
+            && new Rectangle(biomeTooltipX, biomeTooltipY, biomeTooltipWidth, biomeTooltipHeight).contains(relMouse)) {
+            if (shouldDisplayExceptionList) {
+                for (SpawnInfo info : SpawnInfo.getAllKnownInfos()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .filter(
+                        i -> biomeTooltipList.stream()
+                            .noneMatch(p -> p.hashCode() == i.hashCode()))
+                    .collect(Collectors.toList())) currenttip.add(info.getInfo());
+            } else for (SpawnInfo entry : biomeTooltipList) {
+                currenttip.add(entry.getInfo());
+            }
+        }
         return currenttip;
     }
 
@@ -576,10 +665,11 @@ public class MobHandler extends TemplateRecipeHandler {
         public final int enchantmentLevel;
         private final Random rand;
         public final List<String> extraTooltip;
+        public final int yoffset;
 
-        public MobPositionedStack(Object object, int x, int y, MobDrop drop) {
-            super(object, x, y, false);
-
+        public MobPositionedStack(Object object, int x, int yoffset, MobDrop drop) {
+            super(object, x, yoffset + itemsYStart, false);
+            this.yoffset = yoffset;
             rand = new FastRandom();
             this.type = drop.type;
             this.chance = drop.chance;
@@ -621,6 +711,10 @@ public class MobHandler extends TemplateRecipeHandler {
             }
             if (randomdamage) this.item.setItemDamage(damages.get(rand.nextInt(damages.size())));
         }
+
+        public void setYStart(int ystart) {
+            rely = ystart + yoffset;
+        }
     }
 
     private class MobCachedRecipe extends TemplateRecipeHandler.CachedRecipe {
@@ -641,6 +735,7 @@ public class MobHandler extends TemplateRecipeHandler {
         public final boolean isUsableInVial;
         public final boolean isPeacefulAllowed;
         public final List<String> additionalInformation;
+        public final Set<SpawnInfo> spawnList;
         public String isBoss = "";
 
         public MobCachedRecipe(EntityLiving mob, List<MobPositionedStack> mOutputs, int normalOutputsCount,
@@ -688,6 +783,7 @@ public class MobHandler extends TemplateRecipeHandler {
                 else infernaltype = 1; // normal
             }
             this.additionalInformation = new ArrayList<>();
+            this.spawnList = MobRecipe.getSpawnListByMobName(mobname);
             MinecraftForge.EVENT_BUS.post(new MobNEIRegistrationEvent(mobname, mob, this.additionalInformation));
         }
 
