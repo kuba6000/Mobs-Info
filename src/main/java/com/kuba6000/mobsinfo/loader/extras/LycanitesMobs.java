@@ -18,12 +18,48 @@ import com.kuba6000.mobsinfo.api.MobRecipe;
 import io.netty.buffer.ByteBuf;
 import lycanite.lycanitesmobs.ObjectManager;
 import lycanite.lycanitesmobs.api.entity.EntityCreatureBase;
+import lycanite.lycanitesmobs.api.info.DropRate;
 import lycanite.lycanitesmobs.api.info.ItemInfo;
+import lycanite.lycanitesmobs.api.info.Subspecies;
 
 public class LycanitesMobs implements IExtraLoader {
 
     @Override
     public void process(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {
+
+        // lycanite.lycanitesmobs.api.entity.EntityCreatureBase.dropFewItems
+        if (recipe.entity instanceof EntityCreatureBase) {
+            EntityCreatureBase ent = (EntityCreatureBase) recipe.entity;
+            if (!ent.isMinion() && !ent.isBoundPet()) {
+                int subspeciesScale = 1;
+                if (ent.getSubspeciesIndex() > 2) {
+                    subspeciesScale = Subspecies.rareDropScale;
+                } else if (ent.getSubspeciesIndex() > 0) {
+                    subspeciesScale = Subspecies.uncommonDropScale;
+                }
+
+                for (DropRate drop : ent.drops) {
+                    if (drop.subspeciesID != -1 && drop.subspeciesID != ent.getSubspeciesIndex()) continue;
+
+                    MobDrop mobDrop = new MobDrop(
+                        drop.getItemStack(ent, 1),
+                        MobDrop.DropType.Normal,
+                        (int) (MobDrop.getChanceBasedOnFromTo(drop.minAmount, drop.maxAmount) * drop.chance
+                            * (drop.subspeciesID == -1 ? subspeciesScale : 1d)
+                            * (ent.extraMobBehaviour != null && ent.extraMobBehaviour.itemDropMultiplierOverride != 1.0
+                                ? ent.extraMobBehaviour.itemDropMultiplierOverride
+                                : 1d)
+                            * 10000d),
+                        null,
+                        null,
+                        true,
+                        false);
+                    mobDrop.clampChance();
+                    drops.add(mobDrop);
+                }
+            }
+        }
+
         // lycanite.lycanitesmobs.EventListener.onLivingDrops
 
         if (ItemInfo.seasonalItemDropChance > 0.0) {
@@ -46,6 +82,7 @@ public class LycanitesMobs implements IExtraLoader {
                     null,
                     false,
                     false);
+                drop.variableChance = true;
                 drop.chanceModifiers.add(new NormalChance(chance));
                 drop.chanceModifiers.add(new LycanitesMobsOnlyHalloween());
                 drops.add(drop);
@@ -60,9 +97,10 @@ public class LycanitesMobs implements IExtraLoader {
                     null,
                     false,
                     false);
+                drop.variableChance = true;
                 drop.chanceModifiers.add(new NormalChance(chance));
-                drop.chanceModifiers.add(new LycanitesMobsOrOnYuletideDay(chance * 0.5d));
                 drop.chanceModifiers.add(new LycanitesMobsOnlyYuletide());
+                drop.chanceModifiers.add(new LycanitesMobsOrOnYuletideDay(chance * 0.5d));
                 drops.add(drop);
             }
             {
@@ -75,6 +113,7 @@ public class LycanitesMobs implements IExtraLoader {
                     null,
                     false,
                     false);
+                drop.variableChance = true;
                 drop.chanceModifiers.add(new NormalChance(chance));
                 drop.chanceModifiers.add(new LycanitesMobsOnlyYuletideDay());
                 drops.add(drop);
@@ -115,6 +154,11 @@ public class LycanitesMobs implements IExtraLoader {
             if (calendar.get(Calendar.MONTH) == Calendar.DECEMBER && calendar.get(Calendar.DATE) > 9
                 && calendar.get(Calendar.DATE) < 26) return chance;
             return 0d;
+        }
+
+        @Override
+        public int getPriority() {
+            return 10;
         }
     }
 
@@ -164,11 +208,6 @@ public class LycanitesMobs implements IExtraLoader {
         @Override
         public void readFromByteBuf(ByteBuf byteBuf) {
             chance = byteBuf.readDouble();
-        }
-
-        @Override
-        public int getPriority() {
-            return 10;
         }
     }
 
