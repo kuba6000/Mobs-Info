@@ -125,6 +125,7 @@ public class CommandHandler extends CommandBase {
         addCommand(new CommandConfig());
         addCommand(new CommandCustomDrops());
         addCommand(new CommandHidden());
+        addCommand(new CommandHandlers());
     }
 
 }
