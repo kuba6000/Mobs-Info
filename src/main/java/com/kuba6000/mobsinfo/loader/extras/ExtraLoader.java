@@ -49,6 +49,7 @@ public class ExtraLoader {
         if (LoaderReference.ChocoCraft) loaders.add(new ChocoCraft());
         if (LoaderReference.ExtraUtilities) loaders.add(new ExtraUtilities());
         if (LoaderReference.EtFuturumRequiem) loaders.add(new EtFuturum());
+        if (LoaderReference.LycanitesMobs) loaders.add(new LycanitesMobs());
 
         // LAST
         if (LoaderReference.EditMobDrops) loaders.add(new EditMobDrops());
