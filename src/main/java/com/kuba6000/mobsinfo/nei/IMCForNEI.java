@@ -27,6 +27,9 @@ import com.kuba6000.mobsinfo.api.LoaderReference;
 
 import cpw.mods.fml.common.event.FMLInterModComms;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
+
 public class IMCForNEI {
 
     public static void IMCSender() {
@@ -43,8 +46,8 @@ public class IMCForNEI {
         int yshift) {
         NBTTagCompound aNBT = new NBTTagCompound();
         aNBT.setString("handler", aName);
-        aNBT.setString("modName", Tags.MODNAME);
-        aNBT.setString("modId", Tags.MODID);
+        aNBT.setString("modName", MODNAME);
+        aNBT.setString("modId", MODID);
         aNBT.setBoolean("modRequired", true);
         aNBT.setString("itemName", aBlock);
         aNBT.setInteger("handlerHeight", height);

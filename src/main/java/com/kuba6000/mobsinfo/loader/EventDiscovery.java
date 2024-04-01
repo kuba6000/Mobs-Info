@@ -10,9 +10,11 @@ import com.kuba6000.mobsinfo.Tags;
 
 import cpw.mods.fml.common.eventhandler.IEventListener;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 public class EventDiscovery {
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Event Discovery]");
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Event Discovery]");
 
     public static void run() {
         IEventListener[] listeners = new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()

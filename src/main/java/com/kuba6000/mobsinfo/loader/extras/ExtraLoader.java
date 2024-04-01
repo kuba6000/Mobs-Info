@@ -11,9 +11,11 @@ import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 public class ExtraLoader {
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Extra Loader]");
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Extra Loader]");
 
     private static boolean initialized = false;
     private static final List<IExtraLoader> loaders = new ArrayList<>();

@@ -40,11 +40,14 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
+
 @SuppressWarnings("unused")
 @Mod(
-    modid = Tags.MODID,
+    modid = MODID,
     version = Tags.VERSION,
-    name = Tags.MODNAME,
+    name = MODNAME,
     acceptedMinecraftVersions = "[1.7.10]",
     dependencies = "required-after: gtnhmixins@[2.0.1,); " + "required-after: NotEnoughItems; "
         + "after: EnderIO; "
@@ -53,19 +56,22 @@ import cpw.mods.fml.relauncher.Side;
         + "after: MineTweaker3; ")
 public class MobsInfo {
 
+    public static final String MODID = "mobsinfo";
+    public static final String MODNAME = "MobsInfo";
+    public static final String GROUPNAME = "com.kuba6000.mobsinfo";
     @Mod.Instance
     public static MobsInfo instance;
 
-    public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(Tags.MODID);
+    public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
 
     static {
         NETWORK.registerMessage(new LoadConfigPacket.Handler(), LoadConfigPacket.class, 0, Side.CLIENT);
         NETWORK.registerMessage(new SaveDataPacket.Handler(), SaveDataPacket.class, 1, Side.CLIENT);
     }
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID);
+    private static final Logger LOG = LogManager.getLogger(MODID);
 
-    @SidedProxy(clientSide = Tags.GROUPNAME + ".ClientProxy", serverSide = Tags.GROUPNAME + ".CommonProxy")
+    @SidedProxy(clientSide = "com.kuba6000.mobsinfo.ClientProxy", serverSide = "com.kuba6000.mobsinfo.CommonProxy")
     public static CommonProxy proxy;
 
     @Mod.EventHandler

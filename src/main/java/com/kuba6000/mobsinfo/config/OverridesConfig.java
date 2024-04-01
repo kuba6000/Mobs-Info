@@ -44,9 +44,11 @@ import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.api.event.PostMobsOverridesLoadEvent;
 import com.kuba6000.mobsinfo.api.utils.GSONUtils;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 public class OverridesConfig {
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Config-Overrides]");
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Config-Overrides]");
 
     public static Map<String, MobOverride> overrides = new HashMap<>();
     private static File overrideFile = null;

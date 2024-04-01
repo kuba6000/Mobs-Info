@@ -20,6 +20,7 @@
 
 package com.kuba6000.mobsinfo.loader;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 import static com.kuba6000.mobsinfo.api.MobRecipe.MobNameToRecipeMap;
 import static com.kuba6000.mobsinfo.api.utils.ModUtils.isClientSided;
 import static com.kuba6000.mobsinfo.api.utils.ModUtils.isDeobfuscatedEnvironment;
@@ -113,7 +114,7 @@ import thaumcraft.common.items.wands.ItemWandCasting;
 
 public class MobRecipeLoader {
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Mob Recipe Loader]");
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Mob Recipe Loader]");
 
     private static final String addRandomArmorName = isDeobfuscatedEnvironment ? "addRandomArmor" : "func_82164_bB";
     private static final String enchantEquipmentName = isDeobfuscatedEnvironment ? "enchantEquipment" : "func_82162_bC";
@@ -223,13 +224,13 @@ public class MobRecipeLoader {
         public boolean nextRound() {
             walkCounter = 0;
             chance = 1d;
-            while (nexts.size() > 0 && nexts.get(nexts.size() - 1)
+            while (!nexts.isEmpty() && nexts.get(nexts.size() - 1)
                 .next()) nexts.remove(nexts.size() - 1);
-            return nexts.size() > 0;
+            return !nexts.isEmpty();
         }
     }
 
-    private static class dropinstance {
+    public static class dropinstance {
 
         public boolean isDamageRandomized = false;
         public HashMap<Integer, Integer> damagesPossible = new HashMap<>();
@@ -637,12 +638,10 @@ public class MobRecipeLoader {
 
         dropCollector collector = new dropCollector();
 
-        // Stupid MC code, I need to cast myself
-        Map<String, Class<? extends Entity>> stringToClassMapping = (Map<String, Class<? extends Entity>>) EntityList.stringToClassMapping;
-        boolean registeringWitherSkeleton = !stringToClassMapping.containsKey("witherSkeleton");
-        if (registeringWitherSkeleton) stringToClassMapping.put("witherSkeleton", EntitySkeleton.class);
-        ProgressBarWrapper bar = new ProgressBarWrapper("Generating Mob Recipe Map", stringToClassMapping.size());
-        stringToClassMapping.forEach((k, v) -> {
+        boolean registeringWitherSkeleton = !EntityList.stringToClassMapping.containsKey("witherSkeleton");
+        if (registeringWitherSkeleton) EntityList.stringToClassMapping.put("witherSkeleton", EntitySkeleton.class);
+        ProgressBarWrapper bar = new ProgressBarWrapper("Generating Mob Recipe Map", EntityList.stringToClassMapping.size());
+        EntityList.stringToClassMapping.forEach((k, v) -> {
             bar.step(k);
             if (v == null) return;
 
@@ -1022,7 +1021,7 @@ public class MobRecipeLoader {
             }
         });
 
-        if (registeringWitherSkeleton) stringToClassMapping.remove("witherSkeleton");
+        if (registeringWitherSkeleton) EntityList.stringToClassMapping.remove("witherSkeleton");
 
         time -= System.currentTimeMillis();
         time = -time;

@@ -26,6 +26,8 @@ import net.minecraftforge.common.config.Configuration;
 
 import com.kuba6000.mobsinfo.Tags;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 public class Config {
 
     private enum Category {
@@ -172,8 +174,8 @@ public class Config {
     public static File configDirectory;
 
     public static void init(File configFile) {
-        configDirectory = new File(configFile, Tags.MODID);
-        Config.configFile = new File(configDirectory, Tags.MODID + ".cfg");
+        configDirectory = new File(configFile, MODID);
+        Config.configFile = new File(configDirectory, MODID + ".cfg");
     }
 
     public static File getConfigFile(String file) {

@@ -30,6 +30,8 @@ import com.kuba6000.mobsinfo.config.Config;
 import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
+
 public class NEI_Config implements IConfigureNEI {
 
     public static boolean isAdded = true;
@@ -52,7 +54,7 @@ public class NEI_Config implements IConfigureNEI {
 
     @Override
     public String getName() {
-        return Tags.MODNAME + " NEI Plugin";
+        return MODNAME + " NEI Plugin";
     }
 
     @Override

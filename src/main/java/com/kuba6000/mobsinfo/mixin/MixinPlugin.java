@@ -1,5 +1,6 @@
 package com.kuba6000.mobsinfo.mixin;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 import static com.kuba6000.mobsinfo.mixin.TargetedMod.VANILLA;
 import static java.nio.file.Files.walk;
 
@@ -28,7 +29,7 @@ import com.kuba6000.mobsinfo.Tags;
 @SuppressWarnings("unused")
 public class MixinPlugin implements IMixinConfigPlugin {
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + " mixins");
+    private static final Logger LOG = LogManager.getLogger(MODID + " mixins");
     private static final Path MODS_DIRECTORY_PATH = new File(Launch.minecraftHome, "mods/").toPath();
 
     @Override
