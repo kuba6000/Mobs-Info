@@ -58,7 +58,6 @@ public class MobsInfo {
 
     public static final String MODID = "mobsinfo";
     public static final String MODNAME = "MobsInfo";
-    public static final String GROUPNAME = "com.kuba6000.mobsinfo";
     @Mod.Instance
     public static MobsInfo instance;
 
