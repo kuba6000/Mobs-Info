@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
@@ -79,7 +78,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
@@ -416,7 +414,7 @@ public class MobRecipeLoader {
         if (entity instanceof EntitySkeleton && mobName.equals("witherSkeleton")) {
             ((EntitySkeleton) entity).setSkeletonType(1);
         } else if (entity instanceof EntitySlime) {
-            //noinspection ConstantValue
+            // noinspection ConstantValue
             ((EntitySlimeAccessor) entity).callSetSlimeSize(entity.getClass() == EntityMagmaCube.class ? 2 : 1);
         } else if (entity instanceof EntityBat) {
             ((EntityBat) entity).setIsBatHanging(false);
@@ -641,7 +639,9 @@ public class MobRecipeLoader {
 
         boolean registeringWitherSkeleton = !EntityList.stringToClassMapping.containsKey("witherSkeleton");
         if (registeringWitherSkeleton) EntityList.stringToClassMapping.put("witherSkeleton", EntitySkeleton.class);
-        ProgressBarWrapper bar = new ProgressBarWrapper("Generating Mob Recipe Map", EntityList.stringToClassMapping.size());
+        ProgressBarWrapper bar = new ProgressBarWrapper(
+            "Generating Mob Recipe Map",
+            EntityList.stringToClassMapping.size());
         EntityList.stringToClassMapping.forEach((name, entity) -> {
             bar.step(name);
             if (entity == null) return;
@@ -781,8 +781,10 @@ public class MobRecipeLoader {
 
                 currentEntity = e;
 
-                if (entity.getName().startsWith("dqr.entity.")
-                    && !entity.getName().equals("dqr.entity.mobEntity.monsterTensei.DqmEntitySweetbag")) {
+                if (entity.getName()
+                    .startsWith("dqr.entity.")
+                    && !entity.getName()
+                        .equals("dqr.entity.mobEntity.monsterTensei.DqmEntitySweetbag")) {
                     doTheDQRDrop.accept(() -> {
                         ((EntityLivingBaseAccessor) e).callDropFewItems(true, 0);
                         return true;

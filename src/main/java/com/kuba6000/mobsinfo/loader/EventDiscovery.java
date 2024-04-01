@@ -1,16 +1,14 @@
 package com.kuba6000.mobsinfo.loader;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.kuba6000.mobsinfo.Tags;
-
 import cpw.mods.fml.common.eventhandler.IEventListener;
-
-import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 
 public class EventDiscovery {
 

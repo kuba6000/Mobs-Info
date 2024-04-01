@@ -24,7 +24,6 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import com.gtnewhorizon.gtnhmixins.MinecraftURLClassPath;
-import com.kuba6000.mobsinfo.Tags;
 
 @SuppressWarnings("unused")
 public class MixinPlugin implements IMixinConfigPlugin {

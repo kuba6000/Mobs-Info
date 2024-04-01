@@ -20,6 +20,8 @@
 
 package com.kuba6000.mobsinfo.nei;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
+
 import net.minecraft.item.Item;
 
 import com.kuba6000.mobsinfo.Tags;
@@ -29,8 +31,6 @@ import com.kuba6000.mobsinfo.config.Config;
 
 import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
-
-import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
 
 public class NEI_Config implements IConfigureNEI {
 

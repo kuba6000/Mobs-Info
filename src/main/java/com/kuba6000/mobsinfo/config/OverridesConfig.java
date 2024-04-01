@@ -20,6 +20,8 @@
 
 package com.kuba6000.mobsinfo.config;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
@@ -37,14 +39,11 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobDropSimplified;
 import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.api.event.PostMobsOverridesLoadEvent;
 import com.kuba6000.mobsinfo.api.utils.GSONUtils;
-
-import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 
 public class OverridesConfig {
 

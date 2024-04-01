@@ -25,7 +25,6 @@ import static com.kuba6000.mobsinfo.api.utils.ModUtils.isClientSided;
 
 import java.io.IOException;
 
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 
 import alexiil.mods.load.ProgressDisplayer;
