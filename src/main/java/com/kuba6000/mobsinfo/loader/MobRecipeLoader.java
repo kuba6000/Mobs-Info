@@ -123,7 +123,8 @@ public class MobRecipeLoader {
     private static boolean alreadyGenerated = false;
     public static boolean isInGenerationProcess = false;
     public static final String randomEnchantmentDetectedString = "RandomEnchantmentDetected";
-    private static final long GET_DROPS_TIMEOUT = TimeUnit.SECONDS.toNanos(10);
+    // This is in nanoseconds
+    private static final long GET_DROPS_TIMEOUT = (long) (Config.MobHandler.mobTimeout * 1e9);
 
     public static class fakeRand extends Random {
 

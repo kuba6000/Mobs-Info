@@ -70,11 +70,14 @@ public class Config {
 
         public static _CacheRegenerationTrigger regenerationTrigger = _CacheRegenerationTrigger.ModAdditionRemovalChange;
         public static boolean includeEmptyMobs = true;
+        public static double mobTimeout = 10d;
         public static String[] mobBlacklist;
         public static boolean hiddenMode = false;
 
         private static void load(Configuration configuration) {
+
             Category category = Category.MOB_HANDLER;
+
             mobHandlerEnabled = configuration.get(category.get(), "Enabled", true, "Enable \"Mob Info\" NEI page")
                 .getBoolean();
             StringBuilder c = new StringBuilder("When will cache regeneration trigger? ");
@@ -82,6 +85,7 @@ public class Config {
                 .append(" - ")
                 .append(value.name())
                 .append(", ");
+
             regenerationTrigger = _CacheRegenerationTrigger.get(
                 configuration
                     .get(
@@ -90,9 +94,14 @@ public class Config {
                         _CacheRegenerationTrigger.ModAdditionRemovalChange.ordinal(),
                         c.toString())
                     .getInt());
+
             includeEmptyMobs = configuration
                 .get(category.get(), "IncludeEmptyMobs", true, "Include mobs that have no drops in NEI")
                 .getBoolean();
+
+            mobTimeout = configuration.get(category.get(), "MobTimeout", 10d, "Seconds to wait before skipping a mob's dropmap. If negative, will not timeout any mobs").getDouble();
+            if (mobTimeout < 0) mobTimeout = Double.MAX_VALUE;
+
             mobBlacklist = configuration
                 .get(
                     category.get(),
@@ -106,6 +115,7 @@ public class Config {
                         "SpecialMobs.SpecialSilverfish", },
                     "These mobs will be skipped when generating recipe map")
                 .getStringList();
+
             hiddenMode = configuration
                 .get(
                     category.get(),
