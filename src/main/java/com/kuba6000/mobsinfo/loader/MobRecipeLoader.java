@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
@@ -122,6 +123,7 @@ public class MobRecipeLoader {
     private static boolean alreadyGenerated = false;
     public static boolean isInGenerationProcess = false;
     public static final String randomEnchantmentDetectedString = "RandomEnchantmentDetected";
+    private static final long GET_DROPS_TIMEOUT = TimeUnit.SECONDS.toNanos(10);
 
     public static class fakeRand extends Random {
 
@@ -413,10 +415,8 @@ public class MobRecipeLoader {
         if (entity instanceof EntitySkeleton && mobName.equals("witherSkeleton")) {
             ((EntitySkeleton) entity).setSkeletonType(1);
         } else if (entity instanceof EntitySlime) {
-            if (entity.getClass() == EntityMagmaCube.class)
-                // noinspection ConstantConditions
-                ((EntitySlimeAccessor) entity).callSetSlimeSize(2);
-            else((EntitySlimeAccessor) entity).callSetSlimeSize(1);
+            //noinspection ConstantValue
+            ((EntitySlimeAccessor) entity).callSetSlimeSize(entity.getClass() == EntityMagmaCube.class ? 2 : 1);
         } else if (entity instanceof EntityBat) {
             ((EntityBat) entity).setIsBatHanging(false);
         }
@@ -641,43 +641,45 @@ public class MobRecipeLoader {
         boolean registeringWitherSkeleton = !EntityList.stringToClassMapping.containsKey("witherSkeleton");
         if (registeringWitherSkeleton) EntityList.stringToClassMapping.put("witherSkeleton", EntitySkeleton.class);
         ProgressBarWrapper bar = new ProgressBarWrapper("Generating Mob Recipe Map", EntityList.stringToClassMapping.size());
-        EntityList.stringToClassMapping.forEach((k, v) -> {
-            bar.step(k);
-            if (v == null) return;
+        EntityList.stringToClassMapping.forEach((name, entity) -> {
+            bar.step(name);
+            if (entity == null) return;
 
-            if (Modifier.isAbstract(v.getModifiers())) {
+            if (Modifier.isAbstract(entity.getModifiers())) {
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
-                    LOG.info("Entity " + k + " is abstract, skipping");
+                    LOG.info("Entity " + name + " is abstract, skipping");
+                return;
+            }
+
+            if (!EntityLiving.class.isAssignableFrom(entity)) {
+                // not a EntityLiving
+                if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
+                    LOG.info("Entity " + name + " is not a LivingEntity, skipping");
                 return;
             }
 
             EntityLiving e;
             try {
-                e = (EntityLiving) v.getConstructor(new Class[] { World.class })
+                e = (EntityLiving) entity.getConstructor(new Class[] { World.class })
                     .newInstance(new Object[] { f });
-            } catch (ClassCastException ex) {
-                // not a EntityLiving
-                if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
-                    LOG.info("Entity " + k + " is not a LivingEntity, skipping");
-                return;
             } catch (NoSuchMethodException ex) {
                 // No constructor ?
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
-                    LOG.info("Entity " + k + " doesn't have constructor, skipping");
+                    LOG.info("Entity " + name + " doesn't have constructor, skipping");
                 return;
             } catch (NoClassDefFoundError ex) {
                 // Its using classes from Client ? Then it's not important to include
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
-                    LOG.info("Entity " + k + " is using undefined classes, skipping");
+                    LOG.info("Entity " + name + " is using undefined classes, skipping");
                 return;
             } catch (Throwable ex) {
                 ex.printStackTrace();
                 return;
             }
 
-            if (!(registeringWitherSkeleton && k.equals("witherSkeleton")) && e.getCommandSenderName()
+            if (!(registeringWitherSkeleton && name.equals("witherSkeleton")) && e.getCommandSenderName()
                 .startsWith("entity.")) {
-                LOG.warn("Entity " + k + " doesn't have localized name!");
+                LOG.warn("Entity " + name + " doesn't have localized name!");
                 // return;
             }
 
@@ -687,7 +689,7 @@ public class MobRecipeLoader {
 
                 e.captureDrops = true;
 
-                preGenerationEntityModifiers(e, k);
+                preGenerationEntityModifiers(e, name);
 
                 ((EntityAccessor) e).setRand(frand);
 
@@ -700,8 +702,9 @@ public class MobRecipeLoader {
                 frand.newRound();
                 collector.newRound();
 
+                // If the mob is from Witchery, handle it
                 Runnable checkForWitchery = () -> {
-                    if (v.getName()
+                    if (entity.getName()
                         .startsWith("com.emoniph.witchery")) {
                         ((EntityLivingBaseAccessor) e).callDropFewItems(true, 0);
                         frand.newRound();
@@ -725,13 +728,19 @@ public class MobRecipeLoader {
                 ModUtils.TriConsumer<Supplier<Boolean>, droplist, String> doTheDrop = (callerCanceller, dList,
                     dListName) -> {
                     boolean second = false;
+                    final long start = System.nanoTime();
                     do {
                         if (!callerCanceller.get()) break;
 
                         collector.addDrop(dList, e.capturedDrops, frand.chance);
 
                         if (second && frand.chance < 0.0000001d) {
-                            LOG.warn("Skipping " + k + " " + dListName + " dropmap because it's too randomized");
+                            LOG.warn("Skipping " + name + " " + dListName + " dropmap because it's too randomized");
+                            break;
+                        }
+
+                        if (second && System.nanoTime() - start >= GET_DROPS_TIMEOUT) {
+                            LOG.warn("{} {} dropmap took too long, skipping", name, dListName);
                             break;
                         }
                         second = true;
@@ -771,10 +780,8 @@ public class MobRecipeLoader {
 
                 currentEntity = e;
 
-                if (v.getName()
-                    .startsWith("dqr.entity.")
-                    && !v.getName()
-                        .equals("dqr.entity.mobEntity.monsterTensei.DqmEntitySweetbag")) {
+                if (entity.getName().startsWith("dqr.entity.")
+                    && !entity.getName().equals("dqr.entity.mobEntity.monsterTensei.DqmEntitySweetbag")) {
                     doTheDQRDrop.accept(() -> {
                         ((EntityLivingBaseAccessor) e).callDropFewItems(true, 0);
                         return true;
@@ -819,7 +826,7 @@ public class MobRecipeLoader {
                         return true;
                     }, superraredrops, "rare");
 
-                    if (registeringWitherSkeleton && e instanceof EntitySkeleton && k.equals("witherSkeleton")) {
+                    if (registeringWitherSkeleton && e instanceof EntitySkeleton && name.equals("witherSkeleton")) {
                         dropinstance i = new dropinstance(new ItemStack(Items.stone_sword), additionaldrops);
                         i.isDamageRandomized = true;
                         int maxdamage = i.stack.getMaxDamage();
@@ -851,7 +858,7 @@ public class MobRecipeLoader {
                         } while (detectedException && !cl.equals(EntityLiving.class));
                         boolean usingVanillaEnchantingMethod = cl.equals(EntityLiving.class);
                         double chanceModifierLocal = 1f;
-                        if (v.getName()
+                        if (entity.getName()
                             .startsWith("twilightforest.entity")) {
                             frand.forceFloatValue = 0f;
                             chanceModifierLocal = 0.25f;
@@ -907,7 +914,7 @@ public class MobRecipeLoader {
                             Arrays.fill(e.getLastActiveItems(), null);
 
                             if (second && frand.chance < 0.0000001d) {
-                                LOG.warn("Skipping " + k + " additional dropmap because it's too randomized");
+                                LOG.warn("Skipping " + name + " additional dropmap because it's too randomized");
                                 break;
                             }
                             second = true;
@@ -923,8 +930,8 @@ public class MobRecipeLoader {
 
                 if (drops.isEmpty() && raredrops.isEmpty() && additionaldrops.isEmpty()) {
                     ArrayList<MobDrop> arr = new ArrayList<>();
-                    GeneralMobList.put(k, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, k, arr), arr));
-                    if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + k);
+                    GeneralMobList.put(name, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, arr), arr));
+                    if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + name);
                     return;
                 }
 
@@ -1011,12 +1018,12 @@ public class MobRecipeLoader {
                 }
 
                 GeneralMobList
-                    .put(k, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, k, moboutputs), moboutputs));
+                    .put(name, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, moboutputs), moboutputs));
 
-                if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + k);
+                if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + name);
             } catch (Throwable ex) {
                 currentEntity = null;
-                LOG.error("Something went wrong while generating recipes for " + k + ", stacktrace: ");
+                LOG.error("Something went wrong while generating recipes for " + name + ", stacktrace: ");
                 ex.printStackTrace();
             }
         });
