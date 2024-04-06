@@ -20,11 +20,11 @@
 
 package com.kuba6000.mobsinfo.api.helper;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
 import static com.kuba6000.mobsinfo.api.utils.ModUtils.isClientSided;
 
 import java.io.IOException;
 
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 
 import alexiil.mods.load.ProgressDisplayer;
@@ -59,7 +59,7 @@ public class ProgressBarWrapper {
             steps++;
             try {
                 ProgressDisplayer
-                    .displayProgress(Tags.MODNAME + ": " + name + " -> " + message, (float) steps / (float) maxSteps);
+                    .displayProgress(MODNAME + ": " + name + " -> " + message, (float) steps / (float) maxSteps);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

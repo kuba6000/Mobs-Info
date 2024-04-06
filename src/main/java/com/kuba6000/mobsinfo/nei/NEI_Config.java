@@ -20,6 +20,8 @@
 
 package com.kuba6000.mobsinfo.nei;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
+
 import net.minecraft.item.Item;
 
 import com.kuba6000.mobsinfo.Tags;
@@ -52,7 +54,7 @@ public class NEI_Config implements IConfigureNEI {
 
     @Override
     public String getName() {
-        return Tags.MODNAME + " NEI Plugin";
+        return MODNAME + " NEI Plugin";
     }
 
     @Override

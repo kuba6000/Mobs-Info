@@ -1,19 +1,20 @@
 package com.kuba6000.mobsinfo.loader.extras;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
 public class ExtraLoader {
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Extra Loader]");
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Extra Loader]");
 
     private static boolean initialized = false;
     private static final List<IExtraLoader> loaders = new ArrayList<>();
