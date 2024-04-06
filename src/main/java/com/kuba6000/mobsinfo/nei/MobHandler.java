@@ -20,6 +20,7 @@
 
 package com.kuba6000.mobsinfo.nei;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.BOSS;
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_EVERYWHERE;
 import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_IN;
@@ -62,7 +63,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
 import com.kuba6000.mobsinfo.MobsInfo;
-import com.kuba6000.mobsinfo.Tags;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
@@ -158,7 +158,7 @@ public class MobHandler extends TemplateRecipeHandler {
         }
     }
 
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID + "[Mob Handler]");
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Mob Handler]");
     private static final MobHandler instance = new MobHandler();
     private static final List<MobCachedRecipe> cachedRecipes = new ArrayList<>();
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
