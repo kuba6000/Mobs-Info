@@ -92,6 +92,7 @@ import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import cpw.mods.fml.common.event.FMLInterModComms;
+import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
 import gregtech.api.util.GT_OreDictUnificator;
@@ -659,7 +660,8 @@ public class MobHandler extends TemplateRecipeHandler {
 
         public final MobDrop.DropType type;
         public final int chance;
-        public final boolean enchantable;
+        // not final in case of addRandomEnchantment fail
+        public boolean enchantable;
         public final boolean randomdamage;
         public final List<Integer> damages;
         public final int enchantmentLevel;
@@ -707,7 +709,17 @@ public class MobHandler extends TemplateRecipeHandler {
                 if (this.item.getItem() == Items.enchanted_book) this.item = this.items[0].copy();
                 if (this.item.hasTagCompound()) this.item.getTagCompound()
                     .removeTag("ench");
-                EnchantmentHelper.addRandomEnchantment(rand, this.item, enchantmentLevel);
+                try {
+                    EnchantmentHelper.addRandomEnchantment(rand, this.item, enchantmentLevel);
+                } catch (Exception e) {
+                    GameRegistry.UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(this.item.getItem());
+                    LOG.error(
+                        "addRandomEnchantment failed on {}:{}, marking this item as not enchantable! Printing stacktrace:",
+                        ui.toString(),
+                        this.item.getItemDamage());
+                    e.printStackTrace();
+                    enchantable = false;
+                }
             }
             if (randomdamage) this.item.setItemDamage(damages.get(rand.nextInt(damages.size())));
         }
