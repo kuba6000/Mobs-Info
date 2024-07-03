@@ -39,6 +39,9 @@ public class IMCForNEI {
             sendHandler("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword", 168, 192, 1, 6);
             sendCatalyst("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword");
         }
+        sendHandler("mobsinfo.villagertradeshandler", "minecraft:emerald", 168, 192, 1, 6);
+        sendCatalyst("mobsinfo.villagertradeshandler", "minecraft:emerald");
+        sendCatalyst("mobsinfo.villagertradeshandler", "minecraft:spawn_egg:120");
     }
 
     private static void sendHandler(String aName, String aBlock, int width, int height, int maxrecipesperpage,
