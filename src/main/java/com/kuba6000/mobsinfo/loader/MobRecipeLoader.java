@@ -1216,6 +1216,8 @@ public class MobRecipeLoader {
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
 
+            recipe.generateSpawnList();
+
             if (MinecraftForge.EVENT_BUS.post(new PreMobRegistrationEvent(k, drops, recipe))) continue;
 
             ExtraLoader.process(k, drops, recipe);
@@ -1271,8 +1273,12 @@ public class MobRecipeLoader {
             recipe = recipe.copy();
             ArrayList<MobDrop> drops = v.copyDrops();
 
+            // TODO: sync with server
+            recipe.generateSpawnList();
+
             if (MinecraftForge.EVENT_BUS.post(new PreMobRegistrationEvent(k, drops, recipe))) return;
 
+            // TODO: sync with server
             ExtraLoader.process(k, drops, recipe);
 
             recipe.mOutputs.clear();
