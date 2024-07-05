@@ -1,21 +1,28 @@
 package com.kuba6000.mobsinfo.nei;
 
 import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+import static com.kuba6000.mobsinfo.nei.VillagerTradesHandler.Translations.*;
 
 import java.awt.Rectangle;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.village.MerchantRecipe;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,10 +32,14 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
 import com.kuba6000.mobsinfo.MobsInfo;
+import com.kuba6000.mobsinfo.api.VillagerRecipe;
+import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
+import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
 import com.kuba6000.mobsinfo.config.Config;
 
 import codechicken.lib.gui.GuiDraw;
+import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiUsageRecipe;
@@ -36,43 +47,73 @@ import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import cpw.mods.fml.common.event.FMLInterModComms;
+import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.VillagerRegistry;
 
 public class VillagerTradesHandler extends TemplateRecipeHandler {
+
+    enum Translations {
+
+        NAME,
+        MOD
+
+        ;
+
+        final String key;
+
+        Translations() {
+            key = "mobsinfo.villagertradeshandler." + this.name()
+                .toLowerCase();
+        }
+
+        public String get() {
+            return StatCollector.translateToLocal(key);
+        }
+
+        public List<String> getAllLines() {
+            ArrayList<String> lines = new ArrayList<>(Collections.singletonList(StatCollector.translateToLocal(key)));
+            int i = 1;
+            while (StatCollector.canTranslate(key + "_" + i))
+                lines.add(StatCollector.translateToLocal(key + "_" + (i++)));
+            return lines;
+        }
+
+        public String get(Object... args) {
+            return TranslationHelper.translateFormattedFixed(key, args);
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String toString() {
+            return get();
+        }
+    }
 
     private static final List<VillagerCachedRecipe> cachedRecipes = new ArrayList<>();
     private static final Logger LOG = LogManager.getLogger(MODID + "[Villager Trades Handler]");
     private static final VillagerTradesHandler instance = new VillagerTradesHandler();
+    public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
 
-    public static void addRecipe(List<Pair<MerchantRecipe, Double>> recipeList, EntityVillager displayMob) {
-        ArrayList<Pair<Pair<Pair<PositionedStack, PositionedStack>, PositionedStack>, Double>> tradeList = new ArrayList<>(
+    public static void addRecipe(List<VillagerRecipe> recipeList, EntityVillager displayMob) {
+        ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList = new ArrayList<>(
             recipeList.size());
         int x = 7;
         int y = 12 + 83;
         boolean second = false;
-        for (Pair<MerchantRecipe, Double> recipe : recipeList) {
+        for (VillagerRecipe recipe : recipeList) {
             tradeList.add(
                 Pair.of(
                     Pair.of(
                         Pair.of(
-                            new PositionedStack(
-                                recipe.getLeft()
-                                    .getItemToBuy(),
-                                x,
-                                y),
-                            recipe.getLeft()
-                                .hasSecondItemToBuy()
-                                    ? new PositionedStack(
-                                        recipe.getLeft()
-                                            .getSecondItemToBuy(),
-                                        x + 18,
-                                        y)
-                                    : null),
-                        new PositionedStack(
-                            recipe.getLeft()
-                                .getItemToSell(),
-                            x + 59,
-                            y)),
-                    recipe.getRight()));
+                            new VillagerCachedRecipe.PositionedTradeItem(recipe.getFirstInput(), x, y),
+                            recipe.hasSecondInput()
+                                ? new VillagerCachedRecipe.PositionedTradeItem(recipe.getSecondInput(), x + 18, y)
+                                : null),
+                        new VillagerCachedRecipe.PositionedTradeItem(recipe.getOutput(), x + 59, y)),
+                    recipe));
             if (!second) {
                 x += 59 + 20;
                 second = true;
@@ -86,7 +127,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
     }
 
     private void addRecipeInt(
-        ArrayList<Pair<Pair<Pair<PositionedStack, PositionedStack>, PositionedStack>, Double>> tradeList,
+        ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList,
         EntityVillager displayMob) {
         cachedRecipes.add(new VillagerCachedRecipe(tradeList, displayMob));
     }
@@ -237,6 +278,16 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
     }
 
     @Override
+    public void drawForeground(int recipe) {
+        VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
+        int y = 7, yshift = 10, x = 57;
+        GuiDraw.drawString(NAME.get() + currentRecipe.profession, x, y += yshift, 0xFF555555, false);
+        if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
+            GuiDraw.drawString("ID: " + currentRecipe.professionID, x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, 0xFF555555, false);
+    }
+
+    @Override
     public IUsageHandler getUsageAndCatalystHandler(String inputId, Object... ingredients) {
         if (inputId.equals("item")) {
             TemplateRecipeHandler handler = newInstance();
@@ -258,20 +309,77 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
         super.loadCraftingRecipes(outputId, results);
     }
 
+    @Override
+    public void loadCraftingRecipes(ItemStack result) {
+        for (VillagerCachedRecipe r : cachedRecipes) if (r.contains(r.mOutputs, result)) arecipes.add(r);
+    }
+
+    @Override
+    public void loadUsageRecipes(ItemStack ingredient) {
+        for (VillagerCachedRecipe r : cachedRecipes) if (r.contains(r.mInputs, ingredient)) arecipes.add(r);
+    }
+
+    @Override
+    public void onUpdate() {
+        cycleTicksStatic++;
+    }
+
     class VillagerCachedRecipe extends TemplateRecipeHandler.CachedRecipe {
 
-        private final ArrayList<Pair<Pair<Pair<PositionedStack, PositionedStack>, PositionedStack>, Double>> tradeList;
+        static class PositionedTradeItem extends PositionedStack {
+
+            VillagerRecipe.TradeItem tradeItem;
+            private final Random rand;
+
+            public PositionedTradeItem(VillagerRecipe.TradeItem tradeItem, int x, int y) {
+                super(tradeItem.stack, x, y, false);
+                this.tradeItem = tradeItem;
+                this.rand = new FastRandom();
+
+                setPermutationToRender(0);
+            }
+
+            @Override
+            public void setPermutationToRender(int index) {
+                if (this.item == null) this.item = this.items[0].copy();
+                if (this.tradeItem == null) return; // not initialized
+                if (tradeItem.enchantability != null) {
+                    if (this.item.getItem() == Items.enchanted_book) this.item = this.items[0].copy();
+                    if (this.item.hasTagCompound()) this.item.getTagCompound()
+                        .removeTag("ench");
+                    try {
+                        EnchantmentHelper.addRandomEnchantment(rand, this.item, tradeItem.enchantability);
+                    } catch (Exception e) {
+                        GameRegistry.UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(this.item.getItem());
+                        LOG.error(
+                            "addRandomEnchantment failed on {}:{}, marking this item as not enchantable! Printing stacktrace:",
+                            ui.toString(),
+                            this.item.getItemDamage());
+                        e.printStackTrace();
+                        tradeItem.enchantability = null;
+                    }
+                }
+                if (tradeItem.possibleSizes != null) {
+                    this.item.stackSize = tradeItem.possibleSizes.get(rand.nextInt(tradeItem.possibleSizes.size()));
+                }
+            }
+        }
+
+        private final ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList;
         private final ArrayList<PositionedStack> mOutputs;
         private final ArrayList<PositionedStack> mInputs;
         private final EntityVillager displayMob;
+        private final int professionID;
+        private final String profession;
+        private final String mod;
 
         public VillagerCachedRecipe(
-            ArrayList<Pair<Pair<Pair<PositionedStack, PositionedStack>, PositionedStack>, Double>> tradeList,
+            ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList,
             EntityVillager displayMob) {
             this.tradeList = tradeList;
             this.mOutputs = new ArrayList<>();
             this.mInputs = new ArrayList<>();
-            for (Pair<Pair<Pair<PositionedStack, PositionedStack>, PositionedStack>, Double> trade : this.tradeList) {
+            for (var trade : this.tradeList) {
                 mOutputs.add(
                     trade.getLeft()
                         .getRight());
@@ -288,6 +396,38 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
                             .getRight());
             }
             this.displayMob = displayMob;
+            this.professionID = this.displayMob.getProfession();
+            switch (this.professionID) {
+                case 0:
+                    this.profession = "Farmer";
+                    this.mod = "Minecraft";
+                    break;
+                case 1:
+                    this.profession = "Librarian";
+                    this.mod = "Minecraft";
+                    break;
+                case 2:
+                    this.profession = "Priest";
+                    this.mod = "Minecraft";
+                    break;
+                case 3:
+                    this.profession = "Smith";
+                    this.mod = "Minecraft";
+                    break;
+                case 4:
+                    this.profession = "Butcher";
+                    this.mod = "Minecraft";
+                    break;
+                default: {
+                    ResourceLocation villagerSkin = VillagerRegistry
+                        .getVillagerSkin(this.professionID, new ResourceLocation(""));
+                    String path = villagerSkin.getResourcePath();
+                    path = path.substring(path.lastIndexOf('/') + 1);
+                    this.profession = StringUtils.capitalize(path.substring(0, path.lastIndexOf('.')));
+                    this.mod = villagerSkin.getResourceDomain();
+                    break;
+                }
+            }
         }
 
         @Override
@@ -297,11 +437,15 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
 
         @Override
         public List<PositionedStack> getOtherStacks() {
+            if (!NEIClientUtils.shiftKey() && cycleTicksStatic % 10 == 0)
+                mOutputs.forEach(p -> p.setPermutationToRender(0));
             return mOutputs;
         }
 
         @Override
         public List<PositionedStack> getIngredients() {
+            if (!NEIClientUtils.shiftKey() && cycleTicksStatic % 10 == 0)
+                mInputs.forEach(p -> p.setPermutationToRender(0));
             return mInputs;
         }
     }
