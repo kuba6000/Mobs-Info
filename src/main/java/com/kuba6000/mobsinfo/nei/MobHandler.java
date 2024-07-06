@@ -251,7 +251,7 @@ public class MobHandler extends TemplateRecipeHandler {
     public void drawBackground(int recipe) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
         GuiDraw.changeTexture(getGuiTexture());
-        GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 192);
+        GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 166);
 
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
 
