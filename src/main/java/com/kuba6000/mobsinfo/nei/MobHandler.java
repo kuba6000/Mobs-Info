@@ -78,6 +78,8 @@ import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.GuiContainerAccessor;
+import com.kuba6000.mobsinfo.nei.scrollable.IScrollableGUI;
+import com.kuba6000.mobsinfo.nei.scrollable.Scrollbar;
 import com.kuba6000.mobsinfo.savedata.PlayerData;
 import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 
@@ -97,7 +99,7 @@ import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
 import gregtech.api.util.GT_OreDictUnificator;
 
-public class MobHandler extends TemplateRecipeHandler {
+public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI {
 
     enum Translations {
 
@@ -217,6 +219,8 @@ public class MobHandler extends TemplateRecipeHandler {
         });
     }
 
+    private final Scrollbar scrollbar;
+
     public MobHandler() {
         this.transferRects.add(new RecipeTransferRect(new Rectangle(7, 62, 16, 16), getOverlayIdentifier()));
         if (!NEI_Config.isAdded) {
@@ -228,6 +232,7 @@ public class MobHandler extends TemplateRecipeHandler {
             GuiCraftingRecipe.craftinghandlers.add(this);
             GuiUsageRecipe.usagehandlers.add(this);
         }
+        this.scrollbar = new Scrollbar(this, 0, 83);
     }
 
     @Override
@@ -266,6 +271,7 @@ public class MobHandler extends TemplateRecipeHandler {
             return;
         }
 
+        scrollbar.beginBackground(recipe);
         {
             int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
@@ -294,8 +300,13 @@ public class MobHandler extends TemplateRecipeHandler {
                     GuiDraw.drawTexturedModalRect(x, y + (18 * i), 0, 192, 144, 18);
                     if (i > 0) GuiDraw.drawTexturedModalRect(x, y + ((18 * i) - 1), 0, 193, 144, 2);
                 }
+                y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
+            scrollbar.reportMaxContentDrawn(y);
         }
+        scrollbar.endBackground(recipe);
+
+        GuiDraw.changeTexture(getGuiTexture());
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glColor4f(1f, 1f, 1f, 1f);
@@ -394,7 +405,7 @@ public class MobHandler extends TemplateRecipeHandler {
 
     private int drawStringWithWordWrap(String string, int x, int y, int yshift, int width, int color, boolean shadow) {
         @SuppressWarnings("unchecked")
-        List<String> s = (List<String>) GuiDraw.fontRenderer.listFormattedStringToWidth(string, width);
+        List<String> s = GuiDraw.fontRenderer.listFormattedStringToWidth(string, width);
         for (int i = 0, sSize = s.size(); i < sSize; i++) {
             String s1 = s.get(i);
             if (i > 0) GuiDraw.drawString(" " + s1, x, y, color, shadow);
@@ -513,26 +524,30 @@ public class MobHandler extends TemplateRecipeHandler {
         currentrecipe.mOutputs
             .forEach(o -> { if (o instanceof MobPositionedStack) ((MobPositionedStack) o).setYStart(itemsYStart); });
 
-        x = 6;
-        y = itemsYStart;
-        yshift = nextRowYShift;
-        if (currentrecipe.normalOutputsCount > 0) {
-            GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, 0xFF555555, false);
-            y += yshift + ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) * 18;
+        scrollbar.beginForeground(recipe);
+        {
+            x = 6;
+            y = itemsYStart;
+            yshift = nextRowYShift;
+            if (currentrecipe.normalOutputsCount > 0) {
+                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, 0xFF555555, false);
+                y += yshift + ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) * 18;
+            }
+            if (currentrecipe.rareOutputsCount > 0) {
+                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, 0xFF555555, false);
+                y += yshift + ((currentrecipe.rareOutputsCount - 1) / itemsPerRow) * 18;
+            }
+            if (currentrecipe.additionalOutputsCount > 0) {
+                GuiDraw.drawString(Translations.ADDITIONAL_DROPS.get(), x, y, 0xFF555555, false);
+                y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
+            }
+            if (currentrecipe.infernalOutputsCount > 0) {
+                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, 0xFF555555, false);
+                y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
+            }
+            yshift = 10;
         }
-        if (currentrecipe.rareOutputsCount > 0) {
-            GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, 0xFF555555, false);
-            y += yshift + ((currentrecipe.rareOutputsCount - 1) / itemsPerRow) * 18;
-        }
-        if (currentrecipe.additionalOutputsCount > 0) {
-            GuiDraw.drawString(Translations.ADDITIONAL_DROPS.get(), x, y, 0xFF555555, false);
-            y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
-        }
-        if (currentrecipe.infernalOutputsCount > 0) {
-            GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, 0xFF555555, false);
-            y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
-        }
-        yshift = 10;
+        scrollbar.endForeground(recipe);
     }
 
     @Override
@@ -612,6 +627,15 @@ public class MobHandler extends TemplateRecipeHandler {
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
+        for (Integer recipe : ((GuiRecipe<?>) Minecraft.getMinecraft().currentScreen).getRecipeIndices()) {
+            ((MobCachedRecipe) arecipes.get(recipe)).onUpdate();
+        }
+    }
+
+    @Override
+    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
+        if (super.mouseScrolled(gui, scroll, recipe)) return true;
+        return scrollbar.mouseScrolled(gui, scroll, recipe);
     }
 
     private static final Rectangle extendedTooltipRect = new Rectangle(28, 62, 8, 16);
@@ -654,6 +678,16 @@ public class MobHandler extends TemplateRecipeHandler {
         if (positionedStack instanceof MobPositionedStack)
             currenttip.addAll(((MobPositionedStack) positionedStack).extraTooltip);
         return currenttip;
+    }
+
+    @Override
+    public Scrollbar getScrollbar() {
+        return scrollbar;
+    }
+
+    @Override
+    public List<PositionedStack> getAllItems(int recipe) {
+        return ((MobCachedRecipe) arecipes.get(recipe)).getOutputs();
     }
 
     public static class MobPositionedStack extends PositionedStack {
@@ -818,12 +852,19 @@ public class MobHandler extends TemplateRecipeHandler {
             return null;
         }
 
-        @Override
-        public List<PositionedStack> getOtherStacks() {
-            if (!isUnlocked()) return Collections.emptyList();
+        public void onUpdate() {
             if (!NEIClientUtils.shiftKey() && cycleTicksStatic % 10 == 0)
                 mOutputs.forEach(p -> p.setPermutationToRender(0));
+        }
+
+        public List<PositionedStack> getOutputs() {
+            if (!isUnlocked()) return Collections.emptyList();
             return mOutputs;
+        }
+
+        @Override
+        public List<PositionedStack> getOtherStacks() {
+            return Collections.emptyList();
         }
     }
 
