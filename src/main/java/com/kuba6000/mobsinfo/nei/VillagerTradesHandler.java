@@ -6,8 +6,11 @@ import static com.kuba6000.mobsinfo.nei.VillagerTradesHandler.Translations.*;
 import java.awt.Rectangle;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
@@ -33,6 +36,7 @@ import org.lwjgl.util.glu.GLU;
 
 import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.VillagerRecipe;
+import com.kuba6000.mobsinfo.api.VillagerTrade;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
@@ -58,7 +62,9 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     enum Translations {
 
         NAME,
-        MOD
+        MOD,
+        CHANCE,
+        REAL_CHANCE,
 
         ;
 
@@ -101,13 +107,17 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
     private final Scrollbar scrollbar;
 
-    public static void addRecipe(List<VillagerRecipe> recipeList, EntityVillager displayMob) {
-        ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList = new ArrayList<>(
+    public static void addRecipe(VillagerRecipe recipe) {
+        if (recipe != null) addRecipe(recipe.trades, recipe.mob);
+    }
+
+    public static void addRecipe(List<VillagerTrade> recipeList, EntityVillager displayMob) {
+        ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList = new ArrayList<>(
             recipeList.size());
         int x = 7;
         int y = 12 + 83;
         boolean second = false;
-        for (VillagerRecipe recipe : recipeList) {
+        for (VillagerTrade recipe : recipeList) {
             tradeList.add(
                 Pair.of(
                     Pair.of(
@@ -130,8 +140,12 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         instance.addRecipeInt(tradeList, displayMob);
     }
 
+    public static void clearRecipes() {
+        cachedRecipes.clear();
+    }
+
     private void addRecipeInt(
-        ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList,
+        ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList,
         EntityVillager displayMob) {
         cachedRecipes.add(new VillagerCachedRecipe(tradeList, displayMob));
     }
@@ -172,6 +186,8 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
 
     private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
+    private HashMap<Rectangle, VillagerTrade> recipeRects = new HashMap<>();
+
     @Override
     public void drawBackground(int recipe) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
@@ -182,11 +198,16 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
 
         scrollbar.beginBackground(recipe);
         {
+            recipeRects.clear();
             int x = 6;
             int y = 11 + 83;
             boolean second = false;
             for (int i = 0; i < currentRecipe.tradeList.size(); i++) {
                 GuiDraw.drawTexturedModalRect(x, y, 0, 192, 77, 18);
+                recipeRects.put(
+                    new Rectangle(x + 35, y, 24, 18),
+                    currentRecipe.tradeList.get(i)
+                        .getValue());
                 if (!second) {
                     x += 59 + 20;
                     second = true;
@@ -358,17 +379,45 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         return scrollbar.mouseScrolled(gui, scroll, recipe);
     }
 
+    @Override
+    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe, int x, int y) {
+        VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
+        for (Map.Entry<Rectangle, VillagerTrade> entry : recipeRects.entrySet()) {
+            if (entry.getKey()
+                .contains(x, y)) {
+                currenttip.addAll(
+                    Arrays.asList(
+                        CHANCE.get(
+                            entry.getValue()
+                                .getChance() * 100d),
+                        REAL_CHANCE.get(
+                            (entry.getValue()
+                                .getChance() / currentRecipe.tradeList.size()) * 100d)));
+                break;
+            }
+        }
+        return currenttip;
+    }
+
+    @Override
+    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe) {
+        currenttip = super.handleTooltip(gui, currenttip, recipe);
+        return scrollbar.handleTooltip(gui, currenttip, recipe);
+    }
+
     class VillagerCachedRecipe extends TemplateRecipeHandler.CachedRecipe {
 
         static class PositionedTradeItem extends PositionedStack {
 
-            VillagerRecipe.TradeItem tradeItem;
+            private final VillagerTrade.TradeItem tradeItem;
+            private final List<Integer> possibleSizes;
             private final Random rand;
 
-            public PositionedTradeItem(VillagerRecipe.TradeItem tradeItem, int x, int y) {
+            public PositionedTradeItem(VillagerTrade.TradeItem tradeItem, int x, int y) {
                 super(tradeItem.stack, x, y, false);
                 this.tradeItem = tradeItem;
                 this.rand = new FastRandom();
+                this.possibleSizes = tradeItem.possibleSizes == null ? null : new ArrayList<>(tradeItem.possibleSizes);
 
                 setPermutationToRender(0);
             }
@@ -393,13 +442,13 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
                         tradeItem.enchantability = null;
                     }
                 }
-                if (tradeItem.possibleSizes != null) {
-                    this.item.stackSize = tradeItem.possibleSizes.get(rand.nextInt(tradeItem.possibleSizes.size()));
+                if (possibleSizes != null) {
+                    this.item.stackSize = possibleSizes.get(rand.nextInt(possibleSizes.size()));
                 }
             }
         }
 
-        private final ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList;
+        private final ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList;
         private final ArrayList<PositionedStack> mOutputs;
         private final ArrayList<PositionedStack> mInputs;
         private final EntityVillager displayMob;
@@ -408,7 +457,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         private final String mod;
 
         public VillagerCachedRecipe(
-            ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerRecipe>> tradeList,
+            ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList,
             EntityVillager displayMob) {
             this.tradeList = tradeList;
             this.mOutputs = new ArrayList<>();

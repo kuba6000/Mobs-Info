@@ -3,6 +3,7 @@ package com.kuba6000.mobsinfo.nei.scrollable;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -218,6 +219,16 @@ public class Scrollbar {
     public ItemStack getStackUnderMouse(int recipe, int x, int y) {
         PositionedStack stack = getItemUnderMouse(recipe, x, y);
         return stack == null ? null : stack.item;
+    }
+
+    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe) {
+        Point mouse = GuiDraw.getMousePosition();
+        Point offset = gui.getRecipePosition(recipe);
+
+        int x = mouse.x - (offset.x + ((GuiContainerAccessor) gui).getGuiLeft());
+        int y = mouse.y - (offset.y + ((GuiContainerAccessor) gui).getGuiTop()) - this.scrollOffset;
+        return myGUI.get()
+            .handleTooltip(gui, currenttip, recipe, x, y);
     }
 
     // public boolean hideItemPanelSlot(GuiContainer gui, int x, int y, int w, int h){

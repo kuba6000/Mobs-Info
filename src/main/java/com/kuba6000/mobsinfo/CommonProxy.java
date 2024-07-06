@@ -66,6 +66,7 @@ public class CommonProxy {
         MobRecipeLoader.processMobRecipeMap();
 
         VillagerTradesLoader.generateVillagerTrades();
+        VillagerTradesLoader.processVillagerTrades();
 
         CommandHandler cmd = new CommandHandler();
         event.registerServerCommand(cmd);
