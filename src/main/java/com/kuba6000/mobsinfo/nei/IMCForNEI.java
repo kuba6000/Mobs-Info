@@ -26,7 +26,9 @@ import static com.kuba6000.mobsinfo.MobsInfo.MODNAME;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.kuba6000.mobsinfo.api.LoaderReference;
+import com.kuba6000.mobsinfo.nei.scrollable.ScrollableContainerHandler;
 
+import codechicken.nei.guihook.GuiContainerManager;
 import cpw.mods.fml.common.event.FMLInterModComms;
 
 public class IMCForNEI {
@@ -42,6 +44,8 @@ public class IMCForNEI {
         sendHandler("mobsinfo.villagertradeshandler", "minecraft:emerald", 168, 192, 1, 6);
         sendCatalyst("mobsinfo.villagertradeshandler", "minecraft:emerald");
         sendCatalyst("mobsinfo.villagertradeshandler", "minecraft:spawn_egg:120");
+
+        GuiContainerManager.addObjectHandler(new ScrollableContainerHandler());
     }
 
     private static void sendHandler(String aName, String aBlock, int width, int height, int maxrecipesperpage,
