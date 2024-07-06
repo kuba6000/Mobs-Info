@@ -249,6 +249,7 @@ public class VillagerTradesLoader {
         for (int i : villagersToLoad) {
             VillagerTradesHandler.addRecipe(VillagerRecipe.recipes.get(i));
         }
+        VillagerTradesHandler.sortCachedRecipes();
     }
 
     private static class TradeInstance {
