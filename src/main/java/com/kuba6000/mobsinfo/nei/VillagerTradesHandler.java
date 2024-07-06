@@ -144,6 +144,17 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         cachedRecipes.clear();
     }
 
+    public static void sortCachedRecipes() {
+        cachedRecipes.sort((o1, o2) -> {
+            boolean m1 = o1.mod.equals("Minecraft");
+            boolean m2 = o2.mod.equals("Minecraft");
+            if (m1 && !m2) return -1;
+            else if (!m1 && m2) return 1;
+            if (!o1.mod.equals(o2.mod)) return o1.mod.compareTo(o2.mod);
+            else return o1.profession.compareTo(o2.profession);
+        });
+    }
+
     private void addRecipeInt(
         ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList,
         EntityVillager displayMob) {
