@@ -505,7 +505,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
                     this.mod = "Minecraft";
                     break;
                 case 3:
-                    this.profession = "Smith";
+                    this.profession = "Blacksmith";
                     this.mod = "Minecraft";
                     break;
                 case 4:
