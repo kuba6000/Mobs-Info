@@ -49,7 +49,7 @@ public class VillagerTradesLoader {
 
         if (!Config.VillagerTradesHandler.enabled) return;
 
-        LOG.info("Generating Recipe Map for Villager Trades Helper");
+        LOG.info("Generating Recipe Map for Villager Trades Handler");
         final long startTime = System.currentTimeMillis();
 
         DummyWorld world = new DummyWorld();
@@ -305,7 +305,10 @@ public class VillagerTradesLoader {
         MobRecipeLoader.isInGenerationProcess = false;
 
         final long endTime = System.currentTimeMillis();
-        LOG.info("Villager trade information generation took {} ms", endTime - startTime);
+        LOG.info(
+            "Villager trades generation took {} ms, mapped {} recipes in total",
+            endTime - startTime,
+            VillagerRecipe.recipes.size());
 
     }
 
