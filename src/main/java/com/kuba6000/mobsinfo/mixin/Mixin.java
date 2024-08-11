@@ -21,6 +21,7 @@ public enum Mixin {
     GuiAccessor("minecraft.GuiAccessor", VANILLA),
     GuiContainerAccessor("minecraft.GuiContainerAccessor", VANILLA),
     ASMEventHandlerAccessor("minecraft.ASMEventHandlerAccessor", VANILLA),
+    VillagerRegistryAccessor("minecraft.VillagerRegistryAccessor", VANILLA),
 
     // Infernal Mobs
     InfernalMobsCoreAccessor("InfernalMobs.InfernalMobsCoreAccessor", INFERNAL_MOBS),
