@@ -107,6 +107,7 @@ public class VillagerTradesLoader {
             }
         };
 
+        LOG.info("Adding vanilla villagers");
         { // profession 0
             EntityVillager entity = new EntityVillager(world);
 
