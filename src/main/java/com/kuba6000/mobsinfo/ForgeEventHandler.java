@@ -1,5 +1,7 @@
 package com.kuba6000.mobsinfo;
 
+import java.util.ArrayList;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,6 +12,8 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
+import com.kuba6000.mobsinfo.api.IMobExtraInfoProvider;
+import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.network.SaveDataPacket;
@@ -19,7 +23,7 @@ import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
-public class ForgeEventHandler {
+public class ForgeEventHandler implements IMobExtraInfoProvider {
 
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -51,4 +55,8 @@ public class ForgeEventHandler {
         }
     }
 
+    @Override
+    public void provideExtraDropsInformation(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {
+
+    }
 }

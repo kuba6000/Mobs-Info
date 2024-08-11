@@ -44,7 +44,7 @@ public class ProgressBarWrapper {
         if (!isClientSided) return;
         maxSteps = steps;
         this.name = name;
-        if (!LoaderReference.BetterLoadingScreen) {
+        if (!LoaderReference.BetterLoadingScreen.isLoaded) {
             internalFMLBar = ProgressManager.push(name, steps);
             isFMLBar = true;
             return;

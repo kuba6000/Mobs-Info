@@ -65,7 +65,7 @@ import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.kuba6000.mobsinfo.api.DummyWorld;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
-import com.kuba6000.mobsinfo.api.IMobsInfoProvider;
+import com.kuba6000.mobsinfo.api.IMobInfoProvider;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobDropSimplified;
@@ -447,9 +447,9 @@ public class MobRecipeLoader {
 
                 ((EntityAccessor) e).setRand(frand);
 
-                if (e instanceof IMobsInfoProvider) {
+                if (e instanceof IMobInfoProvider) {
                     ArrayList<MobDrop> moboutputs = new ArrayList<>();
-                    ((IMobsInfoProvider) e).provideDropsInformation(moboutputs);
+                    ((IMobInfoProvider) e).provideDropsInformation(moboutputs);
                     GeneralMobList.put(
                         name,
                         new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, moboutputs), moboutputs));
@@ -637,7 +637,7 @@ public class MobRecipeLoader {
                                 < lastActiveItemsLength; j++) {
                                 ItemStack stack = lastActiveItems[j];
                                 if (stack != null) {
-                                    if (LoaderReference.Thaumcraft)
+                                    if (LoaderReference.Thaumcraft.isLoaded)
                                         if (stack.getItem() instanceof ItemWandCasting) continue; // crashes the game
                                                                                                   // when
                                     // rendering in GUI
