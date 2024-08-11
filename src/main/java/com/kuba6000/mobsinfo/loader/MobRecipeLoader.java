@@ -65,6 +65,7 @@ import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.kuba6000.mobsinfo.api.DummyWorld;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
+import com.kuba6000.mobsinfo.api.IMobsInfoProvider;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobDropSimplified;
@@ -445,6 +446,15 @@ public class MobRecipeLoader {
                 preGenerationEntityModifiers(e, name);
 
                 ((EntityAccessor) e).setRand(frand);
+
+                if (e instanceof IMobsInfoProvider) {
+                    ArrayList<MobDrop> moboutputs = new ArrayList<>();
+                    ((IMobsInfoProvider) e).provideDropsInformation(moboutputs);
+                    GeneralMobList.put(
+                        name,
+                        new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, moboutputs), moboutputs));
+                    return;
+                }
 
                 droplist drops = new droplist();
                 droplist raredrops = new droplist();
