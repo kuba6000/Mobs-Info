@@ -4,6 +4,7 @@ import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 import static com.kuba6000.mobsinfo.loader.MobRecipeLoader.randomEnchantmentDetectedString;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,7 +14,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 
@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.collect.Multimap;
 import com.kuba6000.mobsinfo.api.DummyWorld;
 import com.kuba6000.mobsinfo.api.RandomSequencer;
 import com.kuba6000.mobsinfo.api.VillagerRecipe;
@@ -28,6 +29,7 @@ import com.kuba6000.mobsinfo.api.VillagerTrade;
 import com.kuba6000.mobsinfo.api.utils.ItemID;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
+import com.kuba6000.mobsinfo.mixin.minecraft.VillagerRegistryAccessor;
 import com.kuba6000.mobsinfo.nei.VillagerTradesHandler;
 import com.kuba6000.mobsinfo.network.LoadConfigPacket;
 
@@ -47,7 +49,7 @@ public class VillagerTradesLoader {
 
         if (!Config.VillagerTradesHandler.enabled) return;
 
-        LOG.info("Generating Recipe Map for Villager Trades Helper");
+        LOG.info("Generating Recipe Map for Villager Trades Handler");
         final long startTime = System.currentTimeMillis();
 
         DummyWorld world = new DummyWorld();
@@ -57,9 +59,25 @@ public class VillagerTradesLoader {
 
         // vanilla recipes?
 
+        VillagerRegistry villagerRegistry = VillagerRegistry.instance();
+        Multimap<Integer, VillagerRegistry.IVillageTradeHandler> tradeHandlerMap = ((VillagerRegistryAccessor) villagerRegistry)
+            .getTradeHandlers();
+
         ModUtils.TriConsumer<ArrayList<VillagerTrade>, EntityVillager, Integer> detectCustomRecipes = (recipes,
             villager, villagerID) -> {
             try {
+
+                Collection<VillagerRegistry.IVillageTradeHandler> handlers = tradeHandlerMap.get(villagerID);
+
+                if (handlers == null || handlers.isEmpty()) {
+                    return;
+                }
+
+                LOG.info("Detected custom handlers for profession {}, handlers: ", villagerID);
+                for (VillagerRegistry.IVillageTradeHandler handler : handlers) {
+                    LOG.info(" - {}", handler.toString());
+                }
+
                 frand.newRound();
 
                 TradeList trades = new TradeList();
@@ -71,7 +89,7 @@ public class VillagerTradesLoader {
                     collector.collectTrades(trades, list, frand.chance);
 
                     if (second && frand.chance < 0.0000001d) {
-                        LOG.warn("Skipping " + villagerID + "(CustomHandler) because it's too randomized");
+                        LOG.warn("Skipping {}(custom handlers) because it's too randomized", villagerID);
                         break;
                     }
                     second = true;
@@ -89,6 +107,7 @@ public class VillagerTradesLoader {
             }
         };
 
+        LOG.info("Adding vanilla villagers");
         { // profession 0
             EntityVillager entity = new EntityVillager(world);
 
@@ -240,11 +259,21 @@ public class VillagerTradesLoader {
         MobRecipeLoader.isInGenerationProcess = true;
         for (Integer id : VillagerRegistry.getRegisteredVillagers()) {
             try {
-                ResourceLocation l = VillagerRegistry.getVillagerSkin(id, null);
-                LOG.info(
-                    "Generating recipes for profession " + id + (l != null ? ("(" + l.getResourceDomain() + ")") : ""));
+
                 EntityVillager villager = new EntityVillager(world);
                 villager.setProfession(id);
+
+                Collection<VillagerRegistry.IVillageTradeHandler> handlers = tradeHandlerMap.get(id);
+                if (handlers == null || handlers.isEmpty()) {
+                    LOG.info("Generating empty recipe for profession {}", id);
+                    VillagerRecipe.recipes.put(id, new VillagerRecipe(new ArrayList<>(0), id, villager));
+                    continue;
+                }
+
+                LOG.info("Generating recipes for profession {} handlers: ", id);
+                for (VillagerRegistry.IVillageTradeHandler handler : handlers) {
+                    LOG.info(" - {}", handler.toString());
+                }
 
                 frand.newRound();
 
@@ -257,10 +286,7 @@ public class VillagerTradesLoader {
                     collector.collectTrades(trades, list, frand.chance);
 
                     if (second && frand.chance < 0.0000001d) {
-                        LOG.warn(
-                            "Skipping " + id
-                                + (l != null ? ("(" + l.getResourceDomain() + ")") : "")
-                                + " because it's too randomized");
+                        LOG.warn("Skipping {} because it's too randomized", id);
                         break;
                     }
                     second = true;
@@ -280,7 +306,10 @@ public class VillagerTradesLoader {
         MobRecipeLoader.isInGenerationProcess = false;
 
         final long endTime = System.currentTimeMillis();
-        LOG.info("Villager trade information generation took {} ms", endTime - startTime);
+        LOG.info(
+            "Villager trades generation took {} ms, mapped {} recipes in total",
+            endTime - startTime,
+            VillagerRecipe.recipes.size());
 
     }
 

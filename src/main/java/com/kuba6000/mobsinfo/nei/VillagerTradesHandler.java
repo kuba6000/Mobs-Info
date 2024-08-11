@@ -101,6 +101,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         }
     }
 
+    private static final String[] vanillaVillagers = { "farmer", "librarian", "priest", "blacksmith", "butcher" };
     private static final List<VillagerCachedRecipe> cachedRecipes = new ArrayList<>();
     private static final Logger LOG = LogManager.getLogger(MODID + "[Villager Trades Handler]");
     private static final VillagerTradesHandler instance = new VillagerTradesHandler();
@@ -416,7 +417,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         return scrollbar.handleTooltip(gui, currenttip, recipe);
     }
 
-    class VillagerCachedRecipe extends TemplateRecipeHandler.CachedRecipe {
+    class VillagerCachedRecipe extends CachedRecipe {
 
         static class PositionedTradeItem extends PositionedStack {
 
@@ -459,7 +460,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
             }
         }
 
-        private final ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList;
+        private final ArrayList<Pair<Pair<Pair<PositionedTradeItem, PositionedTradeItem>, PositionedTradeItem>, VillagerTrade>> tradeList;
         private final ArrayList<PositionedStack> mOutputs;
         private final ArrayList<PositionedStack> mInputs;
         private final EntityVillager displayMob;
@@ -468,7 +469,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         private final String mod;
 
         public VillagerCachedRecipe(
-            ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList,
+            ArrayList<Pair<Pair<Pair<PositionedTradeItem, PositionedTradeItem>, PositionedTradeItem>, VillagerTrade>> tradeList,
             EntityVillager displayMob) {
             this.tradeList = tradeList;
             this.mOutputs = new ArrayList<>();
@@ -491,43 +492,36 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
             }
             this.displayMob = displayMob;
             this.professionID = this.displayMob.getProfession();
-            switch (this.professionID) {
-                case 0:
-                    this.profession = "Farmer";
-                    this.mod = "Minecraft";
-                    break;
-                case 1:
-                    this.profession = "Librarian";
-                    this.mod = "Minecraft";
-                    break;
-                case 2:
-                    this.profession = "Priest";
-                    this.mod = "Minecraft";
-                    break;
-                case 3:
-                    this.profession = "Blacksmith";
-                    this.mod = "Minecraft";
-                    break;
-                case 4:
-                    this.profession = "Butcher";
-                    this.mod = "Minecraft";
-                    break;
-                default: {
-                    ResourceLocation villagerSkin = VillagerRegistry.getVillagerSkin(this.professionID, null);
-                    if (villagerSkin == null) {
-                        this.mod = "Unknown";
-                        this.profession = "Unknown-" + this.professionID;
-                        break;
-                    }
+
+            if (this.professionID >= 0 && this.professionID <= 4) {
+                String professionString = vanillaVillagers[this.professionID];
+                this.mod = "Minecraft";
+
+                if (StatCollector.canTranslate("description.villager.profession." + professionString))
+                    this.profession = StatCollector
+                        .translateToLocal("description.villager.profession." + professionString);
+                else this.profession = StringUtils.capitalize(professionString);
+            } else {
+                ResourceLocation villagerSkin = VillagerRegistry.getVillagerSkin(this.professionID, null);
+                if (villagerSkin == null) {
+                    this.mod = "Unknown";
+                    this.profession = "Unknown-" + this.professionID;
+                } else {
+                    String professionString = "";
                     String path = villagerSkin.getResourcePath();
                     path = path.substring(path.lastIndexOf('/') + 1);
-                    if (path.indexOf('.') != -1)
-                        this.profession = StringUtils.capitalize(path.substring(0, path.lastIndexOf('.')));
-                    else this.profession = StringUtils.capitalize(path);
+                    if (path.indexOf('.') != -1) professionString = path.substring(0, path.lastIndexOf('.'));
+                    else professionString = path;
                     this.mod = villagerSkin.getResourceDomain();
-                    break;
+
+                    if (StatCollector
+                        .canTranslate("description.villager.profession." + this.mod + '.' + professionString))
+                        this.profession = StatCollector
+                            .translateToLocal("description.villager.profession." + this.mod + '.' + professionString);
+                    else this.profession = StringUtils.capitalize(professionString);
                 }
             }
+
         }
 
         @Override
