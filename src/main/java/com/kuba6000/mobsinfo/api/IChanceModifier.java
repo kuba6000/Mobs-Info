@@ -51,7 +51,7 @@ public interface IChanceModifier {
 
     /**
      * Apply this modification
-     * 
+     *
      * @param chance   Basic drop chance, you should return it back modified/unmodified after your checks
      * @param world    World
      * @param drops    Current drops
@@ -101,7 +101,7 @@ public interface IChanceModifier {
 
         double chance;
 
-        NormalChance() {}
+        protected NormalChance() {}
 
         public NormalChance(double chance) {
             this.chance = chance;
@@ -136,7 +136,7 @@ public interface IChanceModifier {
 
     class BaseChance extends NormalChance {
 
-        BaseChance() {}
+        protected BaseChance() {}
 
         public BaseChance(double chance) {
             super(chance);
@@ -171,7 +171,7 @@ public interface IChanceModifier {
 
         ItemStack weapon;
 
-        DropsOnlyUsing() {}
+        protected DropsOnlyUsing() {}
 
         public DropsOnlyUsing(ItemStack weapon) {
             this.weapon = weapon;
@@ -213,7 +213,7 @@ public interface IChanceModifier {
 
         double newChance;
 
-        OrUsing() {}
+        protected OrUsing() {}
 
         public OrUsing(ItemStack weapon, double newChance) {
             super(weapon);
@@ -258,7 +258,7 @@ public interface IChanceModifier {
         BiomeGenBase biome;
         double newChance;
 
-        OrBiome() {}
+        protected OrBiome() {}
 
         public OrBiome(BiomeGenBase biome, double newChance) {
             this.biome = biome;
@@ -295,7 +295,7 @@ public interface IChanceModifier {
 
         EnchantmentData enchantmentData;
 
-        DropsOnlyWithEnchant() {}
+        protected DropsOnlyWithEnchant() {}
 
         public DropsOnlyWithEnchant(EnchantmentData enchantmentData) {
             this.enchantmentData = enchantmentData;
@@ -343,7 +343,7 @@ public interface IChanceModifier {
 
         int dimension;
 
-        DropsOnlyInDimension() {}
+        protected DropsOnlyInDimension() {}
 
         public DropsOnlyInDimension(int dimension) {
             this.dimension = dimension;
@@ -380,7 +380,7 @@ public interface IChanceModifier {
         Enchantment enchantment;
         double change;
 
-        EachLevelOfGives() {}
+        protected EachLevelOfGives() {}
 
         public EachLevelOfGives(Enchantment enchantment, double change) {
             this.enchantment = enchantment;

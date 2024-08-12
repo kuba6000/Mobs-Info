@@ -450,6 +450,9 @@ public class MobRecipeLoader {
                 if (e instanceof IMobInfoProvider) {
                     ArrayList<MobDrop> moboutputs = new ArrayList<>();
                     ((IMobInfoProvider) e).provideDropsInformation(moboutputs);
+                    for (MobDrop moboutput : moboutputs) {
+                        moboutput.clampChance();
+                    }
                     GeneralMobList.put(
                         name,
                         new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, moboutputs), moboutputs));

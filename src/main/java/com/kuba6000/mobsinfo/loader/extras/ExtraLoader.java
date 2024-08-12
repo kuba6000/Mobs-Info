@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.IMobExtraInfoProvider;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
@@ -154,6 +155,16 @@ public class ExtraLoader {
                         .getSimpleName(),
                     k);
                 ex.printStackTrace();
+            }
+            for (MobDrop drop : drops) {
+                for (IChanceModifier chanceModifier : drop.chanceModifiers) {
+                    try {
+                        chanceModifier.getClass()
+                            .getConstructor();
+                    } catch (NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }

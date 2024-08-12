@@ -81,7 +81,7 @@ public class MobDrop {
 
     /**
      * Create mob drop, to be used as builder
-     * 
+     *
      * @param stack Dropped item ()
      */
     public MobDrop create(ItemStack stack) {
@@ -90,7 +90,7 @@ public class MobDrop {
 
     /**
      * Set drop type
-     * 
+     *
      * @param type Drop type
      */
     public MobDrop withType(DropType type) {
@@ -99,8 +99,9 @@ public class MobDrop {
     }
 
     /**
-     * Set drop chance
-     * 
+     * Set drop chance, if you are having trouble with chance calculation, use {@link #getChanceBasedOnFromTo(int, int)}
+     * but remember to set the stacksize to 1 on the create call !
+     *
      * @param chance Drop chance 0 = 0%, 10000 = 100%
      */
     public MobDrop withChance(int chance) {
@@ -110,7 +111,7 @@ public class MobDrop {
 
     /**
      * Set this drop to be randomly enchanted
-     * 
+     *
      * @param enchantPower Enchantment power
      */
     public MobDrop withRandomEnchant(int enchantPower) {
@@ -120,7 +121,7 @@ public class MobDrop {
 
     /**
      * Set this drop to be randomly damaged
-     * 
+     *
      * @param damages Damage-Weight map
      */
     public MobDrop withRandomDamage(HashMap<Integer, Integer> damages) {
@@ -130,7 +131,7 @@ public class MobDrop {
 
     /**
      * Set this drop to be randomly damaged
-     * 
+     *
      * @param minDamage Minimum damage
      * @param maxDamage Maximum damage
      */

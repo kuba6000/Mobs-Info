@@ -215,7 +215,7 @@ public class ForbiddenMagic implements IExtraLoader {
 
     private static class EachLevelOfGivesFocus extends IChanceModifier.EachLevelOfGives {
 
-        EachLevelOfGivesFocus() {}
+        protected EachLevelOfGivesFocus() {}
 
         @Override
         public String getDescription() {
