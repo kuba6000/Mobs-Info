@@ -318,6 +318,7 @@ public class MobRecipeLoader {
         if (alreadyGenerated) return;
         alreadyGenerated = true;
         if (!Config.MobHandler.mobHandlerEnabled) return;
+        VanillaMobRecipeLoader.init();
 
         World f = new DummyWorld() {
 
@@ -359,6 +360,12 @@ public class MobRecipeLoader {
                     ProgressBarWrapper bar = new ProgressBarWrapper("Parsing cached Mob Recipe Map", s.moblist.size());
                     for (Map.Entry<String, ArrayList<MobDrop>> entry : s.moblist.entrySet()) {
                         bar.step(entry.getKey());
+                        GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(entry.getKey());
+                        if (vanillaMob != null
+                            && vanillaMob.mob.getClass() == EntityList.stringToClassMapping.get(entry.getKey())) {
+                            GeneralMobList.put(entry.getKey(), vanillaMob);
+                            continue;
+                        }
                         try {
                             EntityLiving e;
                             String mobName = entry.getKey();
@@ -425,6 +432,12 @@ public class MobRecipeLoader {
         EntityList.stringToClassMapping.forEach((name, entity) -> {
             bar.step(name);
             if (entity == null) return;
+
+            GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(name);
+            if (vanillaMob != null && vanillaMob.mob.getClass() == entity) {
+                GeneralMobList.put(name, vanillaMob);
+                return;
+            }
 
             if (Modifier.isAbstract(entity.getModifiers())) {
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
