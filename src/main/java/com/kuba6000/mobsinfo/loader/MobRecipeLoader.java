@@ -264,11 +264,21 @@ public class MobRecipeLoader {
         public final EntityLiving mob;
         public final MobRecipe recipe;
         public final ArrayList<MobDrop> drops;
+        public final boolean isProvidedFromAPI;
 
         public GeneralMappedMob(EntityLiving mob, MobRecipe recipe, ArrayList<MobDrop> drops) {
             this.mob = mob;
             this.recipe = recipe;
             this.drops = drops;
+            this.isProvidedFromAPI = false;
+        }
+
+        public GeneralMappedMob(EntityLiving mob, MobRecipe recipe, ArrayList<MobDrop> drops,
+            boolean isProvidedFromAPI) {
+            this.mob = mob;
+            this.recipe = recipe;
+            this.drops = drops;
+            this.isProvidedFromAPI = isProvidedFromAPI;
         }
 
         public ArrayList<MobDrop> copyDrops() {
@@ -360,10 +370,27 @@ public class MobRecipeLoader {
                                 .newInstance(new Object[] { f });
                             preGenerationEntityModifiers(e, mobName);
                             ArrayList<MobDrop> drops = entry.getValue();
-                            drops.forEach(MobDrop::reconstructStack);
-                            GeneralMobList.put(
-                                mobName,
-                                new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, mobName, drops), drops));
+                            if (drops == null) {
+                                if (e instanceof IMobInfoProvider provider) {
+                                    drops = new ArrayList<>();
+                                    provider.provideDropsInformation(drops);
+                                    for (MobDrop drop : drops) {
+                                        drop.clampChance();
+                                    }
+                                    GeneralMobList.put(
+                                        mobName,
+                                        new GeneralMappedMob(
+                                            e,
+                                            MobRecipe.generateMobRecipe(e, mobName, drops),
+                                            drops,
+                                            true));
+                                }
+                            } else {
+                                drops.forEach(MobDrop::reconstructStack);
+                                GeneralMobList.put(
+                                    mobName,
+                                    new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, mobName, drops), drops));
+                            }
                         } catch (Exception ignored) {}
                     }
                     bar.end();
@@ -447,16 +474,46 @@ public class MobRecipeLoader {
 
                 ((EntityAccessor) e).setRand(frand);
 
-                if (e instanceof IMobInfoProvider) {
-                    ArrayList<MobDrop> moboutputs = new ArrayList<>();
-                    ((IMobInfoProvider) e).provideDropsInformation(moboutputs);
-                    for (MobDrop moboutput : moboutputs) {
-                        moboutput.clampChance();
+                if (e instanceof IMobInfoProvider provider) {
+                    boolean illegalOverride = false;
+                    Class<?> clazz = entity;
+                    do {
+                        try {
+                            clazz.getDeclaredMethod("provideDropsInformation", ArrayList.class);
+                            break;
+                        } catch (Exception exception) {
+                            try {
+                                clazz.getDeclaredMethod("dropFewItems", boolean.class, int.class);
+                                illegalOverride = true;
+                                break;
+                            } catch (Exception ignored) {}
+                            try {
+                                clazz.getDeclaredMethod("dropRareDrop", int.class);
+                                illegalOverride = true;
+                                break;
+                            } catch (Exception ignored) {}
+                            clazz = clazz.getSuperclass();
+                        }
+                    } while (true);
+                    if (illegalOverride) {
+                        LOG.error(
+                            "Entity {} is implementing IMobInfoProvider interface in its superclass and doesn't override provideDropsInformation WHILE also overriding dropFewItems or dropRareItems! IGNORING this provider and using normal generation!!!",
+                            name);
+                    } else {
+                        ArrayList<MobDrop> moboutputs = new ArrayList<>();
+                        provider.provideDropsInformation(moboutputs);
+                        for (MobDrop moboutput : moboutputs) {
+                            moboutput.clampChance();
+                        }
+                        GeneralMobList.put(
+                            name,
+                            new GeneralMappedMob(
+                                e,
+                                MobRecipe.generateMobRecipe(e, name, moboutputs),
+                                moboutputs,
+                                true));
+                        return;
                     }
-                    GeneralMobList.put(
-                        name,
-                        new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, moboutputs), moboutputs));
-                    return;
                 }
 
                 droplist drops = new droplist();
@@ -811,7 +868,7 @@ public class MobRecipeLoader {
         MobRecipeLoaderCacheStructure s = new MobRecipeLoaderCacheStructure();
         s.version = modlistversion;
         s.moblist = new HashMap<>();
-        GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.drops));
+        GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.isProvidedFromAPI ? null : v.drops));
         Writer writer = null;
         try {
             writer = Files.newWriter(cache, StandardCharsets.UTF_8);
