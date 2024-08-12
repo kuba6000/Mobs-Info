@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import com.kuba6000.mobsinfo.api.helper.ByteBufHelper;
@@ -86,6 +87,15 @@ public class MobDrop {
      */
     public static MobDrop create(ItemStack stack) {
         return new MobDrop(stack, DropType.Normal, 10000, null, null, false, false);
+    }
+
+    /**
+     * Create mob drop, to be used as builder
+     *
+     * @param item Dropped item ()
+     */
+    public static MobDrop create(Item item) {
+        return new MobDrop(new ItemStack(item), DropType.Normal, 10000, null, null, false, false);
     }
 
     /**
