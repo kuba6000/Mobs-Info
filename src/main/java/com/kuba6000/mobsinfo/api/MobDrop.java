@@ -110,6 +110,17 @@ public class MobDrop {
     }
 
     /**
+     * Set drop chance, if you are having trouble with chance calculation, use {@link #getChanceBasedOnFromTo(int, int)}
+     * but remember to set the stacksize to 1 on the create call !
+     *
+     * @param chance Drop chance
+     */
+    public MobDrop withChance(double chance) {
+        this.chance = (int) (chance * 10000d);
+        return this;
+    }
+
+    /**
      * Set this drop to be randomly enchanted
      *
      * @param enchantPower Enchantment power
