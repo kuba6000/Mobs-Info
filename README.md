@@ -9,7 +9,7 @@
 
 ## About
 
-This mod is an addon to NEI that adds a new tab with all of the information about the mobs.
+This mod is an addon to NEI that adds a new tab with all of the information about the mobs. Now also includes villager trades!
 
 These informations includes:
 - How does it look (it is rendered and always looks at your cursor)
@@ -27,6 +27,12 @@ These informations includes:
   - Additional drops (armor, equipment)
 
 ![1](https://github.com/kuba6000/Mobs-Info/assets/53441451/771b0adc-8b4d-450c-b7c5-2c2bd6b0b3fd)
+
+## Villager trades
+
+Find out which villager sells the stuff that you need! Also supports custom villagers (like forestry ones)
+![image](https://github.com/user-attachments/assets/bdd10784-04f0-46bd-998b-85d777596e54)
+
 
 ## Hidden mode
 
