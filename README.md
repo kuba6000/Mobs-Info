@@ -1,7 +1,7 @@
 <div align=center>
-  
+
 # Mobs Info 1.7.10
-  
+
 [![CF Downloads](https://cf.way2muchnoise.eu/full_879914_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/mobs-info) [![Modrinth Downloads](https://img.shields.io/modrinth/dt/ifG4OZxi?logo=modrinth)
 ](https://modrinth.com/mod/mobsinfo)
 
@@ -34,9 +34,9 @@ You can turn hidden mode on in the configuration file located in `/config/mobsin
 Hidden mode will make all mobs hidden in NEI until you kill them.
 <details>
   <summary>Screenshots in game</summary>
-  
+
   ![image](https://github.com/kuba6000/Mobs-Info/assets/53441451/165b8b65-4fda-4084-8e28-ea86c3c086e4)
-  
+
 </details>
 
 ## Compatibility
@@ -50,11 +50,11 @@ This mod is compatible with many mods including:
 
 <details>
   <summary>Screenshots in game</summary>
-  
+
   ![image](https://github.com/kuba6000/Mobs-Info/assets/53441451/8f7e3b5c-2085-4512-b753-1894a28bf986)
   ![image](https://github.com/kuba6000/Mobs-Info/assets/53441451/765a72c2-6e73-4621-99e9-bc10b50f22c2)
   ![image](https://github.com/kuba6000/Mobs-Info/assets/53441451/21ea707f-5d5b-4180-bfb6-7f825c4cb563)
-  
+
 </details>
 
 If you find any mod that adds its own drops to the game and they don't show in NEI then feel free to open an issue!
@@ -80,7 +80,7 @@ Example file should generate at first start
 ## License
 
 MobsInfo - Minecraft addon
-Copyright (C) 2023  kuba6000
+Copyright (C) 2023-2024  kuba6000
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
