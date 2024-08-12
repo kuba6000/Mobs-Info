@@ -84,7 +84,7 @@ public class MobDrop {
      *
      * @param stack Dropped item ()
      */
-    public MobDrop create(ItemStack stack) {
+    public static MobDrop create(ItemStack stack) {
         return new MobDrop(stack, DropType.Normal, 10000, null, null, false, false);
     }
 
