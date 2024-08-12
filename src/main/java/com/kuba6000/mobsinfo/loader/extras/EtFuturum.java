@@ -42,8 +42,10 @@ public class EtFuturum implements IExtraLoader {
             if (skull != null) {
                 MobDrop drop = new MobDrop(skull, MobDrop.DropType.Normal, 0, null, null, false, false);
                 drop.variableChance = true;
-                drop.chanceModifiers
-                    .addAll(Arrays.asList(new NormalChance(100d), new DropsOnlyWhenKilledByPoweredCreeperModifier()));
+                drop.chanceModifiers.addAll(
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(100d),
+                        new DropsOnlyWhenKilledByPoweredCreeperModifier()));
                 drops.add(drop);
             }
         }
@@ -74,7 +76,8 @@ public class EtFuturum implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(100d), new WitherRoseModifier()));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new IChanceModifier.NormalChance(100d), new WitherRoseModifier()));
             drops.add(drop);
         }
     }

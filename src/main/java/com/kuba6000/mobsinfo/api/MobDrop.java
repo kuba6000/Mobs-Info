@@ -21,6 +21,7 @@
 package com.kuba6000.mobsinfo.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import net.minecraft.item.ItemStack;
@@ -63,6 +64,9 @@ public class MobDrop {
 
     private MobDrop() {}
 
+    /**
+     * All-in-one constructor, you should use {@link #create(ItemStack)} instead!
+     */
     public MobDrop(ItemStack stack, DropType type, int chance, Integer enchantable, HashMap<Integer, Integer> damages,
         boolean lootable, boolean playerOnly) {
         this.stack = stack;
@@ -73,6 +77,103 @@ public class MobDrop {
         this.damages = damages;
         this.lootable = lootable;
         this.playerOnly = playerOnly;
+    }
+
+    /**
+     * Create mob drop, to be used as builder
+     * 
+     * @param stack Dropped item ()
+     */
+    public MobDrop create(ItemStack stack) {
+        return new MobDrop(stack, DropType.Normal, 10000, null, null, false, false);
+    }
+
+    /**
+     * Set drop type
+     * 
+     * @param type Drop type
+     */
+    public MobDrop withType(DropType type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
+     * Set drop chance
+     * 
+     * @param chance Drop chance 0 = 0%, 10000 = 100%
+     */
+    public MobDrop withChance(int chance) {
+        this.chance = chance;
+        return this;
+    }
+
+    /**
+     * Set this drop to be randomly enchanted
+     * 
+     * @param enchantPower Enchantment power
+     */
+    public MobDrop withRandomEnchant(int enchantPower) {
+        this.enchantable = enchantPower;
+        return this;
+    }
+
+    /**
+     * Set this drop to be randomly damaged
+     * 
+     * @param damages Damage-Weight map
+     */
+    public MobDrop withRandomDamage(HashMap<Integer, Integer> damages) {
+        this.damages = damages;
+        return this;
+    }
+
+    /**
+     * Set this drop to be randomly damaged
+     * 
+     * @param minDamage Minimum damage
+     * @param maxDamage Maximum damage
+     */
+    public MobDrop withRandomDamage(int minDamage, int maxDamage) {
+        this.damages = new HashMap<>();
+        for (int i = minDamage; i <= maxDamage; i++) this.damages.put(i, 1);
+        return this;
+    }
+
+    /**
+     * Marks this drop as lootable
+     */
+    public MobDrop withLooting() {
+        this.lootable = true;
+        return this;
+    }
+
+    /**
+     * Marks this drop as player only
+     */
+    public MobDrop withHardPlayerRestriction() {
+        this.playerOnly = true;
+        return this;
+    }
+
+    /**
+     * Add chance modifiers, you can use modifiers implemented in {@link IChanceModifier} or implement some yourself!
+     * After adding chance modifiers, normal chance is no longer shown in tooltip
+     * Do not use in {@link IMobInfoProvider}, you should only use this in {@link IMobExtraInfoProvider} !
+     */
+    public MobDrop withChanceModifiers(IChanceModifier... modifiers) {
+        this.variableChance = true;
+        Collections.addAll(this.chanceModifiers, modifiers);
+        return this;
+    }
+
+    /**
+     * Adds additional tooltip on the drop
+     * Do not use in {@link IMobInfoProvider}, you should only use this in {@link IMobExtraInfoProvider} !
+     */
+    public MobDrop withAdditionalInfo(String... additionalInfo) {
+        Collections.addAll(this.additionalInfo, additionalInfo);
+        return this;
     }
 
     @SuppressWarnings("unchecked")

@@ -83,7 +83,7 @@ public class LycanitesMobs implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers.add(new NormalChance(chance));
+                drop.chanceModifiers.add(new IChanceModifier.NormalChance(chance));
                 drop.chanceModifiers.add(new LycanitesMobsOnlyHalloween());
                 drops.add(drop);
             }
@@ -98,7 +98,7 @@ public class LycanitesMobs implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers.add(new NormalChance(chance));
+                drop.chanceModifiers.add(new IChanceModifier.NormalChance(chance));
                 drop.chanceModifiers.add(new LycanitesMobsOnlyYuletide());
                 drop.chanceModifiers.add(new LycanitesMobsOrOnYuletideDay(chance * 0.5d));
                 drops.add(drop);
@@ -114,7 +114,7 @@ public class LycanitesMobs implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers.add(new NormalChance(chance));
+                drop.chanceModifiers.add(new IChanceModifier.NormalChance(chance));
                 drop.chanceModifiers.add(new LycanitesMobsOnlyYuletideDay());
                 drops.add(drop);
             }

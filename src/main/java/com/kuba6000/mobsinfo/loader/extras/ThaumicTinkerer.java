@@ -7,6 +7,7 @@ import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
@@ -29,7 +30,8 @@ public class ThaumicTinkerer implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(3.12d), new DropsOnlyInDimension(1)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(new IChanceModifier.NormalChance(3.12d), new IChanceModifier.DropsOnlyInDimension(1)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityPigZombie) {
             MobDrop drop = new MobDrop(
@@ -44,7 +46,8 @@ public class ThaumicTinkerer implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(6.25d), new DropsOnlyInDimension(-1)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(new IChanceModifier.NormalChance(6.25d), new IChanceModifier.DropsOnlyInDimension(-1)));
             drops.add(drop);
         }
     }

@@ -20,7 +20,6 @@ import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import io.netty.buffer.ByteBuf;
 
 public class Avaritia implements IExtraLoader {
 
@@ -36,7 +35,8 @@ public class Avaritia implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(100d), new AvaritiaSkullSwordModifier()));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new IChanceModifier.NormalChance(100d), new AvaritiaSkullSwordModifier()));
             drops.add(drop);
         }
     }
@@ -44,11 +44,6 @@ public class Avaritia implements IExtraLoader {
     private static class AvaritiaSkullSwordModifier implements IChanceModifier {
 
         private static final Item skull_sword = GameRegistry.findItem("Avaritia", "Skull_Sword");
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
 
         @Override
         public String getDescription() {
@@ -67,14 +62,5 @@ public class Avaritia implements IExtraLoader {
             return 0d;
         }
 
-        @Override
-        public void writeToByteBuf(ByteBuf byteBuf) {
-
-        }
-
-        @Override
-        public void readFromByteBuf(ByteBuf byteBuf) {
-
-        }
     }
 }

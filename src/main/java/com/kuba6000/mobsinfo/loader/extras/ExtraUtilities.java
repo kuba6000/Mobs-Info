@@ -9,6 +9,7 @@ import net.minecraft.entity.monster.EntitySilverfish;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 import com.rwtema.extrautils.ExtraUtils;
@@ -33,8 +34,8 @@ public class ExtraUtilities implements IExtraLoader {
             drop.variableChance = true;
             drop.chanceModifiers.addAll(
                 Arrays.asList(
-                    new NormalChance((1d / (double) prob) * 100d),
-                    new OrUsing(ExtraUtils.lawSword, (1d / ((double) (prob / 10))) * 100d)));
+                    new IChanceModifier.NormalChance((1d / (double) prob) * 100d),
+                    new IChanceModifier.OrUsing(ExtraUtils.lawSword, (1d / ((double) (prob / 10))) * 100d)));
             drops.add(drop);
         }
 

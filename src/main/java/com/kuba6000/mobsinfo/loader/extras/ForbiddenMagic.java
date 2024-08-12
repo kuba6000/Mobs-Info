@@ -48,7 +48,8 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(50d), new DropsOnlyWithWeaknessII()));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(new IChanceModifier.NormalChance(50d), new IChanceModifier.DropsOnlyWithWeaknessII()));
             drops.add(drop);
         }
 
@@ -62,8 +63,10 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers
-                .addAll(Arrays.asList(new NormalChance(2.86d), new OrBiome(BiomeGenBase.extremeHills, 10d)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(2.86d),
+                    new IChanceModifier.OrBiome(BiomeGenBase.extremeHills, 10d)));
             drops.add(drop);
         }
 
@@ -79,8 +82,10 @@ public class ForbiddenMagic implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers
-                    .addAll(Arrays.asList(new NormalChance(100d), new DropsOnlyWithEnchant(DarkEnchantments.greedy)));
+                drop.chanceModifiers.addAll(
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(100d),
+                        new IChanceModifier.DropsOnlyWithEnchant(DarkEnchantments.greedy)));
             } else {
                 drop = new MobDrop(
                     new ItemStack(ForbiddenItems.resource, 1, 0),
@@ -91,8 +96,10 @@ public class ForbiddenMagic implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers
-                    .addAll(Arrays.asList(new NormalChance(8.57d), new DropsOnlyWithEnchant(DarkEnchantments.greedy)));
+                drop.chanceModifiers.addAll(
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(8.57d),
+                        new IChanceModifier.DropsOnlyWithEnchant(DarkEnchantments.greedy)));
             }
             drops.add(drop);
         }
@@ -107,8 +114,10 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers
-                .addAll(Arrays.asList(new NormalChance(15.38d), new DropsOnlyUsing(ForbiddenItems.skullAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(15.38d),
+                    new IChanceModifier.DropsOnlyUsing(ForbiddenItems.skullAxe)));
             drops.add(drop);
         }
 
@@ -122,8 +131,10 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers
-                .addAll(Arrays.asList(new NormalChance(11.54d), new DropsOnlyUsing(ForbiddenItems.skullAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(11.54d),
+                    new IChanceModifier.DropsOnlyUsing(ForbiddenItems.skullAxe)));
             drops.add(drop);
         }
         if (recipe.entity.getClass() == EntityCreeper.class) {
@@ -136,8 +147,10 @@ public class ForbiddenMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers
-                .addAll(Arrays.asList(new NormalChance(11.54d), new DropsOnlyUsing(ForbiddenItems.skullAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(11.54d),
+                    new IChanceModifier.DropsOnlyUsing(ForbiddenItems.skullAxe)));
             drops.add(drop);
         }
 
@@ -153,8 +166,8 @@ public class ForbiddenMagic implements IExtraLoader {
         drop.variableChance = true;
         drop.chanceModifiers.addAll(
             Arrays.asList(
-                new NormalChance(((double) drop.chance / 100d)),
-                new DropsOnlyInDimension(-1 /* NETHER */),
+                new IChanceModifier.NormalChance(((double) drop.chance / 100d)),
+                new IChanceModifier.DropsOnlyInDimension(-1 /* NETHER */),
                 new NonPlayerEntity()));
         drop.chance = 0;
         drops.add(drop);
@@ -193,14 +206,14 @@ public class ForbiddenMagic implements IExtraLoader {
             drop3.variableChance = true;
             drop3.chanceModifiers.addAll(
                 Arrays.asList(
-                    new NormalChance(0d),
-                    new EachLevelOfGives(Enchantment.looting, 5d),
+                    new IChanceModifier.NormalChance(0d),
+                    new IChanceModifier.EachLevelOfGives(Enchantment.looting, 5d),
                     new EachLevelOfGivesFocus()));
             drops.add(drop3);
         }
     }
 
-    private static class EachLevelOfGivesFocus extends EachLevelOfGives {
+    private static class EachLevelOfGivesFocus extends IChanceModifier.EachLevelOfGives {
 
         EachLevelOfGivesFocus() {}
 
@@ -225,11 +238,6 @@ public class ForbiddenMagic implements IExtraLoader {
     private static class NonPlayerEntity implements IChanceModifier {
 
         @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
         public String getDescription() {
             return Translations.FORBIDDEN_MAGIC_NON_PLAYER.get();
         }
@@ -242,14 +250,5 @@ public class ForbiddenMagic implements IExtraLoader {
             return 0d;
         }
 
-        @Override
-        public void writeToByteBuf(ByteBuf byteBuf) {
-
-        }
-
-        @Override
-        public void readFromByteBuf(ByteBuf byteBuf) {
-
-        }
     }
 }

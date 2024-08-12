@@ -4,7 +4,7 @@ import net.minecraft.util.StatCollector;
 
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 
-enum Translations {
+public enum Translations {
 
     MINECRAFT_SLIME,
     MINECRAFT_MAGMA_CUBE,
