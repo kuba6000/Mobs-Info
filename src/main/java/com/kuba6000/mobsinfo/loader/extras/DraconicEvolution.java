@@ -89,11 +89,6 @@ public class DraconicEvolution implements IExtraLoader {
         }
 
         @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
         public String getDescription() {
             throw new UnsupportedOperationException();
         }

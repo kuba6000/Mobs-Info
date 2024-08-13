@@ -141,7 +141,7 @@ public class DummyWorld extends World {
 
     @Override
     public Block getBlock(int aX, int aY, int aZ) {
-        if (LoaderReference.TwilightForest && new Throwable().getStackTrace()[1].getClassName()
+        if (LoaderReference.TwilightForest.isLoaded && new Throwable().getStackTrace()[1].getClassName()
             .equals("twilightforest.client.renderer.entity.RenderTFSnowQueenIceShield")) return Blocks.packed_ice;
         if ((aX >= 16) && (aZ >= 16) && (aX < 32) && (aZ < 32)) {
             return aY == 64 ? Blocks.grass : Blocks.air;

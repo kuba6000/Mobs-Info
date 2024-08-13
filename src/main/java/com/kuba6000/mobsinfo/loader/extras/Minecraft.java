@@ -21,20 +21,22 @@ import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 import com.kuba6000.mobsinfo.api.SpawnInfo;
 
-import io.netty.buffer.ByteBuf;
-
 public class Minecraft implements IExtraLoader {
 
     @Override
     public void process(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {
         if (recipe.entity.getClass() == EntitySlime.class) {
             drops.get(0).variableChance = true;
-            drops.get(0).chanceModifiers
-                .addAll(Arrays.asList(new NormalChance((double) drops.get(0).chance / 100d), new MinecraftSlime()));
+            drops.get(0).chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance((double) drops.get(0).chance / 100d),
+                    new MinecraftSlime()));
         } else if (recipe.entity.getClass() == EntityMagmaCube.class) {
             drops.get(0).variableChance = true;
-            drops.get(0).chanceModifiers
-                .addAll(Arrays.asList(new NormalChance((double) drops.get(0).chance / 100d), new MinecraftMagmaCube()));
+            drops.get(0).chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance((double) drops.get(0).chance / 100d),
+                    new MinecraftMagmaCube()));
         } else
             if (recipe.entity.getClass() == EntityVillager.class || recipe.entity.getClass() == EntityIronGolem.class) {
                 recipe.spawnList.add(new SpawnInfo.SpawnInfoStructure("Village"));
@@ -46,11 +48,6 @@ public class Minecraft implements IExtraLoader {
     }
 
     private static class MinecraftSlime implements IChanceModifier {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
 
         @Override
         public String getDescription() {
@@ -65,15 +62,6 @@ public class Minecraft implements IExtraLoader {
             return 0d;
         }
 
-        @Override
-        public void writeToByteBuf(ByteBuf byteBuf) {
-
-        }
-
-        @Override
-        public void readFromByteBuf(ByteBuf byteBuf) {
-
-        }
     }
 
     private static class MinecraftMagmaCube extends MinecraftSlime {

@@ -579,7 +579,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        if (LoaderReference.Gregtech5) {
+        if (LoaderReference.Gregtech5.isLoaded) {
             List<ItemStack> results = GT5Helper.getAssociated(result);
             for (MobCachedRecipe r : cachedRecipes) if (results.stream()
                 .anyMatch(i -> r.contains(r.mOutputs, i)) && r.isUnlocked()) arecipes.add(r);
@@ -589,7 +589,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
-        if (LoaderReference.EnderIO) {
+        if (LoaderReference.EnderIO.isLoaded) {
             Item item = ingredient.getItem();
             if (item == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())
                 || item == EnderIOGetter.itemSoulVessel()
@@ -608,7 +608,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     }
 
     public static boolean isUsageInfernalMob(ItemStack ingredient) {
-        if (LoaderReference.EnderIO) {
+        if (LoaderReference.EnderIO.isLoaded) {
             Item item = ingredient.getItem();
             if (item == Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner())
                 || item == EnderIOGetter.itemSoulVessel()
@@ -811,7 +811,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 this.mInput.add(new ItemStack(Items.spawn_egg, 1, id));
                 this.mInput.add(new ItemStack(Blocks.mob_spawner, 1, id));
             }
-            if (LoaderReference.EnderIO) {
+            if (LoaderReference.EnderIO.isLoaded) {
                 this.mInput.add(0, EnderIOGetter.BlockPoweredSpawner$createItemStackForMob(mobname));
                 this.mInput.add(1, EnderIOGetter.ItemSoulVessel$createVesselWithEntityStub(mobname));
                 this.mInput.add(2, EnderIOGetter.ItemBrokenSpawner$createStackForMobType(mobname));
@@ -820,7 +820,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             else ingredient = null;
             this.isUsableInVial = EnderIOHelper.canEntityBeCapturedWithSoulVial(mob, mobname);
 
-            if (!LoaderReference.InfernalMobs) infernaltype = -1; // not supported
+            if (!LoaderReference.InfernalMobs.isLoaded) infernaltype = -1; // not supported
             else {
                 InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
                 if (!InfernalMobsCoreHelper.callIsClassAllowed((InfernalMobsCore) infernalMobsCore, mob))

@@ -32,7 +32,7 @@ import crazypants.enderio.EnderIO;
 public class EnderIOHelper {
 
     public static boolean canEntityBeCapturedWithSoulVial(Entity entity, String entityID) {
-        if (!LoaderReference.EnderIO) return true;
+        if (!LoaderReference.EnderIO.isLoaded) return true;
         if (((ItemSoulVesselAccessor) EnderIO.itemSoulVessel).callIsBlackListed(entityID)) return false;
         return crazypants.enderio.config.Config.soulVesselCapturesBosses || !(entity instanceof IBossDisplayData);
     }

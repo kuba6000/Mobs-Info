@@ -37,7 +37,7 @@ public class IMCForNEI {
 
         sendHandler("mobsinfo.mobhandler", "minecraft:diamond_sword", 168, 192, 1, 6);
         sendCatalyst("mobsinfo.mobhandler", "minecraft:diamond_sword");
-        if (LoaderReference.InfernalMobs) {
+        if (LoaderReference.InfernalMobs.isLoaded) {
             sendHandler("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword", 168, 192, 1, 6);
             sendCatalyst("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword");
         }

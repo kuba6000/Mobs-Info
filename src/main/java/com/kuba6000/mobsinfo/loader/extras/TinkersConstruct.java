@@ -109,7 +109,10 @@ public class TinkersConstruct implements IExtraLoader {
                 true,
                 false);
             drop2.variableChance = true;
-            drop2.chanceModifiers.addAll(Arrays.asList(new NormalChance(10d), new DropsOnlyUsing(TinkerTools.cleaver)));
+            drop2.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(10d),
+                    new IChanceModifier.DropsOnlyUsing(TinkerTools.cleaver)));
             drops.add(drop2);
         }
 

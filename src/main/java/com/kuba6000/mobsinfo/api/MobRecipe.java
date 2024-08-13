@@ -86,7 +86,7 @@ public class MobRecipe {
 
     @SuppressWarnings("unchecked")
     private MobRecipe(EntityLiving e, String entityID, ArrayList<MobDrop> outputs) {
-        if (LoaderReference.InfernalMobs) {
+        if (LoaderReference.InfernalMobs.isLoaded) {
             InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
             if (infernaldrops == null) {
                 infernaldrops = MobRecipeLoader.getInfernalDrops();
@@ -118,7 +118,7 @@ public class MobRecipe {
             MobNameToStructureList = new HashMap<>();
             BiomeGenBase[] biomeList = BiomeGenBase.getBiomeGenArray();
             // JustAnotherSpawner.globalSettings().emptyVanillaSpawnLists
-            if (LoaderReference.JustAnotherSpawner) {
+            if (LoaderReference.JustAnotherSpawner.isLoaded) {
                 BiomeSpawnListRegistry biomeSpawnListRegistry = MVELProfile.worldSettings()
                     .biomeSpawnListRegistry();
                 for (BiomeGenBase biome : biomeList) {
@@ -245,7 +245,7 @@ public class MobRecipe {
             }
         }
 
-        if (LoaderReference.InfernalMobs && includeInfernalDropsIfPossible) {
+        if (LoaderReference.InfernalMobs.isLoaded && includeInfernalDropsIfPossible) {
             InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
             if (infernalityAllowed && !InfernalMobsCoreHelper.getDimensionBlackList((InfernalMobsCore) infernalMobsCore)
                 .contains(world.provider.dimensionId)) {
