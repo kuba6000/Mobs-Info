@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
@@ -19,6 +20,7 @@ import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 import com.kuba6000.mobsinfo.mixin.minecraft.ASMEventHandlerAccessor;
+import com.kuba6000.mobsinfo.mixin.minecraft.EventBusAccessor;
 
 import cpw.mods.fml.common.eventhandler.ASMEventHandler;
 import cpw.mods.fml.common.eventhandler.IEventListener;
@@ -33,6 +35,7 @@ public class ExtraLoader {
 
     private static void init() {
         initialized = true;
+        LOG.info("Initializing extra loader");
         // FIRST
         loaders.add(new Minecraft());
 
@@ -42,11 +45,11 @@ public class ExtraLoader {
         listeners.addAll(
             Arrays.asList(
                 new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()
-                    .getListeners(0)));
+                    .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID())));
         listeners.addAll(
             Arrays.asList(
                 new LivingDeathEvent(null, null).getListenerList()
-                    .getListeners(0)));
+                    .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID())));
 
         for (IEventListener listener : listeners) {
             if (listener instanceof ASMEventHandler asmEventHandler) {
@@ -67,6 +70,8 @@ public class ExtraLoader {
                 }
             }
         }
+
+        LOG.info("Registered {} Extra API providers!", APIProviders.size());
 
         // Mods
         if (LoaderReference.DraconicEvolution.isLoaded
@@ -152,7 +157,7 @@ public class ExtraLoader {
                 LOG.error(
                     "There was an error while loading {} modifications on {}",
                     provider.getClass()
-                        .getSimpleName(),
+                        .getName(),
                     k);
                 ex.printStackTrace();
             }
