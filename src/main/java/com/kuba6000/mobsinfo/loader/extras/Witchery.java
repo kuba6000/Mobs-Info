@@ -59,7 +59,8 @@ public class Witchery implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance((chance * 100d)), new WitcheryVampireBook()));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new IChanceModifier.NormalChance((chance * 100d)), new WitcheryVampireBook()));
             drops.add(drop);
         }
 
@@ -78,8 +79,8 @@ public class Witchery implements IExtraLoader {
                     drop2.variableChance = true;
                     drop2.chanceModifiers.addAll(
                         Arrays.asList(
-                            new NormalChance(5d),
-                            new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
+                            new IChanceModifier.NormalChance(5d),
+                            new IChanceModifier.DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                     drops.add(drop2);
                 }
                 MobDrop drop2 = new MobDrop(
@@ -92,8 +93,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(4d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(4d),
+                        new IChanceModifier.DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityZombie) {
                 MobDrop drop2 = new MobDrop(
@@ -106,8 +108,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(2d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(2d),
+                        new IChanceModifier.DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
                 MobDrop drop3 = new MobDrop(
                     com.emoniph.witchery.Witchery.Items.GENERIC.itemSpectralDust.createStack(),
@@ -119,8 +122,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop3.variableChance = true;
                 drop3.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(3d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(3d),
+                        new IChanceModifier.DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop3);
             } else if (recipe.entity instanceof EntityCreeper) {
                 MobDrop drop2 = new MobDrop(
@@ -133,8 +137,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(1d), new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(1d),
+                        new IChanceModifier.DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
                 MobDrop drop3 = new MobDrop(
                     com.emoniph.witchery.Witchery.Items.GENERIC.itemCreeperHeart.createStack(),
@@ -146,7 +151,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop3.variableChance = true;
                 drop3.chanceModifiers.addAll(
-                    Arrays.asList(new NormalChance(2d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 8d)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(2d),
+                        new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 8d)));
                 drops.add(drop3);
             } else if (recipe.entity instanceof EntityDemon) {
                 MobDrop drop2 = new MobDrop(
@@ -160,8 +167,8 @@ public class Witchery implements IExtraLoader {
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
                     Arrays.asList(
-                        new NormalChance(33d),
-                        new DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
+                        new IChanceModifier.NormalChance(33d),
+                        new IChanceModifier.DropsOnlyUsing(com.emoniph.witchery.Witchery.Items.ARTHANA)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityBat) {
                 MobDrop drop2 = new MobDrop(
@@ -174,8 +181,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(33d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(33d),
+                        new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityWolf) {
                 MobDrop drop2 = new MobDrop(
@@ -188,8 +196,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(33d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(33d),
+                        new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                 drops.add(drop2);
                 MobDrop drop3 = new MobDrop(
                     new ItemStack(com.emoniph.witchery.Witchery.Blocks.WOLFHEAD, 1, 0),
@@ -211,8 +220,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(20d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(20d),
+                        new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntitySheep) {
                 MobDrop drop2 = new MobDrop(
@@ -224,7 +234,8 @@ public class Witchery implements IExtraLoader {
                     false,
                     false);
                 drop2.variableChance = true;
-                drop2.chanceModifiers.addAll(Arrays.asList(new NormalChance(75d), new WitcheryWarewolf()));
+                drop2.chanceModifiers
+                    .addAll(Arrays.asList(new IChanceModifier.NormalChance(75d), new WitcheryWarewolf()));
                 drops.add(drop2);
             } else if (recipe.entity instanceof EntityToad) {
                 MobDrop drop2 = new MobDrop(
@@ -237,8 +248,9 @@ public class Witchery implements IExtraLoader {
                     false);
                 drop2.variableChance = true;
                 drop2.chanceModifiers.addAll(
-                    Arrays
-                        .asList(new NormalChance(20d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
+                    Arrays.asList(
+                        new IChanceModifier.NormalChance(20d),
+                        new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
                 drops.add(drop2);
             } else {
                 Class<?> theClass = recipe.entity.getClass();
@@ -259,8 +271,8 @@ public class Witchery implements IExtraLoader {
                                 drop2.variableChance = true;
                                 drop2.chanceModifiers.addAll(
                                     Arrays.asList(
-                                        new NormalChance(33d),
-                                        new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
+                                        new IChanceModifier.NormalChance(33d),
+                                        new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                                 drops.add(drop2);
                             }
                         } else {
@@ -275,8 +287,8 @@ public class Witchery implements IExtraLoader {
                             drop2.variableChance = true;
                             drop2.chanceModifiers.addAll(
                                 Arrays.asList(
-                                    new NormalChance(33d),
-                                    new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
+                                    new IChanceModifier.NormalChance(33d),
+                                    new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 75d)));
                             drops.add(drop2);
                             if ((upperName.contains("WOLF") || name.contains("Dog"))) {
                                 MobDrop drop3 = new MobDrop(
@@ -309,7 +321,9 @@ public class Witchery implements IExtraLoader {
                 false);
             drop2.variableChance = true;
             drop2.chanceModifiers.addAll(
-                Arrays.asList(new NormalChance(33d), new OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(33d),
+                    new IChanceModifier.OrUsing(com.emoniph.witchery.Witchery.Items.ARTHANA, 50d)));
             drops.add(drop2);
         }
 

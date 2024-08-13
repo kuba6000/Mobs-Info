@@ -21,7 +21,6 @@ import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import io.netty.buffer.ByteBuf;
 
 public class BloodArsenal implements IExtraLoader {
 
@@ -38,7 +37,8 @@ public class BloodArsenal implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(1d), new DropsOnlyWithWeakness()));
+                drop.chanceModifiers
+                    .addAll(Arrays.asList(new IChanceModifier.NormalChance(1d), new DropsOnlyWithWeakness()));
                 drops.add(drop);
             } else if (recipe.entity instanceof EntityVillager) {
                 MobDrop drop = new MobDrop(
@@ -50,7 +50,8 @@ public class BloodArsenal implements IExtraLoader {
                     false,
                     false);
                 drop.variableChance = true;
-                drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(25d), new DropsOnlyWithWeakness()));
+                drop.chanceModifiers
+                    .addAll(Arrays.asList(new IChanceModifier.NormalChance(25d), new DropsOnlyWithWeakness()));
                 drops.add(drop);
             }
         }
@@ -72,11 +73,6 @@ public class BloodArsenal implements IExtraLoader {
     private static class DropsOnlyWithWeakness implements IChanceModifier {
 
         @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
         public String getDescription() {
             return Translations.DROPS_ONLY_WITH_WEAKNESS.get();
         }
@@ -90,14 +86,5 @@ public class BloodArsenal implements IExtraLoader {
             return 0d;
         }
 
-        @Override
-        public void writeToByteBuf(ByteBuf byteBuf) {
-
-        }
-
-        @Override
-        public void readFromByteBuf(ByteBuf byteBuf) {
-
-        }
     }
 }

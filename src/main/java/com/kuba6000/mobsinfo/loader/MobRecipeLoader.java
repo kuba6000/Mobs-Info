@@ -65,6 +65,7 @@ import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.kuba6000.mobsinfo.api.DummyWorld;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
+import com.kuba6000.mobsinfo.api.IMobInfoProvider;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobDropSimplified;
@@ -263,11 +264,21 @@ public class MobRecipeLoader {
         public final EntityLiving mob;
         public final MobRecipe recipe;
         public final ArrayList<MobDrop> drops;
+        public final boolean isProvidedFromAPI;
 
         public GeneralMappedMob(EntityLiving mob, MobRecipe recipe, ArrayList<MobDrop> drops) {
             this.mob = mob;
             this.recipe = recipe;
             this.drops = drops;
+            this.isProvidedFromAPI = false;
+        }
+
+        public GeneralMappedMob(EntityLiving mob, MobRecipe recipe, ArrayList<MobDrop> drops,
+            boolean isProvidedFromAPI) {
+            this.mob = mob;
+            this.recipe = recipe;
+            this.drops = drops;
+            this.isProvidedFromAPI = isProvidedFromAPI;
         }
 
         public ArrayList<MobDrop> copyDrops() {
@@ -307,6 +318,7 @@ public class MobRecipeLoader {
         if (alreadyGenerated) return;
         alreadyGenerated = true;
         if (!Config.MobHandler.mobHandlerEnabled) return;
+        VanillaMobRecipeLoader.init();
 
         World f = new DummyWorld() {
 
@@ -348,6 +360,12 @@ public class MobRecipeLoader {
                     ProgressBarWrapper bar = new ProgressBarWrapper("Parsing cached Mob Recipe Map", s.moblist.size());
                     for (Map.Entry<String, ArrayList<MobDrop>> entry : s.moblist.entrySet()) {
                         bar.step(entry.getKey());
+                        GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(entry.getKey());
+                        if (vanillaMob != null
+                            && vanillaMob.mob.getClass() == EntityList.stringToClassMapping.get(entry.getKey())) {
+                            GeneralMobList.put(entry.getKey(), vanillaMob);
+                            continue;
+                        }
                         try {
                             EntityLiving e;
                             String mobName = entry.getKey();
@@ -359,10 +377,27 @@ public class MobRecipeLoader {
                                 .newInstance(new Object[] { f });
                             preGenerationEntityModifiers(e, mobName);
                             ArrayList<MobDrop> drops = entry.getValue();
-                            drops.forEach(MobDrop::reconstructStack);
-                            GeneralMobList.put(
-                                mobName,
-                                new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, mobName, drops), drops));
+                            if (drops == null) {
+                                if (e instanceof IMobInfoProvider provider) {
+                                    drops = new ArrayList<>();
+                                    provider.provideDropsInformation(drops);
+                                    for (MobDrop drop : drops) {
+                                        drop.clampChance();
+                                    }
+                                    GeneralMobList.put(
+                                        mobName,
+                                        new GeneralMappedMob(
+                                            e,
+                                            MobRecipe.generateMobRecipe(e, mobName, drops),
+                                            drops,
+                                            true));
+                                }
+                            } else {
+                                drops.forEach(MobDrop::reconstructStack);
+                                GeneralMobList.put(
+                                    mobName,
+                                    new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, mobName, drops), drops));
+                            }
                         } catch (Exception ignored) {}
                     }
                     bar.end();
@@ -397,6 +432,12 @@ public class MobRecipeLoader {
         EntityList.stringToClassMapping.forEach((name, entity) -> {
             bar.step(name);
             if (entity == null) return;
+
+            GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(name);
+            if (vanillaMob != null && vanillaMob.mob.getClass() == entity) {
+                GeneralMobList.put(name, vanillaMob);
+                return;
+            }
 
             if (Modifier.isAbstract(entity.getModifiers())) {
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
@@ -445,6 +486,48 @@ public class MobRecipeLoader {
                 preGenerationEntityModifiers(e, name);
 
                 ((EntityAccessor) e).setRand(frand);
+
+                if (e instanceof IMobInfoProvider provider) {
+                    boolean illegalOverride = false;
+                    Class<?> clazz = entity;
+                    do {
+                        try {
+                            clazz.getDeclaredMethod("provideDropsInformation", ArrayList.class);
+                            break;
+                        } catch (Exception exception) {
+                            try {
+                                clazz.getDeclaredMethod("dropFewItems", boolean.class, int.class);
+                                illegalOverride = true;
+                                break;
+                            } catch (Exception ignored) {}
+                            try {
+                                clazz.getDeclaredMethod("dropRareDrop", int.class);
+                                illegalOverride = true;
+                                break;
+                            } catch (Exception ignored) {}
+                            clazz = clazz.getSuperclass();
+                        }
+                    } while (true);
+                    if (illegalOverride) {
+                        LOG.error(
+                            "Entity {} is implementing IMobInfoProvider interface in its superclass and doesn't override provideDropsInformation WHILE also overriding dropFewItems or dropRareItems! IGNORING this provider and using normal generation!!!",
+                            name);
+                    } else {
+                        ArrayList<MobDrop> moboutputs = new ArrayList<>();
+                        provider.provideDropsInformation(moboutputs);
+                        for (MobDrop moboutput : moboutputs) {
+                            moboutput.clampChance();
+                        }
+                        GeneralMobList.put(
+                            name,
+                            new GeneralMappedMob(
+                                e,
+                                MobRecipe.generateMobRecipe(e, name, moboutputs),
+                                moboutputs,
+                                true));
+                        return;
+                    }
+                }
 
                 droplist drops = new droplist();
                 droplist raredrops = new droplist();
@@ -627,7 +710,7 @@ public class MobRecipeLoader {
                                 < lastActiveItemsLength; j++) {
                                 ItemStack stack = lastActiveItems[j];
                                 if (stack != null) {
-                                    if (LoaderReference.Thaumcraft)
+                                    if (LoaderReference.Thaumcraft.isLoaded)
                                         if (stack.getItem() instanceof ItemWandCasting) continue; // crashes the game
                                                                                                   // when
                                     // rendering in GUI
@@ -798,7 +881,7 @@ public class MobRecipeLoader {
         MobRecipeLoaderCacheStructure s = new MobRecipeLoaderCacheStructure();
         s.version = modlistversion;
         s.moblist = new HashMap<>();
-        GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.drops));
+        GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.isProvidedFromAPI ? null : v.drops));
         Writer writer = null;
         try {
             writer = Files.newWriter(cache, StandardCharsets.UTF_8);

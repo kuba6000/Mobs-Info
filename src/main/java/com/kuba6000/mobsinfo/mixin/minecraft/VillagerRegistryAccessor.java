@@ -7,7 +7,7 @@ import com.google.common.collect.Multimap;
 
 import cpw.mods.fml.common.registry.VillagerRegistry;
 
-@Mixin(value = VillagerRegistry.class)
+@Mixin(value = VillagerRegistry.class, remap = false)
 public interface VillagerRegistryAccessor {
 
     @Accessor

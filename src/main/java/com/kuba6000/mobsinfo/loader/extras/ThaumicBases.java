@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
@@ -35,8 +36,8 @@ public class ThaumicBases implements IExtraLoader {
                 drop.variableChance = true;
                 drop.chanceModifiers.addAll(
                     Arrays.asList(
-                        new NormalChance(((double) drop.chance / 100d)),
-                        new DropsOnlyWithEnchant(TBEnchant.vaporising)));
+                        new IChanceModifier.NormalChance(((double) drop.chance / 100d)),
+                        new IChanceModifier.DropsOnlyWithEnchant(TBEnchant.vaporising)));
                 drop.chance = 0;
                 drops.add(drop);
             }

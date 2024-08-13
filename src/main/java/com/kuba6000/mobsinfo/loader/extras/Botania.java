@@ -12,6 +12,7 @@ import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
@@ -32,7 +33,10 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(15.38d), new DropsOnlyUsing(elementiumAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(15.38d),
+                    new IChanceModifier.DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityZombie && !(recipe.entity instanceof EntityPigZombie)) {
             MobDrop drop = new MobDrop(
@@ -44,7 +48,10 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(7.69d), new DropsOnlyUsing(elementiumAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(7.69d),
+                    new IChanceModifier.DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityCreeper) {
             MobDrop drop = new MobDrop(
@@ -56,7 +63,10 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(7.69d), new DropsOnlyUsing(elementiumAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(7.69d),
+                    new IChanceModifier.DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         } else if (recipe.entity instanceof EntityDoppleganger) {
             MobDrop drop = new MobDrop(
@@ -68,7 +78,10 @@ public class Botania implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(7.69d), new DropsOnlyUsing(elementiumAxe)));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(
+                    new IChanceModifier.NormalChance(7.69d),
+                    new IChanceModifier.DropsOnlyUsing(elementiumAxe)));
             drops.add(drop);
         }
     }

@@ -34,14 +34,16 @@ public class BloodMagic implements IExtraLoader {
                 false,
                 false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(50d), new DropsOnlyWithWeaknessII()));
+            drop.chanceModifiers.addAll(
+                Arrays.asList(new IChanceModifier.NormalChance(50d), new IChanceModifier.DropsOnlyWithWeaknessII()));
             drops.add(drop);
         }
         if (recipe.entity instanceof EntityDemon) {
             for (MobDrop drop : drops) {
                 if (drop.stack.getItem() == ModItems.demonPlacer) {
                     drop.variableChance = true;
-                    drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(100d), new DemonDemonPlacer()));
+                    drop.chanceModifiers
+                        .addAll(Arrays.asList(new IChanceModifier.NormalChance(100d), new DemonDemonPlacer()));
                 }
             }
         }
@@ -51,11 +53,13 @@ public class BloodMagic implements IExtraLoader {
             ItemStack soulShardStack = new ItemStack(ModItems.baseItems, 1, 29);
             MobDrop drop = new MobDrop(lifeShardStack, MobDrop.DropType.Normal, 0, 0, null, true, false);
             drop.variableChance = true;
-            drop.chanceModifiers.addAll(Arrays.asList(new NormalChance(30d), new MinorDemonGruntShards()));
+            drop.chanceModifiers
+                .addAll(Arrays.asList(new IChanceModifier.NormalChance(30d), new MinorDemonGruntShards()));
             drops.add(drop);
             MobDrop drop2 = new MobDrop(soulShardStack, MobDrop.DropType.Normal, 0, 0, null, true, false);
             drop2.variableChance = true;
-            drop2.chanceModifiers.addAll(Arrays.asList(new NormalChance(30d), new MinorDemonGruntShards()));
+            drop2.chanceModifiers
+                .addAll(Arrays.asList(new IChanceModifier.NormalChance(30d), new MinorDemonGruntShards()));
             drops.add(drop2);
         }
     }

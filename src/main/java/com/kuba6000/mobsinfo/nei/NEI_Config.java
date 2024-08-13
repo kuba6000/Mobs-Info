@@ -40,11 +40,11 @@ public class NEI_Config implements IConfigureNEI {
     public void loadConfig() {
         isAdded = false;
         new MobHandler();
-        if (LoaderReference.InfernalMobs) new MobHandlerInfernal();
+        if (LoaderReference.InfernalMobs.isLoaded) new MobHandlerInfernal();
         new VillagerTradesHandler();
         isAdded = true;
 
-        if (LoaderReference.EnderIO && Config.Compatibility.addAllEnderIOSpawnersToNEI) {
+        if (LoaderReference.EnderIO.isLoaded && Config.Compatibility.addAllEnderIOSpawnersToNEI) {
             for (String s : MobRecipe.MobNameToRecipeMap.keySet()) {
                 API.addItemVariant(
                     Item.getItemFromBlock(EnderIOGetter.blockPoweredSpawner()),
