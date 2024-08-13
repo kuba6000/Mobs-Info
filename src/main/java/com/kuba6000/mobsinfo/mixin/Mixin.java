@@ -17,6 +17,7 @@ public enum Mixin {
     EntityLivingBaseAccessor("minecraft.EntityLivingBaseAccessor", VANILLA),
     EntitySlimeAccessor("minecraft.EntitySlimeAccessor", VANILLA),
     EntityVillagerAccessor("minecraft.EntityVillagerAccessor", VANILLA),
+    EventBusAccessor("minecraft.EventBusAccessor", VANILLA),
     RendererLivingEntityAccessor("minecraft.RendererLivingEntityAccessor", VANILLA),
     GuiAccessor("minecraft.GuiAccessor", VANILLA),
     GuiContainerAccessor("minecraft.GuiContainerAccessor", VANILLA),

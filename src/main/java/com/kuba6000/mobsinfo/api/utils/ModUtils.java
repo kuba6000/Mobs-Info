@@ -33,11 +33,13 @@ import javax.xml.bind.DatatypeConverter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.mixin.minecraft.ASMEventHandlerAccessor;
+import com.kuba6000.mobsinfo.mixin.minecraft.EventBusAccessor;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -126,7 +128,7 @@ public class ModUtils {
         }
 
         IEventListener[] listeners = new LivingDeathEvent(null, null).getListenerList()
-            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+            .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID());
         for (IEventListener listener : listeners) {
             if (listener instanceof ASMEventHandler) {
                 modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
@@ -134,7 +136,7 @@ public class ModUtils {
         }
 
         listeners = new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()
-            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+            .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID());
         for (IEventListener listener : listeners) {
             if (listener instanceof ASMEventHandler) {
                 modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
@@ -176,7 +178,7 @@ public class ModUtils {
         }
 
         IEventListener[] listeners = new LivingDeathEvent(null, null).getListenerList()
-            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+            .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID());
         for (IEventListener listener : listeners) {
             if (listener instanceof ASMEventHandler) {
                 modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
@@ -184,7 +186,7 @@ public class ModUtils {
         }
 
         listeners = new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()
-            .getListeners(0 /* MinecraftForge.EVENT_BUS.busID */);
+            .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID());
         for (IEventListener listener : listeners) {
             if (listener instanceof ASMEventHandler) {
                 modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
