@@ -160,7 +160,7 @@ public class ExtraLoader {
                 for (IChanceModifier chanceModifier : drop.chanceModifiers) {
                     try {
                         chanceModifier.getClass()
-                            .getConstructor();
+                            .getDeclaredConstructor();
                     } catch (NoSuchMethodException e) {
                         throw new RuntimeException(e);
                     }

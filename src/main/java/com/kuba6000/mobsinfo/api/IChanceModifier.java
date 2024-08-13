@@ -1,5 +1,6 @@
 package com.kuba6000.mobsinfo.api;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -87,8 +88,10 @@ public interface IChanceModifier {
             if (!cl.isAssignableFrom(IChanceModifier.class)) {
                 throw new SecurityException();
             }
-            IChanceModifier modifier = (IChanceModifier) cl.getDeclaredConstructor()
-                .newInstance();
+            Constructor<? extends IChanceModifier> constructor = (Constructor<? extends IChanceModifier>) cl
+                .getDeclaredConstructor();
+            constructor.setAccessible(true);
+            IChanceModifier modifier = constructor.newInstance();
             modifier.readFromByteBuf(byteBuf);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException
             | IllegalAccessException e) {
