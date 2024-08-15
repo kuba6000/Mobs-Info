@@ -359,16 +359,18 @@ public class MobRecipeLoader {
                     || s.version.equals(modlistversion)) {
                     ProgressBarWrapper bar = new ProgressBarWrapper("Parsing cached Mob Recipe Map", s.moblist.size());
                     for (Map.Entry<String, ArrayList<MobDrop>> entry : s.moblist.entrySet()) {
-                        bar.step(entry.getKey());
-                        GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(entry.getKey());
+                        String mobName = entry.getKey();
+                        bar.step(mobName);
+                        GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(mobName);
                         if (vanillaMob != null
-                            && vanillaMob.mob.getClass() == EntityList.stringToClassMapping.get(entry.getKey())) {
-                            GeneralMobList.put(entry.getKey(), vanillaMob);
+                            && (vanillaMob.mob.getClass() == EntityList.stringToClassMapping.get(mobName)
+                                || (mobName.equals("witherSkeleton")
+                                    && !EntityList.stringToClassMapping.containsKey("witherSkeleton")))) {
+                            GeneralMobList.put(mobName, vanillaMob);
                             continue;
                         }
                         try {
                             EntityLiving e;
-                            String mobName = entry.getKey();
                             if (mobName.equals("witherSkeleton")
                                 && !EntityList.stringToClassMapping.containsKey("witherSkeleton")) {
                                 e = new EntitySkeleton(f);
