@@ -343,8 +343,8 @@ public class MobRecipeLoader {
 
         String modlistversion;
         if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.ModAdditionRemoval)
-            modlistversion = ModUtils.getModListVersion(false);
-        else modlistversion = ModUtils.getModListVersion(true);
+            modlistversion = ModUtils.getModListVersionForMobDrops(false);
+        else modlistversion = ModUtils.getModListVersionForMobDrops(true);
 
         isInGenerationProcess = true;
 

@@ -117,7 +117,7 @@ public class ModUtils {
     private static String modListVersion = null;
     private static String modListVersionIgnoringModVersions = null;
 
-    public static String getModListVersion(boolean includeModVersion) {
+    public static String getModListVersionForMobDrops(boolean includeModVersion) {
         if (includeModVersion && modListVersion != null) return modListVersion;
         if (!includeModVersion && modListVersionIgnoringModVersions != null) return modListVersionIgnoringModVersions;
 
