@@ -115,9 +115,11 @@ public class ModUtils {
     }
 
     private static String modListVersion = null;
+    private static String modListVersionIgnoringModVersions = null;
 
-    public static String getModListVersion() {
-        if (modListVersion != null) return modListVersion;
+    public static String getModListVersion(boolean includeModVersion) {
+        if (includeModVersion && modListVersion != null) return modListVersion;
+        if (!includeModVersion && modListVersionIgnoringModVersions != null) return modListVersionIgnoringModVersions;
 
         HashSet<ModContainer> modsWithEntities = new HashSet<>();
         // noinspection unchecked
@@ -149,67 +151,20 @@ public class ModUtils {
             .collect(
                 StringBuilder::new,
                 (a, b) -> a.append(b.getModId())
-                    .append(b.getVersion()),
+                    .append(includeModVersion ? b.getVersion() : ""),
                 (a, b) -> a.append(", ")
                     .append(b))
             .toString();
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            modListVersion = DatatypeConverter.printHexBinary(md.digest(sortedList.getBytes(StandardCharsets.UTF_8)))
+            String ver = DatatypeConverter.printHexBinary(md.digest(sortedList.getBytes(StandardCharsets.UTF_8)))
                 .toUpperCase();
-            return modListVersion;
+            if (includeModVersion) modListVersion = ver;
+            else modListVersionIgnoringModVersions = ver;
+            return ver;
         } catch (Exception e) {
-            modListVersion = sortedList;
-            return sortedList;
-        }
-    }
-
-    private static String modListVersionIgnoringModVersions = null;
-
-    public static String getModListVersionIgnoringModVersions() {
-        if (modListVersionIgnoringModVersions != null) return modListVersionIgnoringModVersions;
-
-        HashSet<ModContainer> modsWithEntities = new HashSet<>();
-        // noinspection unchecked
-        for (Class<? extends Entity> value : ((Map<String, Class<? extends Entity>>) EntityList.stringToClassMapping)
-            .values()) {
-            ModContainer mod = getModContainerFromClassName(value.getName());
-            if (mod != null) modsWithEntities.add(mod);
-        }
-
-        IEventListener[] listeners = new LivingDeathEvent(null, null).getListenerList()
-            .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID());
-        for (IEventListener listener : listeners) {
-            if (listener instanceof ASMEventHandler) {
-                modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
-            }
-        }
-
-        listeners = new LivingDropsEvent(null, null, null, 0, false, 0).getListenerList()
-            .getListeners(((EventBusAccessor) MinecraftForge.EVENT_BUS).getBusID());
-        for (IEventListener listener : listeners) {
-            if (listener instanceof ASMEventHandler) {
-                modsWithEntities.add(((ASMEventHandlerAccessor) listener).getOwner());
-            }
-        }
-
-        String sortedList = modsWithEntities.stream()
-            .filter(m -> m.getMod() != null)
-            .sorted(Comparator.comparing(ModContainer::getModId))
-            .collect(
-                StringBuilder::new,
-                (a, b) -> a.append(b.getModId()),
-                (a, b) -> a.append(", ")
-                    .append(b))
-            .toString();
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            modListVersionIgnoringModVersions = DatatypeConverter
-                .printHexBinary(md.digest(sortedList.getBytes(StandardCharsets.UTF_8)))
-                .toUpperCase();
-            return modListVersionIgnoringModVersions;
-        } catch (Exception e) {
-            modListVersionIgnoringModVersions = sortedList;
+            if (includeModVersion) modListVersion = sortedList;
+            else modListVersionIgnoringModVersions = sortedList;
             return sortedList;
         }
     }
