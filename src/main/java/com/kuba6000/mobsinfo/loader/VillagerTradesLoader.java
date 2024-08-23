@@ -141,6 +141,7 @@ public class VillagerTradesLoader {
                                     trades.addAll(handler.tradeList);
                                 }
                             }
+                            trades.forEach(VillagerTrade::reconstructStacks);
                             VillagerRecipe.recipes.put(profession, new VillagerRecipe(trades, profession, villager));
                         } catch (Exception ignored) {}
                     }
@@ -206,22 +207,32 @@ public class VillagerTradesLoader {
                         handler instanceof IVillagerInfoProvider ? "(provider)" : "");
                 }
 
-                ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler> handlersToCache = new ArrayList<>(
+                final ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler> handlersToCache = new ArrayList<>(
                     handlers.size());
                 toCache.handlerList.put(id, handlersToCache);
+                final HashMap<String, VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler> classNameToHandlerCacheHelper = new HashMap<>();
 
                 frand.newRound();
 
                 TradeCollector collector = new TradeCollector();
                 for (VillagerRegistry.IVillageTradeHandler handler : handlers) {
                     TradeList trades = new TradeList();
-                    VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler handlerToCache = new VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler();
-                    handlerToCache.handler = handler.getClass()
-                        .getName();
+                    VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler handlerToCache = classNameToHandlerCacheHelper
+                        .get(
+                            handler.getClass()
+                                .getName());
+                    if (handlerToCache == null) {
+                        handlerToCache = new VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler();
+                        handlerToCache.handler = handler.getClass()
+                            .getName();
+                        handlerToCache.tradeList = new ArrayList<>();
+                        handlersToCache.add(handlerToCache);
+                        classNameToHandlerCacheHelper.put(handlerToCache.handler, handlerToCache);
+                    }
+
                     if (handler instanceof IVillagerInfoProvider provider) {
                         provider.provideTrades(villager, id, recipes);
                         handlerToCache.tradeList = null;
-                        handlersToCache.add(handlerToCache);
                         continue;
                     }
                     boolean second = false;
@@ -239,13 +250,11 @@ public class VillagerTradesLoader {
                     frand.newRound();
                     collector.newRound();
 
-                    handlerToCache.tradeList = new ArrayList<>();
                     for (TradeInstance value : trades.itemsToTrade.values()) {
                         VillagerTrade trade = new VillagerTrade(value.i1, value.i2, value.o, value.chance);
                         recipes.add(trade);
                         handlerToCache.tradeList.add(trade);
                     }
-                    handlersToCache.add(handlerToCache);
                 }
 
                 VillagerRecipe.recipes.put(id, new VillagerRecipe(recipes, id, villager));

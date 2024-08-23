@@ -87,4 +87,10 @@ public class VillagerTrade {
     public double getChance() {
         return chance;
     }
+
+    public void reconstructStacks() {
+        firstInput.reconstructStack();
+        if (secondInput != null) secondInput.reconstructStack();
+        output.reconstructStack();
+    }
 }
