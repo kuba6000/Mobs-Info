@@ -3,16 +3,19 @@ package com.kuba6000.mobsinfo.loader;
 import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 import static com.kuba6000.mobsinfo.loader.MobRecipeLoader.randomEnchantmentDetectedString;
 
+import java.io.File;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
@@ -22,10 +25,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Multimap;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
 import com.kuba6000.mobsinfo.api.DummyWorld;
+import com.kuba6000.mobsinfo.api.IVillagerInfoProvider;
 import com.kuba6000.mobsinfo.api.RandomSequencer;
 import com.kuba6000.mobsinfo.api.VillagerRecipe;
 import com.kuba6000.mobsinfo.api.VillagerTrade;
+import com.kuba6000.mobsinfo.api.helper.ProgressBarWrapper;
+import com.kuba6000.mobsinfo.api.utils.GSONUtils;
 import com.kuba6000.mobsinfo.api.utils.ItemID;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
@@ -43,11 +51,25 @@ public class VillagerTradesLoader {
 
     private static boolean alreadyGenerated = false;
 
+    private static class VillagerTradesLoaderCacheStructure {
+
+        private static class VillagerTradesLoaderCacheStructure_Handler {
+
+            String handler;
+            ArrayList<VillagerTrade> tradeList;
+        }
+
+        String version;
+        Map<Integer, ArrayList<VillagerTradesLoaderCacheStructure_Handler>> handlerList;
+    }
+
     public static void generateVillagerTrades() {
         if (alreadyGenerated) return;
         alreadyGenerated = true;
 
         if (!Config.VillagerTradesHandler.enabled) return;
+
+        VanillaVillagerTradesLoader.init();
 
         LOG.info("Generating Recipe Map for Villager Trades Handler");
         final long startTime = System.currentTimeMillis();
@@ -57,253 +79,183 @@ public class VillagerTradesLoader {
         RandomSequencer frand = new RandomSequencer();
         world.rand = frand;
 
-        // vanilla recipes?
+        File cache = Config.getConfigFile("VillagerTradesLoader.cache");
+        Gson gson = GSONUtils.GSON_BUILDER.create();
 
-        VillagerRegistry villagerRegistry = VillagerRegistry.instance();
-        Multimap<Integer, VillagerRegistry.IVillageTradeHandler> tradeHandlerMap = ((VillagerRegistryAccessor) villagerRegistry)
+        String modlistversion;
+        if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.ModAdditionRemoval)
+            modlistversion = ModUtils.getModListVersionForVillagerRecipes(false);
+        else modlistversion = ModUtils.getModListVersionForVillagerRecipes(true);
+
+        final VillagerRegistry villagerRegistry = VillagerRegistry.instance();
+        final Multimap<Integer, VillagerRegistry.IVillageTradeHandler> tradeHandlerMap = ((VillagerRegistryAccessor) villagerRegistry)
             .getTradeHandlers();
-
-        ModUtils.TriConsumer<ArrayList<VillagerTrade>, EntityVillager, Integer> detectCustomRecipes = (recipes,
-            villager, villagerID) -> {
-            try {
-
-                Collection<VillagerRegistry.IVillageTradeHandler> handlers = tradeHandlerMap.get(villagerID);
-
-                if (handlers == null || handlers.isEmpty()) {
-                    return;
-                }
-
-                LOG.info("Detected custom handlers for profession {}, handlers: ", villagerID);
-                for (VillagerRegistry.IVillageTradeHandler handler : handlers) {
-                    LOG.info(" - {}", handler.toString());
-                }
-
-                frand.newRound();
-
-                TradeList trades = new TradeList();
-                TradeCollector collector = new TradeCollector();
-                boolean second = false;
-                do {
-                    MerchantRecipeList list = new MerchantRecipeList();
-                    VillagerRegistry.manageVillagerTrades(list, villager, villagerID, world.rand);
-                    collector.collectTrades(trades, list, frand.chance);
-
-                    if (second && frand.chance < 0.0000001d) {
-                        LOG.warn("Skipping {}(custom handlers) because it's too randomized", villagerID);
-                        break;
-                    }
-                    second = true;
-                } while (frand.nextRound());
-                frand.newRound();
-                collector.newRound();
-
-                if (!trades.itemsToTrade.isEmpty()) {
-                    for (TradeInstance value : trades.itemsToTrade.values()) {
-                        recipes.add(new VillagerTrade(value.i1, value.i2, value.o, value.chance));
-                    }
-                }
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        };
-
-        LOG.info("Adding vanilla villagers");
-        { // profession 0
-            EntityVillager entity = new EntityVillager(world);
-
-            entity.setProfession(0);
-
-            ArrayList<VillagerTrade> recipes = new ArrayList<>();
-            recipes.add(new VillagerTrade(Items.wheat, null, Items.emerald, 0.9d));
-            recipes.add(new VillagerTrade(Item.getItemFromBlock(Blocks.wool), null, Items.emerald, 0.5d));
-            recipes.add(new VillagerTrade(Items.chicken, null, Items.emerald, 0.5d));
-            recipes.add(new VillagerTrade(Items.cooked_fished, null, Items.emerald, 0.4d));
-
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.bread, 0.9d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.melon, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.apple, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.cookie, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.shears, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.flint_and_steel, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.cooked_chicken, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.arrow, 0.3d));
-
-            recipes.add(
-                new VillagerTrade(
-                    new ItemStack(Blocks.gravel, 10),
-                    new ItemStack(Items.emerald),
-                    new ItemStack(Items.flint, 5, 0),
-                    0.5d));
-
-            detectCustomRecipes.accept(recipes, entity, 0);
-
-            VillagerRecipe.recipes.put(0, new VillagerRecipe(recipes, 0, entity));
+        final HashMap<String, ArrayList<VillagerRegistry.IVillageTradeHandler>> classNameToHandlerInstances = new HashMap<>();
+        for (VillagerRegistry.IVillageTradeHandler value : tradeHandlerMap.values()) {
+            classNameToHandlerInstances.computeIfAbsent(
+                value.getClass()
+                    .getName(),
+                k -> new ArrayList<>())
+                .add(value);
         }
-
-        { // profession 1
-            EntityVillager entity = new EntityVillager(world);
-
-            entity.setProfession(1);
-            ArrayList<VillagerTrade> recipes = new ArrayList<>();
-            recipes.add(new VillagerTrade(Items.paper, null, Items.emerald, 0.8d));
-            recipes.add(new VillagerTrade(Items.book, null, Items.emerald, 0.8d));
-            recipes.add(new VillagerTrade(Items.written_book, null, Items.emerald, 0.3d));
-
-            recipes.add(new VillagerTrade(Items.emerald, null, Item.getItemFromBlock(Blocks.bookshelf), 0.8d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Item.getItemFromBlock(Blocks.glass), 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.compass, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.clock, 0.2d));
-
-            recipes.add(
-                new VillagerTrade(
-                    new VillagerTrade.TradeItem(new ItemStack(Items.book)),
-                    new VillagerTrade.TradeItem(new ItemStack(Items.emerald)).setPossibleSizes(5, 64),
-                    new VillagerTrade.TradeItem(new ItemStack(Items.book), null, 1),
-                    0.07d));
-
-            detectCustomRecipes.accept(recipes, entity, 1);
-
-            VillagerRecipe.recipes.put(1, new VillagerRecipe(recipes, 1, entity));
-        }
-
-        { // profession 2
-            EntityVillager entity = new EntityVillager(world);
-
-            entity.setProfession(2);
-            ArrayList<VillagerTrade> recipes = new ArrayList<>();
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.ender_eye, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.experience_bottle, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.redstone, 0.4d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Item.getItemFromBlock(Blocks.glowstone), 0.3d));
-
-            Item[] aitem = new Item[] { Items.iron_sword, Items.diamond_sword, Items.iron_chestplate,
-                Items.diamond_chestplate, Items.iron_axe, Items.diamond_axe, Items.iron_pickaxe,
-                Items.diamond_pickaxe };
-
-            for (Item item : aitem) {
-                recipes.add(
-                    new VillagerTrade(
-                        new VillagerTrade.TradeItem(new ItemStack(item)),
-                        new VillagerTrade.TradeItem(new ItemStack(Items.emerald, 4)),
-                        new VillagerTrade.TradeItem(new ItemStack(item), null, 5 + 7),
-                        0.05d));
-            }
-
-            detectCustomRecipes.accept(recipes, entity, 2);
-
-            VillagerRecipe.recipes.put(2, new VillagerRecipe(recipes, 2, entity));
-        }
-
-        { // profession 3
-            EntityVillager entity = new EntityVillager(world);
-
-            entity.setProfession(3);
-            ArrayList<VillagerTrade> recipes = new ArrayList<>();
-            recipes.add(new VillagerTrade(Items.coal, null, Items.emerald, 0.7d));
-            recipes.add(new VillagerTrade(Items.iron_ingot, null, Items.emerald, 0.5d));
-            recipes.add(new VillagerTrade(Items.gold_ingot, null, Items.emerald, 0.5d));
-            recipes.add(new VillagerTrade(Items.diamond, null, Items.emerald, 0.5d));
-
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_sword, 0.5d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_sword, 0.5d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_axe, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_axe, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_pickaxe, 0.5d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_pickaxe, 0.5d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_shovel, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_shovel, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_hoe, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_hoe, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_boots, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_boots, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_helmet, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_helmet, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_chestplate, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_chestplate, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.iron_leggings, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.diamond_leggings, 0.2d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.chainmail_boots, 0.1d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.chainmail_helmet, 0.1d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.chainmail_chestplate, 0.1d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.chainmail_leggings, 0.1d));
-
-            detectCustomRecipes.accept(recipes, entity, 3);
-
-            VillagerRecipe.recipes.put(3, new VillagerRecipe(recipes, 3, entity));
-        }
-
-        { // profession 4
-            EntityVillager entity = new EntityVillager(world);
-
-            entity.setProfession(4);
-            ArrayList<VillagerTrade> recipes = new ArrayList<>();
-            recipes.add(new VillagerTrade(Items.coal, null, Items.emerald, 0.7d));
-            recipes.add(new VillagerTrade(Items.porkchop, null, Items.emerald, 0.5d));
-            recipes.add(new VillagerTrade(Items.beef, null, Items.emerald, 0.5d));
-
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.saddle, 0.1d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.leather_chestplate, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.leather_boots, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.leather_helmet, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.leather_leggings, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.cooked_porkchop, 0.3d));
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.cooked_beef, 0.3d));
-
-            detectCustomRecipes.accept(recipes, entity, 4);
-
-            VillagerRecipe.recipes.put(4, new VillagerRecipe(recipes, 4, entity));
-        }
-
-        // custom villagers
 
         MobRecipeLoader.isInGenerationProcess = true;
-        for (Integer id : VillagerRegistry.getRegisteredVillagers()) {
+
+        if (Config.MobHandler.regenerationTrigger != Config.MobHandler._CacheRegenerationTrigger.Always
+            && cache.exists()) {
+            LOG.info("Parsing Cached map");
+            Reader reader = null;
+            try {
+                reader = Files.newReader(cache, StandardCharsets.UTF_8);
+                VillagerTradesLoaderCacheStructure s = gson.fromJson(reader, VillagerTradesLoaderCacheStructure.class);
+                if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
+                    || s.version.equals(modlistversion)) {
+                    ProgressBarWrapper bar = new ProgressBarWrapper(
+                        "Parsing cached Villager Trades Map",
+                        s.handlerList.size());
+                    for (Map.Entry<Integer, ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler>> entry : s.handlerList
+                        .entrySet()) {
+                        int profession = entry.getKey();
+                        bar.step("Profession " + profession);
+                        try {
+                            ArrayList<VillagerTrade> trades = new ArrayList<>();
+                            if (profession >= 0 && profession <= 4) {
+                                trades.addAll(VanillaVillagerTradesLoader.vanillaTrades.get(profession));
+                            }
+                            ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler> handlers = entry
+                                .getValue();
+                            EntityVillager villager = new EntityVillager(world);
+                            villager.setProfession(profession);
+                            for (VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler handler : handlers) {
+                                if (handler.tradeList == null) { // provider
+                                    ArrayList<VillagerRegistry.IVillageTradeHandler> tradeHandlers = classNameToHandlerInstances
+                                        .get(handler.handler);
+                                    if (tradeHandlers != null && !tradeHandlers.isEmpty()
+                                        && tradeHandlers.get(0) instanceof IVillagerInfoProvider) {
+                                        for (VillagerRegistry.IVillageTradeHandler tradeHandler : tradeHandlers) {
+                                            ((IVillagerInfoProvider) tradeHandler)
+                                                .provideTrades(villager, profession, trades);
+                                        }
+                                    }
+                                } else {
+                                    trades.addAll(handler.tradeList);
+                                }
+                            }
+                            VillagerRecipe.recipes.put(profession, new VillagerRecipe(trades, profession, villager));
+                        } catch (Exception ignored) {}
+                    }
+                    bar.end();
+                    LOG.info("Parsed cached map, skipping generation");
+                    MobRecipeLoader.isInGenerationProcess = false;
+                    return;
+                } else {
+                    LOG.info("Cached map version mismatch, generating a new one");
+                }
+            } catch (Exception ignored) {
+                LOG.warn("There was an exception while parsing cached map, generating a new one");
+            } finally {
+                if (reader != null) try {
+                    reader.close();
+                } catch (Exception ignored) {}
+            }
+        } else {
+            LOG.info("Cached map doesn't exist or config option forced, generating a new one");
+        }
+
+        final VillagerTradesLoaderCacheStructure toCache = new VillagerTradesLoaderCacheStructure();
+        toCache.version = modlistversion;
+        toCache.handlerList = new HashMap<>();
+
+        LOG.info("Generating villager recipes");
+
+        final ArrayList<Integer> villagerIDs = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4));
+        villagerIDs.addAll(VillagerRegistry.getRegisteredVillagers());
+
+        ProgressBarWrapper bar = new ProgressBarWrapper("Generating Villager Traders Map", villagerIDs.size());
+
+        for (final int id : villagerIDs) {
+            bar.step("Profession " + id);
             try {
 
                 EntityVillager villager = new EntityVillager(world);
                 villager.setProfession(id);
 
+                ArrayList<VillagerTrade> recipes = new ArrayList<>();
+
+                if (id >= 0 && id <= 4) {
+                    // Provide vanilla trades
+                    recipes.addAll(VanillaVillagerTradesLoader.vanillaTrades.get(id));
+                }
+
+                // Custom handlers
+
                 Collection<VillagerRegistry.IVillageTradeHandler> handlers = tradeHandlerMap.get(id);
                 if (handlers == null || handlers.isEmpty()) {
-                    LOG.info("Generating empty recipe for profession {}", id);
-                    VillagerRecipe.recipes.put(id, new VillagerRecipe(new ArrayList<>(0), id, villager));
+                    LOG.info("Didn't found any registered handlers for profession {}", id);
+                    VillagerRecipe.recipes.put(id, new VillagerRecipe(recipes, id, villager));
+                    toCache.handlerList.put(id, new ArrayList<>(0));
                     continue;
                 }
 
-                LOG.info("Generating recipes for profession {} handlers: ", id);
+                LOG.info("Generating recipes from registered handlers for profession {} handlers: ", id);
                 for (VillagerRegistry.IVillageTradeHandler handler : handlers) {
-                    LOG.info(" - {}", handler.toString());
+                    LOG.info(
+                        " - {}{}",
+                        handler.getClass()
+                            .getName(),
+                        handler instanceof IVillagerInfoProvider ? "(provider)" : "");
                 }
+
+                ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler> handlersToCache = new ArrayList<>(
+                    handlers.size());
+                toCache.handlerList.put(id, handlersToCache);
 
                 frand.newRound();
 
-                TradeList trades = new TradeList();
                 TradeCollector collector = new TradeCollector();
-                boolean second = false;
-                do {
-                    MerchantRecipeList list = new MerchantRecipeList();
-                    VillagerRegistry.manageVillagerTrades(list, villager, id, world.rand);
-                    collector.collectTrades(trades, list, frand.chance);
-
-                    if (second && frand.chance < 0.0000001d) {
-                        LOG.warn("Skipping {} because it's too randomized", id);
-                        break;
+                for (VillagerRegistry.IVillageTradeHandler handler : handlers) {
+                    TradeList trades = new TradeList();
+                    VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler handlerToCache = new VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler();
+                    handlerToCache.handler = handler.getClass()
+                        .getName();
+                    if (handler instanceof IVillagerInfoProvider provider) {
+                        provider.provideTrades(villager, id, recipes);
+                        handlerToCache.tradeList = null;
+                        handlersToCache.add(handlerToCache);
+                        continue;
                     }
-                    second = true;
-                } while (frand.nextRound());
-                frand.newRound();
-                collector.newRound();
+                    boolean second = false;
+                    do {
+                        MerchantRecipeList list = new MerchantRecipeList();
+                        handler.manipulateTradesForVillager(villager, list, frand);
+                        collector.collectTrades(trades, list, frand.chance);
 
-                VillagerRecipe recipe = new VillagerRecipe(new ArrayList<>(trades.itemsToTrade.size()), id, villager);
-                for (TradeInstance value : trades.itemsToTrade.values()) {
-                    recipe.trades.add(new VillagerTrade(value.i1, value.i2, value.o, value.chance));
+                        if (second && frand.chance < 0.0000001d) {
+                            LOG.warn("Skipping {} because it's too randomized", id);
+                            break;
+                        }
+                        second = true;
+                    } while (frand.nextRound());
+                    frand.newRound();
+                    collector.newRound();
+
+                    handlerToCache.tradeList = new ArrayList<>();
+                    for (TradeInstance value : trades.itemsToTrade.values()) {
+                        VillagerTrade trade = new VillagerTrade(value.i1, value.i2, value.o, value.chance);
+                        recipes.add(trade);
+                        handlerToCache.tradeList.add(trade);
+                    }
+                    handlersToCache.add(handlerToCache);
                 }
-                VillagerRecipe.recipes.put(id, recipe);
+
+                VillagerRecipe.recipes.put(id, new VillagerRecipe(recipes, id, villager));
             } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
         MobRecipeLoader.isInGenerationProcess = false;
+
+        bar.end();
 
         final long endTime = System.currentTimeMillis();
         LOG.info(
@@ -311,6 +263,20 @@ public class VillagerTradesLoader {
             endTime - startTime,
             VillagerRecipe.recipes.size());
 
+        LOG.info("Saving generated map to file");
+        Writer writer = null;
+        try {
+            writer = Files.newWriter(cache, StandardCharsets.UTF_8);
+            gson.toJson(toCache, writer);
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (writer != null) try {
+                writer.close();
+            } catch (Exception ignored) {}
+        }
     }
 
     public static void processVillagerTrades() {

@@ -6,16 +6,21 @@ import java.util.Set;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.utils.GSONUtils;
+
 public class VillagerTrade {
 
     public static class TradeItem {
 
+        @GSONUtils.SkipGSON
         public ItemStack stack;
+        public ConstructableItemStack reconstructableStack;
         public Set<Integer> possibleSizes;
         public Integer enchantability;
 
         public TradeItem(ItemStack stack, Set<Integer> possibleSizes, Integer enchantability) {
             this.stack = stack;
+            this.reconstructableStack = new ConstructableItemStack(this.stack);
             this.possibleSizes = possibleSizes;
             this.enchantability = enchantability;
         }
@@ -30,6 +35,10 @@ public class VillagerTrade {
                 possibleSizes.add(i);
             }
             return this;
+        }
+
+        public void reconstructStack() {
+            this.stack = this.reconstructableStack.construct();
         }
     }
 
