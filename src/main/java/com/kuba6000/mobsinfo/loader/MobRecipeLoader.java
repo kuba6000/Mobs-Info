@@ -83,7 +83,6 @@ import com.kuba6000.mobsinfo.api.utils.ItemID;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.config.OverridesConfig;
-import com.kuba6000.mobsinfo.loader.extras.ExtraLoader;
 import com.kuba6000.mobsinfo.mixin.InfernalMobs.InfernalMobsCoreAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EntityAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EntityLivingAccessor;
@@ -312,6 +311,13 @@ public class MobRecipeLoader {
         }
     }
 
+    private static IMobInfoProvider findMobProvider(EntityLiving e) {
+        IMobInfoProvider provider = MobsInfoManager.customMobProviders.get(e.getClass());
+        if (provider != null) return provider;
+        if (e instanceof IMobInfoProvider) return (IMobInfoProvider) e;
+        return null;
+    }
+
     @SuppressWarnings({ "unchecked", "UnstableApiUsage" })
     public static void generateMobRecipeMap() {
 
@@ -380,7 +386,8 @@ public class MobRecipeLoader {
                             preGenerationEntityModifiers(e, mobName);
                             ArrayList<MobDrop> drops = entry.getValue();
                             if (drops == null) {
-                                if (e instanceof IMobInfoProvider provider) {
+                                IMobInfoProvider provider = findMobProvider(e);
+                                if (provider != null) {
                                     drops = new ArrayList<>();
                                     provider.provideDropsInformation(drops);
                                     for (MobDrop drop : drops) {
@@ -489,27 +496,30 @@ public class MobRecipeLoader {
 
                 ((EntityAccessor) e).setRand(frand);
 
-                if (e instanceof IMobInfoProvider provider) {
+                IMobInfoProvider provider = findMobProvider(e);
+                if (provider != null) {
                     boolean illegalOverride = false;
-                    Class<?> clazz = entity;
-                    do {
-                        try {
-                            clazz.getDeclaredMethod("provideDropsInformation", ArrayList.class);
-                            break;
-                        } catch (Exception exception) {
+                    if (e instanceof IMobInfoProvider && provider == e) {
+                        Class<?> clazz = entity;
+                        do {
                             try {
-                                clazz.getDeclaredMethod("dropFewItems", boolean.class, int.class);
-                                illegalOverride = true;
+                                clazz.getDeclaredMethod("provideDropsInformation", ArrayList.class);
                                 break;
-                            } catch (Exception ignored) {}
-                            try {
-                                clazz.getDeclaredMethod("dropRareDrop", int.class);
-                                illegalOverride = true;
-                                break;
-                            } catch (Exception ignored) {}
-                            clazz = clazz.getSuperclass();
-                        }
-                    } while (true);
+                            } catch (Exception exception) {
+                                try {
+                                    clazz.getDeclaredMethod("dropFewItems", boolean.class, int.class);
+                                    illegalOverride = true;
+                                    break;
+                                } catch (Exception ignored) {}
+                                try {
+                                    clazz.getDeclaredMethod("dropRareDrop", int.class);
+                                    illegalOverride = true;
+                                    break;
+                                } catch (Exception ignored) {}
+                                clazz = clazz.getSuperclass();
+                            }
+                        } while (true);
+                    }
                     if (illegalOverride) {
                         LOG.error(
                             "Entity {} is implementing IMobInfoProvider interface in its superclass and doesn't override provideDropsInformation WHILE also overriding dropFewItems or dropRareItems! IGNORING this provider and using normal generation!!!",

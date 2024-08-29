@@ -23,4 +23,9 @@ public interface IVillagerInfoProvider {
     void provideTrades(@Nonnull final EntityVillager villager, final int profession,
         @Nonnull ArrayList<VillagerTrade> trades);
 
+    default void provideTrades(@Nonnull final IVillageTradeHandler instance, @Nonnull final EntityVillager villager,
+        final int profession, @Nonnull ArrayList<VillagerTrade> trades) {
+        provideTrades(villager, profession, trades);
+    }
+
 }

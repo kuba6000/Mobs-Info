@@ -22,9 +22,11 @@ package com.kuba6000.mobsinfo;
 
 import net.minecraftforge.common.MinecraftForge;
 
+import com.kuba6000.mobsinfo.api.IMobsInfoManager;
 import com.kuba6000.mobsinfo.command.CommandHandler;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
+import com.kuba6000.mobsinfo.loader.MobsInfoManager;
 import com.kuba6000.mobsinfo.loader.VillagerTradesLoader;
 import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 
@@ -51,6 +53,8 @@ public class CommonProxy {
             .register(new FMLEventHandler());
         MinecraftForge.EVENT_BUS.register(new PlayerDataManager());
         MinecraftForge.EVENT_BUS.register(new ForgeEventHandler());
+
+        IMobsInfoManager.instance = new MobsInfoManager();
     }
 
     public void init(FMLInitializationEvent event) {}

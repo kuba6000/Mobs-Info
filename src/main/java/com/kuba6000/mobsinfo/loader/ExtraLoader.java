@@ -1,4 +1,4 @@
-package com.kuba6000.mobsinfo.loader.extras;
+package com.kuba6000.mobsinfo.loader;
 
 import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 
@@ -19,6 +19,36 @@ import com.kuba6000.mobsinfo.api.IMobExtraInfoProvider;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
+import com.kuba6000.mobsinfo.loader.extras.Automagy;
+import com.kuba6000.mobsinfo.loader.extras.Avaritia;
+import com.kuba6000.mobsinfo.loader.extras.BloodArsenal;
+import com.kuba6000.mobsinfo.loader.extras.BloodMagic;
+import com.kuba6000.mobsinfo.loader.extras.Botania;
+import com.kuba6000.mobsinfo.loader.extras.ChocoCraft;
+import com.kuba6000.mobsinfo.loader.extras.CoFHCore;
+import com.kuba6000.mobsinfo.loader.extras.DQRespect;
+import com.kuba6000.mobsinfo.loader.extras.DraconicEvolution;
+import com.kuba6000.mobsinfo.loader.extras.EditMobDrops;
+import com.kuba6000.mobsinfo.loader.extras.ElectroMagicTools;
+import com.kuba6000.mobsinfo.loader.extras.EtFuturum;
+import com.kuba6000.mobsinfo.loader.extras.ExtraUtilities;
+import com.kuba6000.mobsinfo.loader.extras.ForbiddenMagic;
+import com.kuba6000.mobsinfo.loader.extras.GregtechPlusPlus;
+import com.kuba6000.mobsinfo.loader.extras.HardcoreEnderExpansion;
+import com.kuba6000.mobsinfo.loader.extras.HarvestCraft;
+import com.kuba6000.mobsinfo.loader.extras.IExtraLoader;
+import com.kuba6000.mobsinfo.loader.extras.LycanitesMobs;
+import com.kuba6000.mobsinfo.loader.extras.MineTweaker;
+import com.kuba6000.mobsinfo.loader.extras.Minecraft;
+import com.kuba6000.mobsinfo.loader.extras.OpenBlocks;
+import com.kuba6000.mobsinfo.loader.extras.Thaumcraft;
+import com.kuba6000.mobsinfo.loader.extras.ThaumicBases;
+import com.kuba6000.mobsinfo.loader.extras.ThaumicHorizons;
+import com.kuba6000.mobsinfo.loader.extras.ThaumicTinkerer;
+import com.kuba6000.mobsinfo.loader.extras.TinkersConstruct;
+import com.kuba6000.mobsinfo.loader.extras.WirelessCraftingTerminal;
+import com.kuba6000.mobsinfo.loader.extras.Witchery;
+import com.kuba6000.mobsinfo.loader.extras.WitchingGadgets;
 import com.kuba6000.mobsinfo.mixin.minecraft.ASMEventHandlerAccessor;
 import com.kuba6000.mobsinfo.mixin.minecraft.EventBusAccessor;
 
@@ -32,6 +62,13 @@ public class ExtraLoader {
     private static boolean initialized = false;
     private static final List<IExtraLoader> loaders = new ArrayList<>();
     private static final List<IMobExtraInfoProvider> APIProviders = new ArrayList<>();
+
+    private static IMobExtraInfoProvider findExtraProvider(Object eventHandler) {
+        IMobExtraInfoProvider provider = MobsInfoManager.customMobExtraInfoProviders.get(eventHandler.getClass());
+        if (provider != null) return provider;
+        if (eventHandler instanceof IMobExtraInfoProvider) return (IMobExtraInfoProvider) eventHandler;
+        return null;
+    }
 
     private static void init() {
         initialized = true;
@@ -58,9 +95,9 @@ public class ExtraLoader {
                     Object instance = asmListener.getClass()
                         .getField("instance")
                         .get(asmListener);
-                    Class<?> clazz = instance.getClass();
-                    if (IMobExtraInfoProvider.class.isAssignableFrom(clazz)) {
-                        APIProviders.add((IMobExtraInfoProvider) instance);
+                    IMobExtraInfoProvider provider = findExtraProvider(instance);
+                    if (provider != null) {
+                        APIProviders.add(provider);
                         alreadyProvided.add(
                             ((ASMEventHandlerAccessor) listener).getOwner()
                                 .getModId());
