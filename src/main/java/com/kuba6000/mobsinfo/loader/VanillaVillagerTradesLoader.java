@@ -57,7 +57,7 @@ public class VanillaVillagerTradesLoader {
             recipes.add(
                 new VillagerTrade(
                     new VillagerTrade.TradeItem(new ItemStack(Items.book)),
-                    new VillagerTrade.TradeItem(new ItemStack(Items.emerald)).setPossibleSizes(5, 64),
+                    new VillagerTrade.TradeItem(new ItemStack(Items.emerald)).withPossibleSizes(5, 64),
                     new VillagerTrade.TradeItem(new ItemStack(Items.book), null, 1),
                     0.07d));
 

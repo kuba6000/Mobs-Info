@@ -18,7 +18,7 @@ public interface IVillagerInfoProvider {
      *
      * @param villager   Villager
      * @param profession Profession id
-     * @param trades     Trade list
+     * @param trades     Trade list, add trades to this list (use {@link VillagerTrade#create} to create drops)
      */
     void provideTrades(@Nonnull final EntityVillager villager, final int profession,
         @Nonnull ArrayList<VillagerTrade> trades);

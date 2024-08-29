@@ -24,13 +24,13 @@ public interface IMobInfoProvider {
      * {@link EntityLivingBase#dropRareDrop(int)},
      * {@link EntityLiving#addRandomArmor()} + {@link EntityLiving#enchantEquipment()}
      *
-     * @param drops
+     * @param drops Add drops to this list (use {@link MobDrop#create} to create drops)
      */
     void provideDropsInformation(@Nonnull ArrayList<MobDrop> drops);
 
     /**
      * Add drops from vanilla mob
-     * 
+     *
      * @param drops        Drops from provideDropsInformation
      * @param entityString Entity String
      * @param type         Desired drop type or null to get add of them
@@ -47,7 +47,7 @@ public interface IMobInfoProvider {
 
     /**
      * Add drops from vanilla mob
-     * 
+     *
      * @param drops      Drops from provideDropsInformation
      * @param vanillaMob Entity class
      * @param type       Desired drop type or null to get add of them
@@ -59,7 +59,7 @@ public interface IMobInfoProvider {
 
     /**
      * Add drops from vanilla mob
-     * 
+     *
      * @param drops      Drops from provideDropsInformation
      * @param vanillaMob Entity class
      */
@@ -70,7 +70,7 @@ public interface IMobInfoProvider {
 
     /**
      * Add drops from vanilla mob
-     * 
+     *
      * @param drops        Drops from provideDropsInformation
      * @param entityString Entity String
      */
