@@ -50,7 +50,7 @@ public class SaveDataPacket implements IMessage {
 
         @Override
         public IMessage onMessage(SaveDataPacket message, MessageContext ctx) {
-            MobsInfo.info("Received Mob Handler config, parsing");
+            MobsInfo.info("Received player data, parsing");
             PlayerData localData = PlayerDataManager.getPlayer(null);
             localData.loadFromNBT(message.tag);
             MobHandler.sortCachedRecipes();

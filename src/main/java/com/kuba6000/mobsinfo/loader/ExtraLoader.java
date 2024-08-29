@@ -1,4 +1,4 @@
-package com.kuba6000.mobsinfo.loader.extras;
+package com.kuba6000.mobsinfo.loader;
 
 import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 
@@ -33,6 +33,13 @@ public class ExtraLoader {
     private static final List<IExtraLoader> loaders = new ArrayList<>();
     private static final List<IMobExtraInfoProvider> APIProviders = new ArrayList<>();
 
+    private static IMobExtraInfoProvider findExtraProvider(Object eventHandler) {
+        IMobExtraInfoProvider provider = MobsInfoManager.customMobExtraInfoProviders.get(eventHandler.getClass());
+        if (provider != null) return provider;
+        if (eventHandler instanceof IMobExtraInfoProvider) return (IMobExtraInfoProvider) eventHandler;
+        return null;
+    }
+
     private static void init() {
         initialized = true;
         LOG.info("Initializing extra loader");
@@ -58,9 +65,9 @@ public class ExtraLoader {
                     Object instance = asmListener.getClass()
                         .getField("instance")
                         .get(asmListener);
-                    Class<?> clazz = instance.getClass();
-                    if (IMobExtraInfoProvider.class.isAssignableFrom(clazz)) {
-                        APIProviders.add((IMobExtraInfoProvider) instance);
+                    IMobExtraInfoProvider provider = findExtraProvider(instance);
+                    if (provider != null) {
+                        APIProviders.add(provider);
                         alreadyProvided.add(
                             ((ASMEventHandlerAccessor) listener).getOwner()
                                 .getModId());

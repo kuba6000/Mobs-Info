@@ -63,6 +63,13 @@ public class VillagerTradesLoader {
         Map<Integer, ArrayList<VillagerTradesLoaderCacheStructure_Handler>> handlerList;
     }
 
+    private static IVillagerInfoProvider findVillagerProvider(VillagerRegistry.IVillageTradeHandler tradeHandler) {
+        IVillagerInfoProvider provider = MobsInfoManager.customVillagerProviders.get(tradeHandler.getClass());
+        if (provider != null) return provider;
+        if (tradeHandler instanceof IVillagerInfoProvider) return (IVillagerInfoProvider) tradeHandler;
+        return null;
+    }
+
     public static void generateVillagerTrades() {
         if (alreadyGenerated) return;
         alreadyGenerated = true;
@@ -131,10 +138,10 @@ public class VillagerTradesLoader {
                                     ArrayList<VillagerRegistry.IVillageTradeHandler> tradeHandlers = classNameToHandlerInstances
                                         .get(handler.handler);
                                     if (tradeHandlers != null && !tradeHandlers.isEmpty()
-                                        && tradeHandlers.get(0) instanceof IVillagerInfoProvider) {
+                                        && findVillagerProvider(tradeHandlers.get(0)) != null) {
                                         for (VillagerRegistry.IVillageTradeHandler tradeHandler : tradeHandlers) {
-                                            ((IVillagerInfoProvider) tradeHandler)
-                                                .provideTrades(villager, profession, trades);
+                                            findVillagerProvider(tradeHandler)
+                                                .provideTrades(tradeHandler, villager, profession, trades);
                                         }
                                     }
                                 } else {
@@ -204,7 +211,8 @@ public class VillagerTradesLoader {
                         " - {}{}",
                         handler.getClass()
                             .getName(),
-                        handler instanceof IVillagerInfoProvider ? "(provider)" : "");
+                        handler instanceof IVillagerInfoProvider ? "(provider)"
+                            : (findVillagerProvider(handler) != null ? "(custom provider)" : ""));
                 }
 
                 final ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler> handlersToCache = new ArrayList<>(
@@ -230,8 +238,9 @@ public class VillagerTradesLoader {
                         classNameToHandlerCacheHelper.put(handlerToCache.handler, handlerToCache);
                     }
 
-                    if (handler instanceof IVillagerInfoProvider provider) {
-                        provider.provideTrades(villager, id, recipes);
+                    IVillagerInfoProvider provider = findVillagerProvider(handler);
+                    if (provider != null) {
+                        provider.provideTrades(handler, villager, id, recipes);
                         handlerToCache.tradeList = null;
                         continue;
                     }
