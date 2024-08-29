@@ -66,7 +66,7 @@ public class MobDrop {
     private MobDrop() {}
 
     /**
-     * All-in-one constructor, you should use {@link #create(ItemStack)} instead!
+     * All-in-one constructor, you should use {@link #create} instead!
      */
     public MobDrop(ItemStack stack, DropType type, int chance, Integer enchantable, HashMap<Integer, Integer> damages,
         boolean lootable, boolean playerOnly) {

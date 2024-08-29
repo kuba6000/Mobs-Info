@@ -18,9 +18,9 @@ public interface IMobExtraInfoProvider {
      * You should provide all changes that you make in events. You should modify provided drops list, DO NOT EDIT
      * {@link MobRecipe#mOutputs}, IT WON'T WORK!
      * You can check for actual entity using {@link MobRecipe#entity} instead of entityString
-     * 
+     *
      * @param entityString Entity registration name
-     * @param drops        Drop list (you should edit that)
+     * @param drops        Drop list (you should edit that) (use {@link MobDrop#create} to create drops)
      * @param recipe       Recipe
      */
     void provideExtraDropsInformation(@Nonnull final String entityString, @Nonnull final ArrayList<MobDrop> drops,
