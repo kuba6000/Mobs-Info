@@ -97,7 +97,7 @@ import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
-import gregtech.api.util.GT_OreDictUnificator;
+import gregtech.api.util.GTOreDictUnificator;
 
 public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI {
 
@@ -871,15 +871,15 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     private static class GT5Helper {
 
         public static List<ItemStack> getAssociated(ItemStack aResult) {
-            ItemData tPrefixMaterial = GT_OreDictUnificator.getAssociation(aResult);
+            ItemData tPrefixMaterial = GTOreDictUnificator.getAssociation(aResult);
 
             ArrayList<ItemStack> tResults = new ArrayList<>();
             tResults.add(aResult);
-            tResults.add(GT_OreDictUnificator.get(true, aResult));
+            tResults.add(GTOreDictUnificator.get(true, aResult));
             if ((tPrefixMaterial != null) && (!tPrefixMaterial.mBlackListed)
                 && (!tPrefixMaterial.mPrefix.mFamiliarPrefixes.isEmpty())) {
                 for (OrePrefixes tPrefix : tPrefixMaterial.mPrefix.mFamiliarPrefixes) {
-                    tResults.add(GT_OreDictUnificator.get(tPrefix, tPrefixMaterial.mMaterial.mMaterial, 1L));
+                    tResults.add(GTOreDictUnificator.get(tPrefix, tPrefixMaterial.mMaterial.mMaterial, 1L));
                 }
             }
             if (aResult.getUnlocalizedName()
