@@ -28,6 +28,8 @@ import static com.kuba6000.mobsinfo.nei.MobHandler.Translations.SPAWNS_NOT_IN;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +39,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import gregtech.api.enums.Materials;
+import gregtech.api.util.GTOreDictUnificator;
+import kubatech.api.helpers.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -97,7 +102,6 @@ import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
-import gregtech.api.util.GTOreDictUnificator;
 
 public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI {
 
@@ -870,26 +874,55 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
     private static class GT5Helper {
 
+        private static Class<?> oreDictUnificator = null;
+
+        private static Class<?> getUnificator() {
+            if (oreDictUnificator != null) return oreDictUnificator;
+            try {
+                // Try new API first
+                oreDictUnificator = Class.forName("gregtech.api.util.GTOreDictUnificator");
+            } catch (ClassNotFoundException ignored) {
+                try {
+                    // Compat with old GT versions: use old name
+                    oreDictUnificator = Class.forName("gregtech.api.GT_OreDictUnificator");
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            return oreDictUnificator;
+        }
+
         public static List<ItemStack> getAssociated(ItemStack aResult) {
-            ItemData tPrefixMaterial = GTOreDictUnificator.getAssociation(aResult);
+            try {
+                // Use reflection to lookup oredict unificator methods to keep compatibility with non-GTNH GT5
+                Class<?> unificator = getUnificator();
+                Method getAssociation = unificator.getMethod("getAssociation", ItemStack.class);
+                Method get = unificator.getMethod("get", boolean.class, ItemStack.class);
+                Method getWithMaterial = unificator.getMethod("get", OrePrefixes.class, Materials.class, long.class);
 
-            ArrayList<ItemStack> tResults = new ArrayList<>();
-            tResults.add(aResult);
-            tResults.add(GTOreDictUnificator.get(true, aResult));
-            if ((tPrefixMaterial != null) && (!tPrefixMaterial.mBlackListed)
-                && (!tPrefixMaterial.mPrefix.mFamiliarPrefixes.isEmpty())) {
-                for (OrePrefixes tPrefix : tPrefixMaterial.mPrefix.mFamiliarPrefixes) {
-                    tResults.add(GTOreDictUnificator.get(tPrefix, tPrefixMaterial.mMaterial.mMaterial, 1L));
-                }
-            }
-            if (aResult.getUnlocalizedName()
-                .startsWith("gt.blockores")) {
-                for (int i = 0; i < 8; i++) {
-                    tResults.add(new ItemStack(aResult.getItem(), 1, aResult.getItemDamage() % 1000 + i * 1000));
-                }
-            }
+                ItemData tPrefixMaterial = (ItemData) getAssociation.invoke(null, aResult);
 
-            return tResults;
+                ArrayList<ItemStack> tResults = new ArrayList<>();
+                tResults.add(aResult);
+                tResults.add((ItemStack) get.invoke(null, true, aResult));
+                if ((tPrefixMaterial != null) && (!tPrefixMaterial.mBlackListed)
+                    && (!tPrefixMaterial.mPrefix.mFamiliarPrefixes.isEmpty())) {
+                    for (OrePrefixes tPrefix : tPrefixMaterial.mPrefix.mFamiliarPrefixes) {
+                        tResults.add((ItemStack) getWithMaterial.invoke(null, tPrefix, tPrefixMaterial.mMaterial.mMaterial, 1L));
+                    }
+                }
+                if (aResult.getUnlocalizedName()
+                    .startsWith("gt.blockores")) {
+                    for (int i = 0; i < 8; i++) {
+                        tResults.add(new ItemStack(aResult.getItem(), 1, aResult.getItemDamage() % 1000 + i * 1000));
+                    }
+                }
+
+                return tResults;
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
         }
     }
 }
