@@ -896,7 +896,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 Class<?> unificator = getUnificator();
                 Method getAssociation = unificator.getMethod("getAssociation", ItemStack.class);
                 Method get = unificator.getMethod("get", boolean.class, ItemStack.class);
-                Method getWithMaterial = unificator.getMethod("get", OrePrefixes.class, Materials.class, long.class);
+                Method getWithMaterial = unificator.getMethod("get", OrePrefixes.class, Object.class, long.class);
 
                 ItemData tPrefixMaterial = (ItemData) getAssociation.invoke(null, aResult);
 
