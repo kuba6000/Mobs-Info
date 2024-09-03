@@ -39,7 +39,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import gregtech.api.enums.Materials;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -98,6 +97,7 @@ import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
+import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
 
@@ -906,7 +906,8 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 if ((tPrefixMaterial != null) && (!tPrefixMaterial.mBlackListed)
                     && (!tPrefixMaterial.mPrefix.mFamiliarPrefixes.isEmpty())) {
                     for (OrePrefixes tPrefix : tPrefixMaterial.mPrefix.mFamiliarPrefixes) {
-                        tResults.add((ItemStack) getWithMaterial.invoke(null, tPrefix, tPrefixMaterial.mMaterial.mMaterial, 1L));
+                        tResults.add(
+                            (ItemStack) getWithMaterial.invoke(null, tPrefix, tPrefixMaterial.mMaterial.mMaterial, 1L));
                     }
                 }
                 if (aResult.getUnlocalizedName()
