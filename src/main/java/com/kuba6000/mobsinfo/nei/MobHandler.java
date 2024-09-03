@@ -40,8 +40,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import gregtech.api.enums.Materials;
-import gregtech.api.util.GTOreDictUnificator;
-import kubatech.api.helpers.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
