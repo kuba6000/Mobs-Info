@@ -1,8 +1,7 @@
 <div align=center>
-  
+
 # Mobs Info 1.7.10 GTNH FORK
-  
-### Pull requests on this repo are disabled! Please open any mod-related PRs [upstream](https://github.com/kuba6000/Mobs-Info).
+
 ### If you want to change something GTNH-specific please try to do it in the configs or [KubaTech](https://github.com/GTNewHorizons/GT5-Unofficial/blob/master/src/main/java/kubatech/loaders/MobHandlerLoader.java).
 
 </div>
