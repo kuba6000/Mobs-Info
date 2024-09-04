@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import gtPlusPlus.core.material.MaterialsElements;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.item.ItemStack;
 
@@ -13,6 +12,7 @@ import com.kuba6000.mobsinfo.api.MobRecipe;
 
 import gtPlusPlus.api.objects.data.AutoMap;
 import gtPlusPlus.api.objects.data.Triplet;
+import gtPlusPlus.core.material.MaterialsElements;
 
 public class GregtechPlusPlus implements IExtraLoader {
 
