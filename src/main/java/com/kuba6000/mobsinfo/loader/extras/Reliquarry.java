@@ -1,5 +1,6 @@
 package com.kuba6000.mobsinfo.loader.extras;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,28 +88,37 @@ public class Reliquarry implements IExtraLoader {
     private void addDrop(ArrayList<MobDrop> drops, ItemStack item, String name) {
         MobDrop drop = new MobDrop(item, MobDrop.DropType.Normal, 0, null, null, false, false);
         drop.variableChance = true;
-        drop.chanceModifiers.add(new ReliquaryDropChance(name));
+        drop.chanceModifiers.add(new ReliquaryDropChance(name, eventHandler));
         drops.add(drop);
     }
 
-    private class ReliquaryDropChance implements IChanceModifier {
+    private static class ReliquaryDropChance implements IChanceModifier, Serializable {
 
-        private final String dropName;
-        private final double baseChance;
+        private static final long serialVersionUID = 1L;
+        private String dropName;
+        private transient double baseChance;
+        private transient CommonEventHandler eventHandler;
 
-        ReliquaryDropChance(String dropName) {
+        public ReliquaryDropChance() {}
+
+        ReliquaryDropChance(String dropName, CommonEventHandler eventHandler) {
             this.dropName = dropName;
+            this.eventHandler = eventHandler;
             this.baseChance = eventHandler.getBaseDrop(dropName);
         }
 
         @Override
         public String getDescription() {
             double percentage = baseChance * 100;
-            return String.format("Chance: %.2f%%", percentage);
+            return String.format("Percentage: %.2f%%", percentage);
         }
 
         @Override
         public double apply(double chance, World world, List<ItemStack> drops, Entity attacker, EntityLiving victim) {
+            // Recalculate baseChance if it's 0 (e.g., after deserialization)
+            if (baseChance == 0 && eventHandler != null) {
+                baseChance = eventHandler.getBaseDrop(dropName);
+            }
             return baseChance;
         }
     }
