@@ -86,9 +86,7 @@ public class Reliquarry implements IExtraLoader {
     }
 
     private void addDrop(ArrayList<MobDrop> drops, ItemStack item, String name) {
-        MobDrop drop = new MobDrop(item, MobDrop.DropType.Normal, 0, null, null, false, false);
-        drop.variableChance = true;
-        drop.chanceModifiers.add(new ReliquaryDropChance(name, eventHandler));
+        MobDrop drop = new MobDrop(item, MobDrop.DropType.Normal, (int)(eventHandler.getBaseDrop(name) * 10000d), null, null, false, false);
         drops.add(drop);
     }
 
