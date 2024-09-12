@@ -89,35 +89,4 @@ public class Reliquarry implements IExtraLoader {
         MobDrop drop = new MobDrop(item, MobDrop.DropType.Normal, (int)(eventHandler.getBaseDrop(name) * 10000d), null, null, false, false);
         drops.add(drop);
     }
-
-    private static class ReliquaryDropChance implements IChanceModifier, Serializable {
-
-        private static final long serialVersionUID = 1L;
-        private String dropName;
-        private transient double baseChance;
-        private transient CommonEventHandler eventHandler;
-
-        public ReliquaryDropChance() {}
-
-        ReliquaryDropChance(String dropName, CommonEventHandler eventHandler) {
-            this.dropName = dropName;
-            this.eventHandler = eventHandler;
-            this.baseChance = eventHandler.getBaseDrop(dropName);
-        }
-
-        @Override
-        public String getDescription() {
-            double percentage = baseChance * 100;
-            return String.format("Percentage: %.2f%%", percentage);
-        }
-
-        @Override
-        public double apply(double chance, World world, List<ItemStack> drops, Entity attacker, EntityLiving victim) {
-            // Recalculate baseChance if it's 0 (e.g., after deserialization)
-            if (baseChance == 0 && eventHandler != null) {
-                baseChance = eventHandler.getBaseDrop(dropName);
-            }
-            return baseChance;
-        }
-    }
 }
