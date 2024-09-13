@@ -20,6 +20,7 @@ import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
@@ -67,9 +68,11 @@ public class Reliquarry implements IExtraLoader {
             addDrop(drops, XRRecipes.ingredient(Reference.CREEPER_INGREDIENT_META), Names.ghast_gland);
         } else if (recipe.entity instanceof EntityCreeper) {
             addDrop(drops, XRRecipes.ingredient(Reference.CREEPER_INGREDIENT_META), Names.creeper_gland);
-            if (((EntityCreeper) recipe.entity).getPowered()) {
-                addDrop(drops, XRRecipes.ingredient(Reference.STORM_INGREDIENT_META), Names.eye_of_the_storm);
-            }
+            MobDrop drop = addDrop(
+                drops,
+                XRRecipes.ingredient(Reference.STORM_INGREDIENT_META),
+                Names.eye_of_the_storm);
+            drop.withChanceModifiers(new IChanceModifier.NormalChance(drop.chance * 0.01d));
         } else if (recipe.entity instanceof EntityEnderman) {
             addDrop(drops, XRRecipes.ingredient(Reference.ENDER_INGREDIENT_META), Names.ender_heart);
         } else if (recipe.entity instanceof EntityBat) {
@@ -79,7 +82,7 @@ public class Reliquarry implements IExtraLoader {
         }
     }
 
-    private void addDrop(ArrayList<MobDrop> drops, ItemStack item, String name) {
+    private MobDrop addDrop(ArrayList<MobDrop> drops, ItemStack item, String name) {
         MobDrop drop = new MobDrop(
             item,
             MobDrop.DropType.Normal,
@@ -89,5 +92,6 @@ public class Reliquarry implements IExtraLoader {
             eventHandler.getLootingDrop(name) > 0.01f,
             false);
         drops.add(drop);
+        return drop;
     }
 }
