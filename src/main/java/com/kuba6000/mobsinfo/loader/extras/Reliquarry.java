@@ -72,7 +72,9 @@ public class Reliquarry implements IExtraLoader {
                 drops,
                 XRRecipes.ingredient(Reference.STORM_INGREDIENT_META),
                 Names.eye_of_the_storm);
-            drop.withChanceModifiers(new IChanceModifier.NormalChance(drop.chance * 0.01d));
+            drop.withChanceModifiers(
+                new IChanceModifier.NormalChance(drop.chance * 0.01d),
+                new IChanceModifier.PoweredCreeper());
         } else if (recipe.entity instanceof EntityEnderman) {
             addDrop(drops, XRRecipes.ingredient(Reference.ENDER_INGREDIENT_META), Names.ender_heart);
         } else if (recipe.entity instanceof EntityBat) {
