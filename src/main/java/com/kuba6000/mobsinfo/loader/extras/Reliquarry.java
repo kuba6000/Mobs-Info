@@ -1,11 +1,7 @@
 package com.kuba6000.mobsinfo.loader.extras;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityCaveSpider;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -23,9 +19,7 @@ import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
-import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 
@@ -36,7 +30,7 @@ import xreliquary.lib.Reference;
 
 public class Reliquarry implements IExtraLoader {
 
-    private CommonEventHandler eventHandler;
+    private final CommonEventHandler eventHandler;
 
     public Reliquarry() {
         this.eventHandler = new CommonEventHandler();
@@ -86,7 +80,14 @@ public class Reliquarry implements IExtraLoader {
     }
 
     private void addDrop(ArrayList<MobDrop> drops, ItemStack item, String name) {
-        MobDrop drop = new MobDrop(item, MobDrop.DropType.Normal, (int)(eventHandler.getBaseDrop(name) * 10000d), null, null, false, false);
+        MobDrop drop = new MobDrop(
+            item,
+            MobDrop.DropType.Normal,
+            (int) (eventHandler.getBaseDrop(name) * 10000d),
+            null,
+            null,
+            eventHandler.getLootingDrop(name) > 0.01f,
+            false);
         drops.add(drop);
     }
 }
