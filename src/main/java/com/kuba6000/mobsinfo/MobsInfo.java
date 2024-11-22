@@ -70,6 +70,7 @@ public class MobsInfo {
     public static final String MODNAME = "MobsInfo";
     @Mod.Instance
     public static MobsInfo instance;
+    public static ModContainer container;
 
     public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
 
@@ -83,30 +84,35 @@ public class MobsInfo {
     @SidedProxy(clientSide = "com.kuba6000.mobsinfo.ClientProxy", serverSide = "com.kuba6000.mobsinfo.CommonProxy")
     public static CommonProxy proxy;
 
+    private static EventBus masterEventBus;
+
     @Subscribe
     public void iAmDependingOnEverything(FMLEvent event) {
         if (event instanceof FMLPreInitializationEvent) {
-            ModContainer activecontainer = Loader.instance()
-                .activeModContainer();
+            LOG.info("I Am Depending On Everything -> reordering mod load order!");
             List<ModContainer> list = Loader.instance()
                 .getActiveModList();
-            list.remove(activecontainer);
-            list.add(activecontainer);
+            list.remove(container);
+            list.add(container);
+            masterEventBus.unregister(this);
         }
     }
 
     @Mod.EventHandler
     public void construction(FMLConstructionEvent event) {
+        container = Loader.instance()
+            .activeModContainer();
         // hack into load order only if JustAnotherSpawner mod is loaded
         if (!Loader.isModLoaded("JustAnotherSpawner")) return;
+        LOG.info("Found JustAnotherSpawner mod, hacking load order");
         try {
             Field loaderControllerField = Loader.class.getDeclaredField("modController");
             loaderControllerField.setAccessible(true);
             LoadController controller = (LoadController) loaderControllerField.get(Loader.instance());
-            Field masterEventBus = LoadController.class.getDeclaredField("masterChannel");
-            masterEventBus.setAccessible(true);
-            EventBus bus = (EventBus) masterEventBus.get(controller);
-            bus.register(this);
+            Field masterEventBusField = LoadController.class.getDeclaredField("masterChannel");
+            masterEventBusField.setAccessible(true);
+            masterEventBus = (EventBus) masterEventBusField.get(controller);
+            masterEventBus.register(this);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             //
         }
