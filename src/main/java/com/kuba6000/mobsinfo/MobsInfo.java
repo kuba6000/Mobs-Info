@@ -89,6 +89,7 @@ public class MobsInfo {
     @Subscribe
     public void iAmDependingOnEverything(FMLEvent event) {
         if (event instanceof FMLPreInitializationEvent) {
+            LOG.info("I Am Depending On Everything -> reordering mod load order!");
             List<ModContainer> list = Loader.instance()
                 .getActiveModList();
             list.remove(container);
@@ -103,6 +104,7 @@ public class MobsInfo {
             .activeModContainer();
         // hack into load order only if JustAnotherSpawner mod is loaded
         if (!Loader.isModLoaded("JustAnotherSpawner")) return;
+        LOG.info("Found JustAnotherSpawner mod, hacking load order");
         try {
             Field loaderControllerField = Loader.class.getDeclaredField("modController");
             loaderControllerField.setAccessible(true);
