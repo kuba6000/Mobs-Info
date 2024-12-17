@@ -40,7 +40,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Setup the workspace
-        run: ./gradlew --build-cache --info --stacktrace -PmavenPublishUrl='${{ env.MAVEN_PUBLISHING_URL }}' ${{ inputs.workspace }}
+        run: ./gradlew --build-cache --info --stacktrace -PmavenPublishUrl='${{ env.MAVEN_PUBLISHING_URL }}' setupCIWorkspace
 
       - name: Build the mod
         run: ./gradlew --build-cache --info --stacktrace -PmavenPublishUrl='${{ env.MAVEN_PUBLISHING_URL }}' assemble
