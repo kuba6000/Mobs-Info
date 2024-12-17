@@ -8,6 +8,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.VillagerTrade;
 
 public class VanillaVillagerTradesLoader {
@@ -66,6 +67,9 @@ public class VanillaVillagerTradesLoader {
 
         { // profession 2
             ArrayList<VillagerTrade> recipes = new ArrayList<>();
+            if (!LoaderReference.Gregtech5.isLoaded) {
+                recipes.add(new VillagerTrade(Items.emerald, null, Items.ender_eye, 0.3d));
+            }
             recipes.add(new VillagerTrade(Items.emerald, null, Items.experience_bottle, 0.2d));
             recipes.add(new VillagerTrade(Items.emerald, null, Items.redstone, 0.4d));
             recipes.add(new VillagerTrade(Items.emerald, null, Item.getItemFromBlock(Blocks.glowstone), 0.3d));
