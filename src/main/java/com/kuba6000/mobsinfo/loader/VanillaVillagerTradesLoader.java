@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 
 import com.kuba6000.mobsinfo.api.VillagerTrade;
 
+import cpw.mods.fml.common.Loader;
+
 public class VanillaVillagerTradesLoader {
 
     public static HashMap<Integer, ArrayList<VillagerTrade>> vanillaTrades = new HashMap<>();
@@ -66,7 +68,11 @@ public class VanillaVillagerTradesLoader {
 
         { // profession 2
             ArrayList<VillagerTrade> recipes = new ArrayList<>();
-            recipes.add(new VillagerTrade(Items.emerald, null, Items.ender_eye, 0.3d));
+            // TODO: This file should not depend on other mods
+            // TODO: Add an API to do it instead!
+            if (!Loader.isModLoaded("dreamcraft")) {
+                recipes.add(new VillagerTrade(Items.emerald, null, Items.ender_eye, 0.3d));
+            }
             recipes.add(new VillagerTrade(Items.emerald, null, Items.experience_bottle, 0.2d));
             recipes.add(new VillagerTrade(Items.emerald, null, Items.redstone, 0.4d));
             recipes.add(new VillagerTrade(Items.emerald, null, Item.getItemFromBlock(Blocks.glowstone), 0.3d));
