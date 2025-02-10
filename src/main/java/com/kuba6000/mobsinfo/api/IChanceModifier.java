@@ -152,11 +152,11 @@ public interface IChanceModifier {
         }
     }
 
-    class DropsOnlyWithWeaknessII implements IChanceModifier {
+    class DropsOnlyWithWeaknessIII implements IChanceModifier {
 
         @Override
         public String getDescription() {
-            return Translations.DROPS_ONLY_WITH_WEAKNESS_2.get();
+            return Translations.DROPS_ONLY_WITH_WEAKNESS_3.get();
         }
 
         @Override
