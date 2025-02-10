@@ -49,7 +49,7 @@ public class ForbiddenMagic implements IExtraLoader {
                 false);
             drop.variableChance = true;
             drop.chanceModifiers.addAll(
-                Arrays.asList(new IChanceModifier.NormalChance(50d), new IChanceModifier.DropsOnlyWithWeaknessII()));
+                Arrays.asList(new IChanceModifier.NormalChance(50d), new IChanceModifier.DropsOnlyWithWeaknessIII()));
             drops.add(drop);
         }
 
