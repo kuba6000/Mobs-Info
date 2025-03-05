@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.kuba6000.mobsinfo.ClientProxy;
 import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.config.Config;
@@ -107,6 +108,8 @@ public class LoadConfigPacket implements IMessage {
 
         @Override
         public IMessage onMessage(LoadConfigPacket message, MessageContext ctx) {
+            ClientProxy.mobsToLoad = message.mobsToLoad;
+            ClientProxy.mobsOverrides = message.mobsOverrides;
             MobsInfo.info("Received Mobs-Info config, parsing");
             MobRecipeLoader.processMobRecipeMap(message.mobsToLoad, message.mobsOverrides);
             VillagerTradesLoader.processVillagerTrades(message.villagersToLoad);
