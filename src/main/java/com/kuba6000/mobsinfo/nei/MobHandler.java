@@ -196,6 +196,10 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         instance.addRecipeInt(e, positionedStacks, normaldrops, raredrops, additionaldrops, infernaldrops);
     }
 
+    public static MobHandler getInstance() {
+        return instance;
+    }
+
     private void addRecipeInt(EntityLiving e, List<MobPositionedStack> l, int normaldrops, int raredrops,
         int additionaldrops, int infernalDrops) {
         cachedRecipes.add(new MobCachedRecipe(e, l, normaldrops, raredrops, additionaldrops, infernalDrops));
@@ -572,7 +576,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     @Override
     public void loadCraftingRecipes(String outputId, Object... results) {
         if (outputId.equals(getOverlayIdentifier())) {
-            arecipes.addAll(cachedRecipes);
+            addAllRecipes();
             return;
         }
         super.loadCraftingRecipes(outputId, results);
@@ -606,6 +610,11 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         }
         for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
             .anyMatch(ingredient::isItemEqual)) arecipes.add(r);
+    }
+
+    public MobHandler addAllRecipes() {
+        arecipes.addAll(cachedRecipes);
+        return this;
     }
 
     public static boolean isUsageInfernalMob(ItemStack ingredient) {

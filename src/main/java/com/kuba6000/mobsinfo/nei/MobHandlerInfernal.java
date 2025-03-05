@@ -154,6 +154,11 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
         if (MobHandler.isUsageInfernalMob(ingredient)) arecipes.add(recipe);
     }
 
+    public MobHandlerInfernal addAllRecipes() {
+        arecipes.add(recipe);
+        return this;
+    }
+
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
