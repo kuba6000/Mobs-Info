@@ -35,13 +35,13 @@ public class IMCForNEI {
 
     public static void IMCSender() {
 
-        sendHandler("mobsinfo.mobhandler", "minecraft:diamond_sword", 168, 192, 1, 6);
+        sendHandler("mobsinfo.mobhandler", "minecraft:diamond_sword", 168, 105, 1, 6);
         sendCatalyst("mobsinfo.mobhandler", "minecraft:diamond_sword");
         if (LoaderReference.InfernalMobs.isLoaded) {
-            sendHandler("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword", 168, 192, 1, 6);
+            sendHandler("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword", 168, 105, 1, 6);
             sendCatalyst("mobsinfo.mobhandlerinfernal", "minecraft:diamond_sword");
         }
-        sendHandler("mobsinfo.villagertradeshandler", "minecraft:emerald", 168, 192, 1, 6);
+        sendHandler("mobsinfo.villagertradeshandler", "minecraft:emerald", 168, 105, 1, 6);
         sendCatalyst("mobsinfo.villagertradeshandler", "minecraft:emerald");
         sendCatalyst("mobsinfo.villagertradeshandler", "minecraft:spawn_egg:120");
 
