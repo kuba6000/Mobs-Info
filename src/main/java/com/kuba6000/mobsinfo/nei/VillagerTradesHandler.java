@@ -377,6 +377,11 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         for (VillagerCachedRecipe r : cachedRecipes) if (r.contains(r.mInputs, ingredient)) arecipes.add(r);
     }
 
+    public VillagerTradesHandler addAllRecipes() {
+        arecipes.addAll(cachedRecipes);
+        return this;
+    }
+
     @Override
     public void onUpdate() {
         cycleTicksStatic++;

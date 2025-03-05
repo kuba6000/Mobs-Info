@@ -33,6 +33,7 @@ import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
 import com.kuba6000.mobsinfo.loader.VillagerTradesLoader;
 import com.kuba6000.mobsinfo.nei.IMCForNEI;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -59,6 +60,10 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
         IMCForNEI.IMCSender();
+        KeyBindingHandler.init();
+        FMLCommonHandler.instance()
+            .bus()
+            .register(KeyBindingHandler.INSTANCE);
     }
 
     @Override
