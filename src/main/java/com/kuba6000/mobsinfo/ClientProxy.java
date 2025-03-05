@@ -20,6 +20,14 @@
 
 package com.kuba6000.mobsinfo;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IReloadableResourceManager;
+import net.minecraft.client.resources.IResourceManager;
+
+import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
 import com.kuba6000.mobsinfo.loader.VillagerTradesLoader;
@@ -38,6 +46,9 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 @SuppressWarnings("unused")
 public class ClientProxy extends CommonProxy {
 
+    public static HashSet<String> mobsToLoad = new HashSet<>();
+    public static HashMap<String, MobOverride> mobsOverrides = new HashMap<>();
+
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         ModUtils.isClientSided = true;
@@ -53,6 +64,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+        registerLanguageReload();
     }
 
     @Override
@@ -85,5 +97,14 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void serverStopped(FMLServerStoppedEvent event) {
         super.serverStopped(event);
+    }
+
+    @Override
+    public void registerLanguageReload() {
+        if (Minecraft.getMinecraft()
+            .getResourceManager() instanceof IReloadableResourceManager manager) {
+            manager.registerReloadListener(
+                (IResourceManager manager2) -> { MobRecipeLoader.processMobRecipeMap(mobsToLoad, mobsOverrides); });
+        }
     }
 }

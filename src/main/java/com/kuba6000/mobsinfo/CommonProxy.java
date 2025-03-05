@@ -77,4 +77,6 @@ public class CommonProxy {
     public void serverStopping(FMLServerStoppingEvent event) {}
 
     public void serverStopped(FMLServerStoppedEvent event) {}
+
+    public void registerLanguageReload() {}
 }
