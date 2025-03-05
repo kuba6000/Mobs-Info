@@ -86,7 +86,7 @@ Example file should generate at first start
 ## License
 
 MobsInfo - Minecraft addon
-Copyright (C) 2023-2024  kuba6000
+Copyright (C) 2023-2025  kuba6000
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
