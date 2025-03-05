@@ -1,7 +1,7 @@
 /*
  * spotless:off
  * MobsInfo - Minecraft addon
- * Copyright (C) 2023-2024  kuba6000
+ * Copyright (C) 2023-2025  kuba6000
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,20 @@
 
 package com.kuba6000.mobsinfo;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IReloadableResourceManager;
+import net.minecraft.client.resources.IResourceManager;
+
+import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
 import com.kuba6000.mobsinfo.loader.VillagerTradesLoader;
 import com.kuba6000.mobsinfo.nei.IMCForNEI;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -38,6 +47,9 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 @SuppressWarnings("unused")
 public class ClientProxy extends CommonProxy {
 
+    public static HashSet<String> mobsToLoad = new HashSet<>();
+    public static HashMap<String, MobOverride> mobsOverrides = new HashMap<>();
+
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         ModUtils.isClientSided = true;
@@ -48,11 +60,16 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
         IMCForNEI.IMCSender();
+        KeyBindingHandler.init();
+        FMLCommonHandler.instance()
+            .bus()
+            .register(KeyBindingHandler.INSTANCE);
     }
 
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+        registerLanguageReload();
     }
 
     @Override
@@ -85,5 +102,14 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void serverStopped(FMLServerStoppedEvent event) {
         super.serverStopped(event);
+    }
+
+    @Override
+    public void registerLanguageReload() {
+        if (Minecraft.getMinecraft()
+            .getResourceManager() instanceof IReloadableResourceManager manager) {
+            manager.registerReloadListener(
+                (IResourceManager manager2) -> { MobRecipeLoader.processMobRecipeMap(mobsToLoad, mobsOverrides); });
+        }
     }
 }

@@ -204,7 +204,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     public void drawBackground(int recipe) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
         GuiDraw.changeTexture(getGuiTexture());
-        GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 166);
+        GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 105);
 
         VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
 
@@ -375,6 +375,11 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
         for (VillagerCachedRecipe r : cachedRecipes) if (r.contains(r.mInputs, ingredient)) arecipes.add(r);
+    }
+
+    public VillagerTradesHandler addAllRecipes() {
+        arecipes.addAll(cachedRecipes);
+        return this;
     }
 
     @Override

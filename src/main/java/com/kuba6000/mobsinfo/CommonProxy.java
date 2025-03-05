@@ -1,7 +1,7 @@
 /*
  * spotless:off
  * MobsInfo - Minecraft addon
- * Copyright (C) 2023-2024  kuba6000
+ * Copyright (C) 2023-2025  kuba6000
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,4 +77,6 @@ public class CommonProxy {
     public void serverStopping(FMLServerStoppingEvent event) {}
 
     public void serverStopped(FMLServerStoppedEvent event) {}
+
+    public void registerLanguageReload() {}
 }

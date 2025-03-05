@@ -1,7 +1,7 @@
 /*
  * spotless:off
  * MobsInfo - Minecraft addon
- * Copyright (C) 2023-2024  kuba6000
+ * Copyright (C) 2023-2025  kuba6000
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -196,6 +196,10 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         instance.addRecipeInt(e, positionedStacks, normaldrops, raredrops, additionaldrops, infernaldrops);
     }
 
+    public static MobHandler getInstance() {
+        return instance;
+    }
+
     private void addRecipeInt(EntityLiving e, List<MobPositionedStack> l, int normaldrops, int raredrops,
         int additionaldrops, int infernalDrops) {
         cachedRecipes.add(new MobCachedRecipe(e, l, normaldrops, raredrops, additionaldrops, infernalDrops));
@@ -257,7 +261,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     public void drawBackground(int recipe) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
         GuiDraw.changeTexture(getGuiTexture());
-        GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 166);
+        GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 105);
 
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
 
@@ -572,7 +576,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     @Override
     public void loadCraftingRecipes(String outputId, Object... results) {
         if (outputId.equals(getOverlayIdentifier())) {
-            arecipes.addAll(cachedRecipes);
+            addAllRecipes();
             return;
         }
         super.loadCraftingRecipes(outputId, results);
@@ -606,6 +610,11 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         }
         for (MobCachedRecipe r : cachedRecipes) if (r.mInput.stream()
             .anyMatch(ingredient::isItemEqual)) arecipes.add(r);
+    }
+
+    public MobHandler addAllRecipes() {
+        arecipes.addAll(cachedRecipes);
+        return this;
     }
 
     public static boolean isUsageInfernalMob(ItemStack ingredient) {
