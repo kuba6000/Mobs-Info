@@ -89,7 +89,14 @@ public class ModUtils {
                             MobsInfo.warn("Mod " + m.getModId() + " package is not loaded yet!");
                             return;
                         }
-                        classNamesToModContainer.put(modPackage.getName(), m);
+                        String modPackageName = modPackage.getName();
+                        if (modPackageName.isEmpty()) {
+                            MobsInfo.warn("Mod " + m.getModId() + " package is root directory!");
+                            return;
+                        }
+                        if (classNamesToModContainer.put(modPackageName, m) != null) {
+                            MobsInfo.warn("There are multiple mods with package '" + modPackageName + "'!");
+                        }
                     }
                 });
         }
