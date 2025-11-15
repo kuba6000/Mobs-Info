@@ -584,7 +584,12 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        if (LoaderReference.Gregtech5.isLoaded) {
+        if (LoaderReference.Thaumcraft.isLoaded && result.hasTagCompound()
+            && result.getTagCompound()
+                .hasKey("Aspects", 9)) {
+            for (MobCachedRecipe r : cachedRecipes)
+                if (r.containsWithNBT(r.mOutputs, result) && r.isUnlocked()) arecipes.add(r);
+        } else if (LoaderReference.Gregtech5.isLoaded) {
             List<ItemStack> results = GT5Helper.getAssociated(result);
             for (MobCachedRecipe r : cachedRecipes) if (results.stream()
                 .anyMatch(i -> r.contains(r.mOutputs, i)) && r.isUnlocked()) arecipes.add(r);
