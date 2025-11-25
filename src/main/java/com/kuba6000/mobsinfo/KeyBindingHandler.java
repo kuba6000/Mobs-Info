@@ -1,5 +1,6 @@
 package com.kuba6000.mobsinfo;
 
+import com.kuba6000.mobsinfo.api.LoaderReference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 
@@ -34,7 +35,7 @@ public class KeyBindingHandler {
                 MobHandler.getInstance()
                     .getOverlayIdentifier(),
                 false);
-            gui.currenthandlers.add(new MobHandlerInfernal().addAllRecipes());
+            if (LoaderReference.InfernalMobs.isLoaded) gui.currenthandlers.add(new MobHandlerInfernal().addAllRecipes());
             gui.currenthandlers.add(new VillagerTradesHandler().addAllRecipes());
             mc.displayGuiScreen(gui);
         }
