@@ -642,8 +642,10 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
-        for (Integer recipe : ((GuiRecipe<?>) Minecraft.getMinecraft().currentScreen).getRecipeIndices()) {
-            ((MobCachedRecipe) arecipes.get(recipe)).onUpdate();
+        if (Minecraft.getMinecraft().currentScreen instanceof GuiRecipe<?>guiRecipe) {
+            for (Integer recipe : guiRecipe.getRecipeIndices()) {
+                ((MobCachedRecipe) arecipes.get(recipe)).onUpdate();
+            }
         }
     }
 
