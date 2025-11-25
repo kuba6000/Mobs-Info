@@ -1,11 +1,11 @@
 package com.kuba6000.mobsinfo;
 
-import com.kuba6000.mobsinfo.api.LoaderReference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 
 import org.lwjgl.input.Keyboard;
 
+import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.nei.MobHandler;
 import com.kuba6000.mobsinfo.nei.MobHandlerInfernal;
 import com.kuba6000.mobsinfo.nei.VillagerTradesHandler;
@@ -35,7 +35,8 @@ public class KeyBindingHandler {
                 MobHandler.getInstance()
                     .getOverlayIdentifier(),
                 false);
-            if (LoaderReference.InfernalMobs.isLoaded) gui.currenthandlers.add(new MobHandlerInfernal().addAllRecipes());
+            if (LoaderReference.InfernalMobs.isLoaded)
+                gui.currenthandlers.add(new MobHandlerInfernal().addAllRecipes());
             gui.currenthandlers.add(new VillagerTradesHandler().addAllRecipes());
             mc.displayGuiScreen(gui);
         }
