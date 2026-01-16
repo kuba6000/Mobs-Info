@@ -80,6 +80,7 @@ import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiContainerAccessor;
 import com.kuba6000.mobsinfo.mixin.late.InfernalMobs.InfernalMobsCoreAccessor;
+import com.kuba6000.mobsinfo.nei.MobHandler.MobPositionedStack;
 import com.kuba6000.mobsinfo.nei.scrollable.IScrollableGUI;
 import com.kuba6000.mobsinfo.nei.scrollable.Scrollbar;
 import com.kuba6000.mobsinfo.savedata.PlayerData;
@@ -689,12 +690,16 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     @Override
     public List<String> handleItemTooltip(GuiRecipe<?> gui, ItemStack stack, List<String> currenttip, int recipe) {
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
+
         PositionedStack positionedStack = currentrecipe.mOutputs.stream()
-            .filter(ps -> ps.item == stack)
+            .filter(ps -> ps.containsWithNBT(stack))
             .findFirst()
             .orElse(null);
-        if (positionedStack instanceof MobPositionedStack)
+
+        if (positionedStack instanceof MobPositionedStack) {
             currenttip.addAll(((MobPositionedStack) positionedStack).extraTooltip);
+        }
+
         return currenttip;
     }
 
