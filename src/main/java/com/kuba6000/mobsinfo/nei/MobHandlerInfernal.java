@@ -246,7 +246,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
     @Override
     public List<String> handleItemTooltip(GuiRecipe<?> gui, ItemStack stack, List<String> currenttip, int recipeID) {
         InfernalPositionedStack pstack = (InfernalPositionedStack) recipe.all.stream()
-            .filter(f -> f.item == stack)
+            .filter(f -> f.containsWithNBT(stack))
             .findFirst()
             .orElse(null);
         if (pstack != null) pstack.handleTooltip(currenttip);
