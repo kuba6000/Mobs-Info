@@ -690,7 +690,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     public List<String> handleItemTooltip(GuiRecipe<?> gui, ItemStack stack, List<String> currenttip, int recipe) {
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
         PositionedStack positionedStack = currentrecipe.mOutputs.stream()
-            .filter(ps -> ps.item == stack)
+            .filter(ps -> ps.containsWithNBT(stack))
             .findFirst()
             .orElse(null);
         if (positionedStack instanceof MobPositionedStack)
