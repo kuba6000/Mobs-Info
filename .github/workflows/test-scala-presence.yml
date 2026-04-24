@@ -12,11 +12,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Ensure Java sources do not import Scala
+      - name: Detect scala presence
         shell: bash
         run: |
-          set -euo pipefail
-          if grep -R -n --include='*.java' 'import scala\.' src/main/java; then
-            echo "Found forbidden Scala import in Java sources."
-            exit 1
-          fi
+          ! grep -E -r 'import scala\.' src/main/java
