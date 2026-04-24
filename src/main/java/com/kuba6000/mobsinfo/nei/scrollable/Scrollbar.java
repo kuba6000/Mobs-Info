@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiAccessor;
 import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiContainerAccessor;
+import com.kuba6000.mobsinfo.nei.EnumColors;
 
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientUtils;
@@ -194,8 +195,8 @@ public class Scrollbar {
                     input.rely,
                     input.relx + 16,
                     input.rely + 16,
-                    -2130706433,
-                    -2130706433);
+                    EnumColors.SLOT_HIGHLIGHT.getColor(),
+                    EnumColors.SLOT_HIGHLIGHT.getColor());
                 GL11.glColorMask(true, true, true, true);
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
             }

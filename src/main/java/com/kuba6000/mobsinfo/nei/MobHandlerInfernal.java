@@ -204,12 +204,12 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
     public void drawForeground(int recipeID) {
         int y = 0, yshift = 10, x = 7;
 
-        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
 
         scrollbar.beginForeground(recipeID);
         {
@@ -217,7 +217,12 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
             y = itemsYStart;
             yshift = nextRowYShift;
             if (recipe.eliteCount > 0) {
-                GuiDraw.drawString(Translations.ELITE.get(recipe.eliteChance * 100d, 100d), x, y, 0xFF555555, false);
+                GuiDraw.drawString(
+                    Translations.ELITE.get(recipe.eliteChance * 100d, 100d),
+                    x,
+                    y,
+                    EnumColors.TEXT_DEFAULT.getColor(),
+                    false);
                 y += yshift + ((recipe.eliteCount - 1) / itemsPerRow) * 18;
             }
             if (recipe.ultraCount > 0) {
@@ -225,7 +230,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
                     Translations.ULTRA.get(recipe.ultraChance * recipe.eliteChance * 100d, recipe.ultraChance * 100d),
                     x,
                     y,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
                 y += yshift + ((recipe.ultraCount - 1) / itemsPerRow) * 18;
             }
@@ -236,7 +241,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
                         recipe.infernoChance * recipe.ultraChance * 100d),
                     x,
                     y,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
             }
         }
