@@ -271,7 +271,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
             GL11.glTranslatef(20.f, 20.f, 0.f);
             GL11.glScalef(4.f, 4.f, 0.f);
-            GuiDraw.drawString("?", 0, 0, 0xFF555555, false);
+            GuiDraw.drawString("?", 0, 0, EnumColors.TEXT_DEFAULT.getColor(), false);
 
             GL11.glPopMatrix();
             return;
@@ -445,53 +445,103 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
         int y = 7, yshift = 10, x = 57;
 
-        y += drawStringWithWordWrap(currentrecipe.localizedName, x, y, yshift, 168 - x, 0xFF555555, false) - yshift;
+        y += drawStringWithWordWrap(
+            currentrecipe.localizedName,
+            x,
+            y,
+            yshift,
+            168 - x,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false) - yshift;
         if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
-            GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.MOD.get() + currentrecipe.mod, x, y += yshift, 0xFF555555, false);
+            GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(
+            Translations.MOD.get() + currentrecipe.mod,
+            x,
+            y += yshift,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false);
         if (!currentrecipe.isUnlocked()) {
             x = 6;
             y = 83;
-            GuiDraw.drawStringC(Translations.LOCKED.get(), 168 / 2, y += yshift, 0xFF555555, false);
-            GuiDraw.drawStringC(Translations.LOCKED_1.get(), 168 / 2, y += yshift, 0xFF555555, false);
+            GuiDraw.drawStringC(
+                Translations.LOCKED.get(),
+                168 / 2,
+                y += yshift,
+                EnumColors.TEXT_DEFAULT.getColor(),
+                false);
+            GuiDraw.drawStringC(
+                Translations.LOCKED_1.get(),
+                168 / 2,
+                y += yshift,
+                EnumColors.TEXT_DEFAULT.getColor(),
+                false);
             return;
         }
-        GuiDraw.drawString(Translations.MAX_HEALTH.get() + currentrecipe.maxHealth, x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(
+            Translations.MAX_HEALTH.get() + currentrecipe.maxHealth,
+            x,
+            y += yshift,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false);
         switch (currentrecipe.infernaltype) {
             case -1:
                 break;
             case 0:
-                GuiDraw.drawString(Translations.INFERNAL_CANNOT.get(), x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(
+                    Translations.INFERNAL_CANNOT.get(),
+                    x,
+                    y += yshift,
+                    EnumColors.TEXT_DEFAULT.getColor(),
+                    false);
                 break;
             case 1:
-                GuiDraw.drawString(Translations.INFERNAL_CAN.get(), x, y += yshift, 0xFFFF0000, false);
+                GuiDraw.drawString(
+                    Translations.INFERNAL_CAN.get(),
+                    x,
+                    y += yshift,
+                    EnumColors.TEXT_DANGER.getColor(),
+                    false);
                 break;
             case 2:
-                GuiDraw.drawString(Translations.INFERNAL_ALWAYS.get(), x, y += yshift, 0xFFFF0000, false);
+                GuiDraw.drawString(
+                    Translations.INFERNAL_ALWAYS.get(),
+                    x,
+                    y += yshift,
+                    EnumColors.TEXT_DANGER.getColor(),
+                    false);
                 break;
         }
 
-        if (!currentrecipe.isBoss.isEmpty())
-            GuiDraw.drawString(EnumChatFormatting.BOLD + "" + BOSS.get(), x, y += yshift, 0xFFD68F00, false);
+        if (!currentrecipe.isBoss.isEmpty()) GuiDraw.drawString(
+            EnumChatFormatting.BOLD + "" + BOSS.get(),
+            x,
+            y += yshift,
+            EnumColors.TEXT_BOSS.getColor(),
+            false);
 
-        if (currentrecipe.isPeacefulAllowed)
-            GuiDraw.drawString(Translations.PEACEFUL_ALLOWED.get(), x, y += yshift, 0xFF005500, false);
+        if (currentrecipe.isPeacefulAllowed) GuiDraw.drawString(
+            Translations.PEACEFUL_ALLOWED.get(),
+            x,
+            y += yshift,
+            EnumColors.TEXT_POSITIVE.getColor(),
+            false);
 
-        if (!currentrecipe.isUsableInVial)
-            GuiDraw.drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, 0xFF555555, false);
+        if (!currentrecipe.isUsableInVial) GuiDraw
+            .drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
 
         if (currentrecipe.spawnList != null && !currentrecipe.spawnList.isEmpty()) {
             int possiblePlaces = SpawnInfo.getAllKnownInfos()
                 .size();
             if (currentrecipe.spawnList.size() >= possiblePlaces && !NEIClientUtils.shiftKey()) {
-                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
                 setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
             } else if (currentrecipe.spawnList.size() < possiblePlaces / 2 || NEIClientUtils.shiftKey()) {
                 GuiDraw.drawString(
                     EnumChatFormatting.UNDERLINE + SPAWNS_IN.get(currentrecipe.spawnList.size()),
                     x,
                     y += yshift,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
                 setBiomeSpawnTooltip(
                     true,
@@ -508,18 +558,18 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                     y + yshift,
                     yshift,
                     168 - x,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
                 setBiomeSpawnTooltip(true, x, y - yshift, 168 - x, 18, true, currentrecipe.spawnList);
             }
         } else {
-            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, 0xFF555555, false);
+            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
             setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
         }
 
         if (!currentrecipe.additionalInformation.isEmpty()) {
             for (String s : currentrecipe.additionalInformation) {
-                GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(s, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
             }
         }
 
@@ -536,19 +586,20 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             y = itemsYStart;
             yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.rareOutputsCount > 0) {
-                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.rareOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.additionalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.ADDITIONAL_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw
+                    .drawString(Translations.ADDITIONAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.infernalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             yshift = 10;
