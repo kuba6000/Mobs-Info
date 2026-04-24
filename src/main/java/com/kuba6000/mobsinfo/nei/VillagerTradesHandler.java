@@ -323,10 +323,15 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     public void drawForeground(int recipe) {
         VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
         int y = 7, yshift = 10, x = 57;
-        GuiDraw.drawString(NAME.get() + currentRecipe.profession, x, y += yshift, 0xFF555555, false);
-        if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
-            GuiDraw.drawString("ID: " + currentRecipe.professionID, x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(
+            NAME.get() + currentRecipe.profession,
+            x,
+            y += yshift,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false);
+        if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey()) GuiDraw
+            .drawString("ID: " + currentRecipe.professionID, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
 
         scrollbar.beginForeground(recipe);
         scrollbar.endForeground(recipe);
