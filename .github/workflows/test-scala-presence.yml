@@ -11,8 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Check file content
-        uses: mattsb42-meta/not-grep@1.0.0
-        with:
-          config-file: ./.github/test-scala-presence.toml
+        uses: actions/checkout@v4
+      - name: Ensure Java sources do not import Scala
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n --include='*.java' 'import scala\.' src/main/java; then
+            echo "Found forbidden Scala import in Java sources."
+            exit 1
+          fi
