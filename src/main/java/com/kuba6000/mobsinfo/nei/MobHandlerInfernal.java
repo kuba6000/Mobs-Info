@@ -4,11 +4,11 @@ import static com.kuba6000.mobsinfo.config.Config.Compatibility.enableMobHandler
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
@@ -19,11 +19,10 @@ import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.mixin.late.InfernalMobs.InfernalMobsCoreAccessor;
-import com.kuba6000.mobsinfo.nei.scrollable.IScrollableGUI;
-import com.kuba6000.mobsinfo.nei.scrollable.Scrollbar;
 
 import atomicstryker.infernalmobs.common.InfernalMobsCore;
 import codechicken.lib.gui.GuiDraw;
+import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiRecipe;
@@ -33,7 +32,7 @@ import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import cpw.mods.fml.common.event.FMLInterModComms;
 
-public class MobHandlerInfernal extends TemplateRecipeHandler implements IScrollableGUI {
+public class MobHandlerInfernal extends TemplateRecipeHandler {
 
     enum Translations {
 
@@ -80,8 +79,6 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
     private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35, itemsYStart = 80;
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
 
-    private final Scrollbar scrollbar;
-
     public MobHandlerInfernal() {
         if (!NEI_Config.isAdded) {
             FMLInterModComms.sendRuntimeMessage(
@@ -95,7 +92,6 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
         if (recipe == null) {
             recipe = new InfernalRecipe();
         }
-        this.scrollbar = new Scrollbar(this, 0, itemsYStart);
     }
 
     @Override
@@ -116,6 +112,11 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
     @Override
     public String getRecipeName() {
         return "Infernal Drops";
+    }
+
+    @Override
+    public int getRecipeHeight(int recipe) {
+        return MobHandlerInfernal.recipe.height;
     }
 
     @Override
@@ -162,6 +163,9 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
+        for (Integer recipe : ((GuiRecipe<?>) Minecraft.getMinecraft().currentScreen).getRecipeIndices()) {
+            ((InfernalRecipe) arecipes.get(recipe)).onUpdate();
+        }
     }
 
     @Override
@@ -170,7 +174,6 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
         GuiDraw.changeTexture(getGuiTexture());
         GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 105);
 
-        scrollbar.beginBackground(recipeID);
         {
             int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
             if (recipe.eliteCount > 0) {
@@ -194,9 +197,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
                 }
                 y += yshift + ((recipe.ultraCount - 1) / itemsPerRow) * 18;
             }
-            scrollbar.reportMaxContentDrawn(y);
         }
-        scrollbar.endBackground(recipeID);
 
     }
 
@@ -204,20 +205,24 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
     public void drawForeground(int recipeID) {
         int y = 0, yshift = 10, x = 7;
 
-        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
 
-        scrollbar.beginForeground(recipeID);
         {
             x = 6;
             y = itemsYStart;
             yshift = nextRowYShift;
             if (recipe.eliteCount > 0) {
-                GuiDraw.drawString(Translations.ELITE.get(recipe.eliteChance * 100d, 100d), x, y, 0xFF555555, false);
+                GuiDraw.drawString(
+                    Translations.ELITE.get(recipe.eliteChance * 100d, 100d),
+                    x,
+                    y,
+                    EnumColors.TEXT_DEFAULT.getColor(),
+                    false);
                 y += yshift + ((recipe.eliteCount - 1) / itemsPerRow) * 18;
             }
             if (recipe.ultraCount > 0) {
@@ -225,7 +230,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
                     Translations.ULTRA.get(recipe.ultraChance * recipe.eliteChance * 100d, recipe.ultraChance * 100d),
                     x,
                     y,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
                 y += yshift + ((recipe.ultraCount - 1) / itemsPerRow) * 18;
             }
@@ -236,11 +241,10 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
                         recipe.infernoChance * recipe.ultraChance * 100d),
                     x,
                     y,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
             }
         }
-        scrollbar.endForeground(recipeID);
     }
 
     @Override
@@ -251,22 +255,6 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
             .orElse(null);
         if (pstack != null) pstack.handleTooltip(currenttip);
         return currenttip;
-    }
-
-    @Override
-    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
-        if (super.mouseScrolled(gui, scroll, recipe)) return true;
-        return scrollbar.mouseScrolled(gui, scroll, recipe);
-    }
-
-    @Override
-    public Scrollbar getScrollbar() {
-        return scrollbar;
-    }
-
-    @Override
-    public List<PositionedStack> getAllItems(int recipe) {
-        return ((InfernalRecipe) arecipes.get(recipe)).getOutputs();
     }
 
     private static class InfernalPositionedStack extends PositionedStack {
@@ -322,6 +310,8 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
         final List<PositionedStack> elite;
         final List<PositionedStack> ultra;
         final List<PositionedStack> inferno;
+
+        private final int height;
 
         public InfernalRecipe() {
             InfernalMobsCoreAccessor infernalMobsCore = (InfernalMobsCoreAccessor) InfernalMobsCore.instance();
@@ -402,6 +392,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
             all.addAll(ultra);
             all.addAll(inferno);
 
+            height = yoffset + 30;
         }
 
         @Override
@@ -410,16 +401,12 @@ public class MobHandlerInfernal extends TemplateRecipeHandler implements IScroll
         }
 
         public void onUpdate() {
-            if (cycleTicksStatic % 10 == 0) all.forEach(p -> p.setPermutationToRender(0));
-        }
-
-        public List<PositionedStack> getOutputs() {
-            return all;
+            if (!NEIClientUtils.shiftKey() && cycleTicksStatic % 10 == 0) all.forEach(p -> p.setPermutationToRender(0));
         }
 
         @Override
         public List<PositionedStack> getOtherStacks() {
-            return Collections.emptyList();
+            return all;
         }
     }
 }

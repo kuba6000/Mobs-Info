@@ -3,6 +3,7 @@ package com.kuba6000.mobsinfo.nei;
 import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 import static com.kuba6000.mobsinfo.nei.VillagerTradesHandler.Translations.*;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -41,8 +42,7 @@ import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
 import com.kuba6000.mobsinfo.config.Config;
-import com.kuba6000.mobsinfo.nei.scrollable.IScrollableGUI;
-import com.kuba6000.mobsinfo.nei.scrollable.Scrollbar;
+import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiContainerAccessor;
 
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientUtils;
@@ -57,7 +57,7 @@ import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.VillagerRegistry;
 
-public class VillagerTradesHandler extends TemplateRecipeHandler implements IScrollableGUI {
+public class VillagerTradesHandler extends TemplateRecipeHandler {
 
     enum Translations {
 
@@ -106,7 +106,6 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     private static final Logger LOG = LogManager.getLogger(MODID + "[Villager Trades Handler]");
     private static final VillagerTradesHandler instance = new VillagerTradesHandler();
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
-    private final Scrollbar scrollbar;
 
     public static void addRecipe(VillagerRecipe recipe) {
         if (recipe != null) addRecipe(recipe.trades, recipe.mob);
@@ -138,7 +137,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
                 second = false;
             }
         }
-        instance.addRecipeInt(tradeList, displayMob);
+        instance.addRecipeInt(tradeList, displayMob, y + 30);
     }
 
     public static void clearRecipes() {
@@ -158,8 +157,8 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
 
     private void addRecipeInt(
         ArrayList<Pair<Pair<Pair<VillagerCachedRecipe.PositionedTradeItem, VillagerCachedRecipe.PositionedTradeItem>, VillagerCachedRecipe.PositionedTradeItem>, VillagerTrade>> tradeList,
-        EntityVillager displayMob) {
-        cachedRecipes.add(new VillagerCachedRecipe(tradeList, displayMob));
+        EntityVillager displayMob, int maxHeight) {
+        cachedRecipes.add(new VillagerCachedRecipe(tradeList, displayMob, maxHeight));
     }
 
     @Override
@@ -193,12 +192,16 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
             GuiCraftingRecipe.craftinghandlers.add(this);
             GuiUsageRecipe.usagehandlers.add(this);
         }
-        this.scrollbar = new Scrollbar(this, 0, 11 + 83);
     }
 
     private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
     private HashMap<Rectangle, VillagerTrade> recipeRects = new HashMap<>();
+
+    @Override
+    public int getRecipeHeight(int recipe) {
+        return ((VillagerCachedRecipe) arecipes.get(recipe)).maxHeight;
+    }
 
     @Override
     public void drawBackground(int recipe) {
@@ -208,7 +211,6 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
 
         VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
 
-        scrollbar.beginBackground(recipe);
         {
             recipeRects.clear();
             int x = 6;
@@ -229,9 +231,7 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
                     second = false;
                 }
             }
-            scrollbar.reportMaxContentDrawn(y + 18);
         }
-        scrollbar.endBackground(recipe);
         GuiDraw.changeTexture(getGuiTexture());
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -323,26 +323,16 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     public void drawForeground(int recipe) {
         VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
         int y = 7, yshift = 10, x = 57;
-        GuiDraw.drawString(NAME.get() + currentRecipe.profession, x, y += yshift, 0xFF555555, false);
-        if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
-            GuiDraw.drawString("ID: " + currentRecipe.professionID, x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(
+            NAME.get() + currentRecipe.profession,
+            x,
+            y += yshift,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false);
+        if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey()) GuiDraw
+            .drawString("ID: " + currentRecipe.professionID, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
 
-        scrollbar.beginForeground(recipe);
-        scrollbar.endForeground(recipe);
-    }
-
-    @Override
-    public Scrollbar getScrollbar() {
-        return scrollbar;
-    }
-
-    @Override
-    public List<PositionedStack> getAllItems(int recipe) {
-        List<PositionedStack> ret = new ArrayList<>();
-        ret.addAll(((VillagerCachedRecipe) arecipes.get(recipe)).getInputs());
-        ret.addAll(((VillagerCachedRecipe) arecipes.get(recipe)).getOutputs());
-        return ret;
     }
 
     @Override
@@ -391,17 +381,17 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
     }
 
     @Override
-    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
-        if (super.mouseScrolled(gui, scroll, recipe)) return true;
-        return scrollbar.mouseScrolled(gui, scroll, recipe);
-    }
-
-    @Override
-    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe, int x, int y) {
+    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe) {
+        currenttip = super.handleTooltip(gui, currenttip, recipe);
+        Point pos = GuiDraw.getMousePosition();
+        Point offset = gui.getRecipePosition(recipe);
+        Point relMouse = new Point(
+            pos.x - ((GuiContainerAccessor) gui).getGuiLeft() - offset.x,
+            pos.y - ((GuiContainerAccessor) gui).getGuiTop() - offset.y);
         VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
         for (Map.Entry<Rectangle, VillagerTrade> entry : recipeRects.entrySet()) {
             if (entry.getKey()
-                .contains(x, y)) {
+                .contains(relMouse)) {
                 currenttip.addAll(
                     Arrays.asList(
                         CHANCE.get(
@@ -414,12 +404,6 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
             }
         }
         return currenttip;
-    }
-
-    @Override
-    public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe) {
-        currenttip = super.handleTooltip(gui, currenttip, recipe);
-        return scrollbar.handleTooltip(gui, currenttip, recipe);
     }
 
     class VillagerCachedRecipe extends CachedRecipe {
@@ -472,13 +456,15 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
         private final int professionID;
         private final String profession;
         private final String mod;
+        private final int maxHeight;
 
         public VillagerCachedRecipe(
             ArrayList<Pair<Pair<Pair<PositionedTradeItem, PositionedTradeItem>, PositionedTradeItem>, VillagerTrade>> tradeList,
-            EntityVillager displayMob) {
+            EntityVillager displayMob, int maxHeight) {
             this.tradeList = tradeList;
             this.mOutputs = new ArrayList<>();
             this.mInputs = new ArrayList<>();
+            this.maxHeight = maxHeight;
             for (var trade : this.tradeList) {
                 mOutputs.add(
                     trade.getLeft()
@@ -541,22 +527,14 @@ public class VillagerTradesHandler extends TemplateRecipeHandler implements IScr
             }
         }
 
-        public List<PositionedStack> getOutputs() {
-            return mOutputs;
-        }
-
-        public List<PositionedStack> getInputs() {
-            return mInputs;
-        }
-
         @Override
         public List<PositionedStack> getOtherStacks() {
-            return Collections.emptyList();
+            return mOutputs;
         }
 
         @Override
         public List<PositionedStack> getIngredients() {
-            return Collections.emptyList();
+            return mInputs;
         }
     }
 }

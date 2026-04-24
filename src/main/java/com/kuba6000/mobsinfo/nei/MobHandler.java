@@ -78,10 +78,9 @@ import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.api.utils.MobUtils;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
 import com.kuba6000.mobsinfo.config.Config;
+import com.kuba6000.mobsinfo.mixin.early.minecraft.EntityLivingAccessor;
 import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiContainerAccessor;
 import com.kuba6000.mobsinfo.mixin.late.InfernalMobs.InfernalMobsCoreAccessor;
-import com.kuba6000.mobsinfo.nei.scrollable.IScrollableGUI;
-import com.kuba6000.mobsinfo.nei.scrollable.Scrollbar;
 import com.kuba6000.mobsinfo.savedata.PlayerData;
 import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 
@@ -100,7 +99,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
 
-public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI {
+public class MobHandler extends TemplateRecipeHandler {
 
     enum Translations {
 
@@ -169,6 +168,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
     private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 35, itemsYStartMin = 83;
     private static int itemsYStart = itemsYStartMin;
+    private static int lastArmorTick = 0;
 
     public static void addRecipe(EntityLiving e, List<MobDrop> drop) {
         List<MobPositionedStack> positionedStacks = new ArrayList<>();
@@ -194,7 +194,14 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             else if (d.type == MobDrop.DropType.Infernal) break; // dont render infernal drops
             positionedStacks.add(new MobPositionedStack(d.stack.copy(), xoffset, yoffset, d));
         }
-        instance.addRecipeInt(e, positionedStacks, normaldrops, raredrops, additionaldrops, infernaldrops);
+        instance.addRecipeInt(
+            e,
+            positionedStacks,
+            normaldrops,
+            raredrops,
+            additionaldrops,
+            infernaldrops,
+            yoffset + itemsYStart + 30);
     }
 
     public static MobHandler getInstance() {
@@ -202,8 +209,8 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     }
 
     private void addRecipeInt(EntityLiving e, List<MobPositionedStack> l, int normaldrops, int raredrops,
-        int additionaldrops, int infernalDrops) {
-        cachedRecipes.add(new MobCachedRecipe(e, l, normaldrops, raredrops, additionaldrops, infernalDrops));
+        int additionaldrops, int infernalDrops, int maxHeight) {
+        cachedRecipes.add(new MobCachedRecipe(e, l, normaldrops, raredrops, additionaldrops, infernalDrops, maxHeight));
     }
 
     public static void clearRecipes() {
@@ -225,8 +232,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         });
     }
 
-    private final Scrollbar scrollbar;
-
     public MobHandler() {
         this.transferRects.add(new RecipeTransferRect(new Rectangle(7, 62, 16, 16), getOverlayIdentifier()));
         if (!NEI_Config.isAdded) {
@@ -238,7 +243,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             GuiCraftingRecipe.craftinghandlers.add(this);
             GuiUsageRecipe.usagehandlers.add(this);
         }
-        this.scrollbar = new Scrollbar(this, 0, 83);
     }
 
     @Override
@@ -256,6 +260,11 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         return "mobsinfo:textures/gui/MobHandler.png";
     }
 
+    @Override
+    public int getRecipeHeight(int recipe) {
+        return ((MobCachedRecipe) arecipes.get(recipe)).maxHeight;
+    }
+
     private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
     @Override
@@ -271,13 +280,12 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
             GL11.glTranslatef(20.f, 20.f, 0.f);
             GL11.glScalef(4.f, 4.f, 0.f);
-            GuiDraw.drawString("?", 0, 0, 0xFF555555, false);
+            GuiDraw.drawString("?", 0, 0, EnumColors.TEXT_DEFAULT.getColor(), false);
 
             GL11.glPopMatrix();
             return;
         }
 
-        scrollbar.beginBackground(recipe);
         {
             int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
@@ -308,9 +316,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 }
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
-            scrollbar.reportMaxContentDrawn(y);
         }
-        scrollbar.endBackground(recipe);
 
         GuiDraw.changeTexture(getGuiTexture());
 
@@ -347,6 +353,20 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
 
         try {
             EntityLiving e = currentrecipe.mob;
+            String mobName = EntityList.getEntityString(e);
+
+            if ("TwilightForest.SnowGuardian".equals(mobName)) {
+                if (lastArmorTick == 0) {
+                    ((EntityLivingAccessor) e).callAddRandomArmor();
+                    lastArmorTick += 1;
+                }
+
+                if (cycleTicksStatic % 20 == 0 && cycleTicksStatic != lastArmorTick) {
+                    lastArmorTick = cycleTicksStatic;
+
+                    ((EntityLivingAccessor) e).callAddRandomArmor();
+                }
+            }
 
             int mobx = 31, moby = 50;
             e.setPosition(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
@@ -445,53 +465,103 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         MobCachedRecipe currentrecipe = ((MobCachedRecipe) arecipes.get(recipe));
         int y = 7, yshift = 10, x = 57;
 
-        y += drawStringWithWordWrap(currentrecipe.localizedName, x, y, yshift, 168 - x, 0xFF555555, false) - yshift;
+        y += drawStringWithWordWrap(
+            currentrecipe.localizedName,
+            x,
+            y,
+            yshift,
+            168 - x,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false) - yshift;
         if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
-            GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, 0xFF555555, false);
-        GuiDraw.drawString(Translations.MOD.get() + currentrecipe.mod, x, y += yshift, 0xFF555555, false);
+            GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(
+            Translations.MOD.get() + currentrecipe.mod,
+            x,
+            y += yshift,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false);
         if (!currentrecipe.isUnlocked()) {
             x = 6;
             y = 83;
-            GuiDraw.drawStringC(Translations.LOCKED.get(), 168 / 2, y += yshift, 0xFF555555, false);
-            GuiDraw.drawStringC(Translations.LOCKED_1.get(), 168 / 2, y += yshift, 0xFF555555, false);
+            GuiDraw.drawStringC(
+                Translations.LOCKED.get(),
+                168 / 2,
+                y += yshift,
+                EnumColors.TEXT_DEFAULT.getColor(),
+                false);
+            GuiDraw.drawStringC(
+                Translations.LOCKED_1.get(),
+                168 / 2,
+                y += yshift,
+                EnumColors.TEXT_DEFAULT.getColor(),
+                false);
             return;
         }
-        GuiDraw.drawString(Translations.MAX_HEALTH.get() + currentrecipe.maxHealth, x, y += yshift, 0xFF555555, false);
+        GuiDraw.drawString(
+            Translations.MAX_HEALTH.get() + currentrecipe.maxHealth,
+            x,
+            y += yshift,
+            EnumColors.TEXT_DEFAULT.getColor(),
+            false);
         switch (currentrecipe.infernaltype) {
             case -1:
                 break;
             case 0:
-                GuiDraw.drawString(Translations.INFERNAL_CANNOT.get(), x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(
+                    Translations.INFERNAL_CANNOT.get(),
+                    x,
+                    y += yshift,
+                    EnumColors.TEXT_DEFAULT.getColor(),
+                    false);
                 break;
             case 1:
-                GuiDraw.drawString(Translations.INFERNAL_CAN.get(), x, y += yshift, 0xFFFF0000, false);
+                GuiDraw.drawString(
+                    Translations.INFERNAL_CAN.get(),
+                    x,
+                    y += yshift,
+                    EnumColors.TEXT_DANGER.getColor(),
+                    false);
                 break;
             case 2:
-                GuiDraw.drawString(Translations.INFERNAL_ALWAYS.get(), x, y += yshift, 0xFFFF0000, false);
+                GuiDraw.drawString(
+                    Translations.INFERNAL_ALWAYS.get(),
+                    x,
+                    y += yshift,
+                    EnumColors.TEXT_DANGER.getColor(),
+                    false);
                 break;
         }
 
-        if (!currentrecipe.isBoss.isEmpty())
-            GuiDraw.drawString(EnumChatFormatting.BOLD + "" + BOSS.get(), x, y += yshift, 0xFFD68F00, false);
+        if (!currentrecipe.isBoss.isEmpty()) GuiDraw.drawString(
+            EnumChatFormatting.BOLD + "" + BOSS.get(),
+            x,
+            y += yshift,
+            EnumColors.TEXT_BOSS.getColor(),
+            false);
 
-        if (currentrecipe.isPeacefulAllowed)
-            GuiDraw.drawString(Translations.PEACEFUL_ALLOWED.get(), x, y += yshift, 0xFF005500, false);
+        if (currentrecipe.isPeacefulAllowed) GuiDraw.drawString(
+            Translations.PEACEFUL_ALLOWED.get(),
+            x,
+            y += yshift,
+            EnumColors.TEXT_POSITIVE.getColor(),
+            false);
 
-        if (!currentrecipe.isUsableInVial)
-            GuiDraw.drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, 0xFF555555, false);
+        if (!currentrecipe.isUsableInVial) GuiDraw
+            .drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
 
         if (currentrecipe.spawnList != null && !currentrecipe.spawnList.isEmpty()) {
             int possiblePlaces = SpawnInfo.getAllKnownInfos()
                 .size();
             if (currentrecipe.spawnList.size() >= possiblePlaces && !NEIClientUtils.shiftKey()) {
-                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
                 setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
             } else if (currentrecipe.spawnList.size() < possiblePlaces / 2 || NEIClientUtils.shiftKey()) {
                 GuiDraw.drawString(
                     EnumChatFormatting.UNDERLINE + SPAWNS_IN.get(currentrecipe.spawnList.size()),
                     x,
                     y += yshift,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
                 setBiomeSpawnTooltip(
                     true,
@@ -508,18 +578,18 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                     y + yshift,
                     yshift,
                     168 - x,
-                    0xFF555555,
+                    EnumColors.TEXT_DEFAULT.getColor(),
                     false);
                 setBiomeSpawnTooltip(true, x, y - yshift, 168 - x, 18, true, currentrecipe.spawnList);
             }
         } else {
-            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, 0xFF555555, false);
+            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
             setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
         }
 
         if (!currentrecipe.additionalInformation.isEmpty()) {
             for (String s : currentrecipe.additionalInformation) {
-                GuiDraw.drawString(s, x, y += yshift, 0xFF555555, false);
+                GuiDraw.drawString(s, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
             }
         }
 
@@ -530,30 +600,29 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         currentrecipe.mOutputs
             .forEach(o -> { if (o instanceof MobPositionedStack) ((MobPositionedStack) o).setYStart(itemsYStart); });
 
-        scrollbar.beginForeground(recipe);
         {
             x = 6;
             y = itemsYStart;
             yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.rareOutputsCount > 0) {
-                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.rareOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.additionalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.ADDITIONAL_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw
+                    .drawString(Translations.ADDITIONAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.infernalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, 0xFF555555, false);
+                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             yshift = 10;
         }
-        scrollbar.endForeground(recipe);
     }
 
     @Override
@@ -650,12 +719,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         }
     }
 
-    @Override
-    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
-        if (super.mouseScrolled(gui, scroll, recipe)) return true;
-        return scrollbar.mouseScrolled(gui, scroll, recipe);
-    }
-
     private static final Rectangle extendedTooltipRect = new Rectangle(28, 62, 8, 16);
 
     @Override
@@ -696,16 +759,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         if (positionedStack instanceof MobPositionedStack)
             currenttip.addAll(((MobPositionedStack) positionedStack).extraTooltip);
         return currenttip;
-    }
-
-    @Override
-    public Scrollbar getScrollbar() {
-        return scrollbar;
-    }
-
-    @Override
-    public List<PositionedStack> getAllItems(int recipe) {
-        return ((MobCachedRecipe) arecipes.get(recipe)).getOutputs();
     }
 
     public static class MobPositionedStack extends PositionedStack {
@@ -800,10 +853,11 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         public final boolean isPeacefulAllowed;
         public final List<String> additionalInformation;
         public final Set<SpawnInfo> spawnList;
+        private final int maxHeight;
         public String isBoss = "";
 
         public MobCachedRecipe(EntityLiving mob, List<MobPositionedStack> mOutputs, int normalOutputsCount,
-            int rareOutputsCount, int additionalOutputsCount, int infernalOutputsCount) {
+            int rareOutputsCount, int additionalOutputsCount, int infernalOutputsCount, int maxHeight) {
             super();
             String classname = mob.getClass()
                 .getName();
@@ -818,6 +872,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             this.infernalOutputsCount = infernalOutputsCount;
             this.mInput = new ArrayList<>();
             this.isPeacefulAllowed = !(mob instanceof IMob);
+            this.maxHeight = maxHeight;
             int id = EntityList.getEntityID(mob);
             mobname = EntityList.getEntityString(mob);
             // noinspection ConstantConditions
@@ -877,14 +932,10 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 mOutputs.forEach(p -> p.setPermutationToRender(0));
         }
 
-        public List<PositionedStack> getOutputs() {
-            if (!isUnlocked()) return Collections.emptyList();
-            return mOutputs;
-        }
-
         @Override
         public List<PositionedStack> getOtherStacks() {
-            return Collections.emptyList();
+            if (!isUnlocked()) return Collections.emptyList();
+            return mOutputs;
         }
     }
 
