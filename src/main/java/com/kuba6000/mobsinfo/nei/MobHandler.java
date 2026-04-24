@@ -81,8 +81,6 @@ import com.kuba6000.mobsinfo.config.Config;
 import com.kuba6000.mobsinfo.mixin.early.minecraft.EntityLivingAccessor;
 import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiContainerAccessor;
 import com.kuba6000.mobsinfo.mixin.late.InfernalMobs.InfernalMobsCoreAccessor;
-import com.kuba6000.mobsinfo.nei.scrollable.IScrollableGUI;
-import com.kuba6000.mobsinfo.nei.scrollable.Scrollbar;
 import com.kuba6000.mobsinfo.savedata.PlayerData;
 import com.kuba6000.mobsinfo.savedata.PlayerDataManager;
 
@@ -101,7 +99,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
 
-public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI {
+public class MobHandler extends TemplateRecipeHandler {
 
     enum Translations {
 
@@ -196,7 +194,14 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             else if (d.type == MobDrop.DropType.Infernal) break; // dont render infernal drops
             positionedStacks.add(new MobPositionedStack(d.stack.copy(), xoffset, yoffset, d));
         }
-        instance.addRecipeInt(e, positionedStacks, normaldrops, raredrops, additionaldrops, infernaldrops);
+        instance.addRecipeInt(
+            e,
+            positionedStacks,
+            normaldrops,
+            raredrops,
+            additionaldrops,
+            infernaldrops,
+            yoffset + itemsYStart + 30);
     }
 
     public static MobHandler getInstance() {
@@ -204,8 +209,8 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     }
 
     private void addRecipeInt(EntityLiving e, List<MobPositionedStack> l, int normaldrops, int raredrops,
-        int additionaldrops, int infernalDrops) {
-        cachedRecipes.add(new MobCachedRecipe(e, l, normaldrops, raredrops, additionaldrops, infernalDrops));
+        int additionaldrops, int infernalDrops, int maxHeight) {
+        cachedRecipes.add(new MobCachedRecipe(e, l, normaldrops, raredrops, additionaldrops, infernalDrops, maxHeight));
     }
 
     public static void clearRecipes() {
@@ -227,8 +232,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         });
     }
 
-    private final Scrollbar scrollbar;
-
     public MobHandler() {
         this.transferRects.add(new RecipeTransferRect(new Rectangle(7, 62, 16, 16), getOverlayIdentifier()));
         if (!NEI_Config.isAdded) {
@@ -240,7 +243,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             GuiCraftingRecipe.craftinghandlers.add(this);
             GuiUsageRecipe.usagehandlers.add(this);
         }
-        this.scrollbar = new Scrollbar(this, 0, 83);
     }
 
     @Override
@@ -256,6 +258,11 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
     @Override
     public String getGuiTexture() {
         return "mobsinfo:textures/gui/MobHandler.png";
+    }
+
+    @Override
+    public int getRecipeHeight(int recipe) {
+        return ((MobCachedRecipe) arecipes.get(recipe)).maxHeight;
     }
 
     private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
@@ -279,7 +286,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             return;
         }
 
-        scrollbar.beginBackground(recipe);
         {
             int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
@@ -310,9 +316,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 }
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
-            scrollbar.reportMaxContentDrawn(y);
         }
-        scrollbar.endBackground(recipe);
 
         GuiDraw.changeTexture(getGuiTexture());
 
@@ -596,7 +600,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         currentrecipe.mOutputs
             .forEach(o -> { if (o instanceof MobPositionedStack) ((MobPositionedStack) o).setYStart(itemsYStart); });
 
-        scrollbar.beginForeground(recipe);
         {
             x = 6;
             y = itemsYStart;
@@ -620,7 +623,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             }
             yshift = 10;
         }
-        scrollbar.endForeground(recipe);
     }
 
     @Override
@@ -717,12 +719,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         }
     }
 
-    @Override
-    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
-        if (super.mouseScrolled(gui, scroll, recipe)) return true;
-        return scrollbar.mouseScrolled(gui, scroll, recipe);
-    }
-
     private static final Rectangle extendedTooltipRect = new Rectangle(28, 62, 8, 16);
 
     @Override
@@ -763,16 +759,6 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         if (positionedStack instanceof MobPositionedStack)
             currenttip.addAll(((MobPositionedStack) positionedStack).extraTooltip);
         return currenttip;
-    }
-
-    @Override
-    public Scrollbar getScrollbar() {
-        return scrollbar;
-    }
-
-    @Override
-    public List<PositionedStack> getAllItems(int recipe) {
-        return ((MobCachedRecipe) arecipes.get(recipe)).getOutputs();
     }
 
     public static class MobPositionedStack extends PositionedStack {
@@ -867,10 +853,11 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
         public final boolean isPeacefulAllowed;
         public final List<String> additionalInformation;
         public final Set<SpawnInfo> spawnList;
+        private final int maxHeight;
         public String isBoss = "";
 
         public MobCachedRecipe(EntityLiving mob, List<MobPositionedStack> mOutputs, int normalOutputsCount,
-            int rareOutputsCount, int additionalOutputsCount, int infernalOutputsCount) {
+            int rareOutputsCount, int additionalOutputsCount, int infernalOutputsCount, int maxHeight) {
             super();
             String classname = mob.getClass()
                 .getName();
@@ -885,6 +872,7 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
             this.infernalOutputsCount = infernalOutputsCount;
             this.mInput = new ArrayList<>();
             this.isPeacefulAllowed = !(mob instanceof IMob);
+            this.maxHeight = maxHeight;
             int id = EntityList.getEntityID(mob);
             mobname = EntityList.getEntityString(mob);
             // noinspection ConstantConditions
@@ -944,14 +932,10 @@ public class MobHandler extends TemplateRecipeHandler implements IScrollableGUI 
                 mOutputs.forEach(p -> p.setPermutationToRender(0));
         }
 
-        public List<PositionedStack> getOutputs() {
-            if (!isUnlocked()) return Collections.emptyList();
-            return mOutputs;
-        }
-
         @Override
         public List<PositionedStack> getOtherStacks() {
-            return Collections.emptyList();
+            if (!isUnlocked()) return Collections.emptyList();
+            return mOutputs;
         }
     }
 

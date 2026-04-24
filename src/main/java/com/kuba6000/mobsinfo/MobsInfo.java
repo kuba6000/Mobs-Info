@@ -59,7 +59,7 @@ import cpw.mods.fml.relauncher.Side;
     version = Tags.VERSION,
     name = MODNAME,
     acceptedMinecraftVersions = "[1.7.10]",
-    dependencies = "required-after: gtnhmixins@[2.0.1,); " + "required-after: NotEnoughItems; "
+    dependencies = "required-after: gtnhmixins@[2.0.1,); " + "required-after: NotEnoughItems@[2.8.11-GTNH,); "
         + "after: EnderIO; "
         + "after: Thaumcraft; "
         + "after: InfernalMobs; "
