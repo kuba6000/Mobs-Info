@@ -48,6 +48,17 @@ mobsinfo.mobhandlerinfernal.inferno=Inferno drops - %.3f%% (%.3f%%)
 mobsinfo.mobhandlerinfernal.tooltip_chance=Total chance to get: %.4f%%
 mobsinfo.mobhandlerinfernal.tooltip_chance_always=Total chance to get when always infernal: %.4f%%
 
+mobsinfo.mobhandlerfishing.title=Fishing Loot Table
+mobsinfo.mobhandlerfishing.format=Format:
+mobsinfo.mobhandlerfishing.format_1=Category name - x%
+mobsinfo.mobhandlerfishing.format_2=x - Chance to get the item
+mobsinfo.mobhandlerfishing.format_3=Base chances are with:
+mobsinfo.mobhandlerfishing.format_4=Luck of the Sea 0 and Lure 0
+mobsinfo.mobhandlerfishing.fish=Fish - %.2f%%
+mobsinfo.mobhandlerfishing.junk=Junk - %.2f%%
+mobsinfo.mobhandlerfishing.treasure=Treasure - %.2f%%
+mobsinfo.mobhandlerfishing.tooltip_chance=Chance to get: %.4f%%
+
 #Extras (compatibility)
 mobsinfo.extras.minecraft_slime=Drops only when the slime is at the smallest size
 mobsinfo.extras.minecraft_magma_cube=Drops only when the magma cube is NOT at the smallest size
