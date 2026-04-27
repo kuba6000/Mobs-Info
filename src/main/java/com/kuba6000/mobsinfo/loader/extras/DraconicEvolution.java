@@ -1,5 +1,8 @@
 package com.kuba6000.mobsinfo.loader.extras;
 
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,12 +11,16 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.brandon3055.draconicevolution.common.ModItems;
 import com.brandon3055.draconicevolution.common.entity.EntityCustomDragon;
@@ -22,11 +29,15 @@ import com.brandon3055.draconicevolution.common.handler.MinecraftForgeEventHandl
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.MobDrop;
 import com.kuba6000.mobsinfo.api.MobRecipe;
-import com.kuba6000.mobsinfo.mixin.late.DraconicEvolution.MinecraftForgeEventHandlerAccessor;
 
 import io.netty.buffer.ByteBuf;
 
 public class DraconicEvolution implements IExtraLoader {
+
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Extra Loader][Draconic Evolution]");
+
+    private final MinecraftForgeEventHandler DEEventHandler = new MinecraftForgeEventHandler();
+    private Method isValidEntityMethod = null;
 
     @Override
     public void process(String k, ArrayList<MobDrop> drops, MobRecipe recipe) {
@@ -55,8 +66,20 @@ public class DraconicEvolution implements IExtraLoader {
 
         }
 
-        if (!((MinecraftForgeEventHandlerAccessor) (new MinecraftForgeEventHandler())).callIsValidEntity(recipe.entity))
+        try {
+            if (isValidEntityMethod == null) {
+                isValidEntityMethod = MinecraftForgeEventHandler.class
+                    .getDeclaredMethod("isValidEntity", EntityLivingBase.class);
+                isValidEntityMethod.setAccessible(true);
+            }
+            if (!((boolean) isValidEntityMethod.invoke(DEEventHandler, recipe.entity))) return;
+        } catch (Exception e) {
+            LOG.error(
+                "Fatal: failed to check if entity is valid for mob soul drop, skipping mob soul drop for {}",
+                k,
+                e);
             return;
+        }
 
         ItemStack soul = new ItemStack(ModItems.mobSoul);
         soul.stackTagCompound = new NBTTagCompound();
