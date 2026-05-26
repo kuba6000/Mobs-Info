@@ -383,6 +383,19 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
     }
 
     @Override
+    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
+        Point offset = gui.getRecipePosition(recipe);
+        Point mouse = GuiDraw.getMousePosition();
+        GuiContainerAccessor accessor = (GuiContainerAccessor) gui;
+        if (MobUtils
+            .isPreviewBoxHovered(accessor.getGuiLeft() + offset.x, accessor.getGuiTop() + offset.y, mouse.x, mouse.y)) {
+            MobUtils.adjustPreviewZoom(((VillagerCachedRecipe) arecipes.get(recipe)).displayMob, scroll);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public List<String> handleTooltip(GuiRecipe<?> gui, List<String> currenttip, int recipe) {
         currenttip = super.handleTooltip(gui, currenttip, recipe);
         Point pos = GuiDraw.getMousePosition();

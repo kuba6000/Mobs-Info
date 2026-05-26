@@ -719,6 +719,19 @@ public class MobHandler extends TemplateRecipeHandler {
         }
     }
 
+    @Override
+    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
+        Point offset = gui.getRecipePosition(recipe);
+        Point mouse = GuiDraw.getMousePosition();
+        GuiContainerAccessor accessor = (GuiContainerAccessor) gui;
+        if (MobUtils
+            .isPreviewBoxHovered(accessor.getGuiLeft() + offset.x, accessor.getGuiTop() + offset.y, mouse.x, mouse.y)) {
+            MobUtils.adjustPreviewZoom(((MobCachedRecipe) arecipes.get(recipe)).mob, scroll);
+            return true;
+        }
+        return false;
+    }
+
     private static final Rectangle extendedTooltipRect = new Rectangle(28, 62, 8, 16);
 
     @Override
