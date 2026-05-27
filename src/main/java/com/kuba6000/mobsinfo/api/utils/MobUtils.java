@@ -48,9 +48,9 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class MobUtils {
 
-    private static final int PREVIEW_BOX_X = 7;
+    private static final int PREVIEW_BOX_X = 8;
     private static final int PREVIEW_BOX_Y = 8;
-    private static final int PREVIEW_BOX_WIDTH = 48;
+    private static final int PREVIEW_BOX_WIDTH = 46;
     private static final int PREVIEW_BOX_HEIGHT = 52;
     private static final int PREVIEW_ANCHOR_X = 31;
     private static final int PREVIEW_ANCHOR_Y = 50;
@@ -283,19 +283,16 @@ public class MobUtils {
         float aa = a - (a * newScale);
         float aaa = (wantedy - ylocal) - aa;
 
-        GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
-        applyPreviewScissor(Math.round(guiLeft), Math.round(guiTop));
-        try {
+        float finalNewScale = newScale;
+        GuiHelper.useScissor(PREVIEW_BOX_X, PREVIEW_BOX_Y, PREVIEW_BOX_WIDTH, PREVIEW_BOX_HEIGHT, () -> {
             GuiInventory.func_147046_a(
                 mobx,
                 (int) (moby + aaa),
-                Math.round(PREVIEW_MEASURE_SCALE * newScale),
+                Math.round(PREVIEW_MEASURE_SCALE * finalNewScale),
                 (guiLeft + mobx) - mouseX,
                 guiTop + moby - 25 - mouseY,
                 mob);
-        } finally {
-            GL11.glPopAttrib();
-        }
+        });
     }
 
     public static boolean isPreviewBoxHovered(float guiLeft, float guiTop, int mouseX, int mouseY) {
