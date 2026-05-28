@@ -43,6 +43,7 @@ import org.lwjgl.util.Rectangle;
 
 import com.kuba6000.mobsinfo.mixin.early.minecraft.RendererLivingEntityAccessor;
 
+import codechicken.nei.scroll.GuiHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -317,20 +318,5 @@ public class MobUtils {
         if (zoom < PREVIEW_ZOOM_MIN) zoom = PREVIEW_ZOOM_MIN;
         if (zoom > PREVIEW_ZOOM_MAX) zoom = PREVIEW_ZOOM_MAX;
         previewZooms.put(mob, zoom);
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static void applyPreviewScissor(int guiLeft, int guiTop) {
-        Minecraft mc = Minecraft.getMinecraft();
-        ScaledResolution scale = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-        int scaleFactor = scale.getScaleFactor();
-
-        int scissorX = (guiLeft + PREVIEW_BOX_X) * scaleFactor;
-        int scissorY = mc.displayHeight - ((guiTop + PREVIEW_BOX_Y + PREVIEW_BOX_HEIGHT) * scaleFactor);
-        int scissorWidth = PREVIEW_BOX_WIDTH * scaleFactor;
-        int scissorHeight = PREVIEW_BOX_HEIGHT * scaleFactor;
-
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(scissorX, scissorY, scissorWidth, scissorHeight);
     }
 }
