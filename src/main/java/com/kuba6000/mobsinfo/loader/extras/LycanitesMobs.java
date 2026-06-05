@@ -182,7 +182,7 @@ public class LycanitesMobs implements IExtraLoader {
 
         double chance;
 
-        public LycanitesMobsOrOnYuletideDay() {}
+        protected LycanitesMobsOrOnYuletideDay() {}
 
         public LycanitesMobsOrOnYuletideDay(double chance) {
             this.chance = chance;
