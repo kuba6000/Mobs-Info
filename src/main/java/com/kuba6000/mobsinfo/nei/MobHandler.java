@@ -459,12 +459,8 @@ public class MobHandler extends TemplateRecipeHandler {
         if (!currentrecipe.isUnlocked()) {
             x = 6;
             y = 83;
-            GuiDraw.drawStringC(
-                Translations.LOCKED.get(),
-                168 / 2,
-                y += yshift,
-                ColorUtils.textDefault.getColor(),
-                false);
+            GuiDraw
+                .drawStringC(Translations.LOCKED.get(), 168 / 2, y += yshift, ColorUtils.textDefault.getColor(), false);
             GuiDraw.drawStringC(
                 Translations.LOCKED_1.get(),
                 168 / 2,
@@ -515,12 +511,8 @@ public class MobHandler extends TemplateRecipeHandler {
             ColorUtils.textBoss.getColor(),
             false);
 
-        if (currentrecipe.isPeacefulAllowed) GuiDraw.drawString(
-            Translations.PEACEFUL_ALLOWED.get(),
-            x,
-            y += yshift,
-            ColorUtils.textPositive.getColor(),
-            false);
+        if (currentrecipe.isPeacefulAllowed) GuiDraw
+            .drawString(Translations.PEACEFUL_ALLOWED.get(), x, y += yshift, ColorUtils.textPositive.getColor(), false);
 
         if (!currentrecipe.isUsableInVial) GuiDraw
             .drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
@@ -588,8 +580,7 @@ public class MobHandler extends TemplateRecipeHandler {
                 y += yshift + ((currentrecipe.rareOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.additionalOutputsCount > 0) {
-                GuiDraw
-                    .drawString(Translations.ADDITIONAL_DROPS.get(), x, y, ColorUtils.textDefault.getColor(), false);
+                GuiDraw.drawString(Translations.ADDITIONAL_DROPS.get(), x, y, ColorUtils.textDefault.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.infernalOutputsCount > 0) {
