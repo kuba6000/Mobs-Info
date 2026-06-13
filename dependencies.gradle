@@ -82,6 +82,6 @@ dependencies {
 
 tasks.jar {
     from({ project.configurations.getByName('gtnhlibEmbed').collect { zipTree(it) } }) {
-        include 'com/gtnewhorizon/gtnhlib/color/ColorResource.class'
+        include 'com/gtnewhorizon/gtnhlib/color/ColorResource*.class'
     }
 }
