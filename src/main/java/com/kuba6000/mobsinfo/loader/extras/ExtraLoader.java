@@ -173,9 +173,7 @@ public class ExtraLoader {
                     try {
                         chanceModifier.getClass()
                             .getDeclaredConstructor();
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException(e);
-                    }
+                    } catch (NoSuchMethodException ignored) {}
                 }
             }
         }
