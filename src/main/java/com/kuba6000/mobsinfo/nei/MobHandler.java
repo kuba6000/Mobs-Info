@@ -173,11 +173,9 @@ public class MobHandler extends TemplateRecipeHandler {
     private static int lastArmorTick = 0;
 
     /**
-     * Every drop used to build its own copy of the handful of constant tooltip lines, and of the chance line, which
-     * repeats heavily ("100%" alone covers most drops). They are retained for the life of the NEI recipe list, so a
-     * pack with a few thousand drops retained a few thousand equal Strings. Snapshotted per rebuild rather than in a
-     * static initializer so that a language change is still picked up: {@link #clearRecipes()} runs before every
-     * rebuild and drops both caches.
+     * Caches constant tooltip lines and chance-line Strings ("100%" etc.) per rebuild instead of
+     * per drop. Rebuilt (not static) so locale changes apply: {@link #clearRecipes()} clears
+     * both caches before every rebuild.
      */
     private static final Map<Translations, String> resetLineCache = new EnumMap<>(Translations.class);
     private static final Map<Integer, String> chanceLineCache = new HashMap<>();
