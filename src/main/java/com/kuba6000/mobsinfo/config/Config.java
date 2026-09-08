@@ -70,6 +70,8 @@ public class Config {
         public static _CacheRegenerationTrigger regenerationTrigger = _CacheRegenerationTrigger.ModAdditionRemovalChange;
         public static boolean includeEmptyMobs = true;
         public static double mobTimeout = 10d;
+        public static boolean optimizeRandomComparisons = true;
+        public static int maxPathsPerMobPass = 1_000_000;
         public static String[] mobBlacklist;
         public static boolean hiddenMode = false;
 
@@ -106,6 +108,21 @@ public class Config {
                     "Seconds to wait before skipping a mob's dropmap. If negative, will not timeout any mobs")
                 .getDouble();
             if (mobTimeout < 0) mobTimeout = Double.MAX_VALUE;
+
+            optimizeRandomComparisons = configuration
+                .get(
+                    category.get(),
+                    "OptimizeRandomComparisons",
+                    true,
+                    "Group equivalent outcomes of direct Random comparisons when generating mob drops.")
+                .getBoolean();
+            maxPathsPerMobPass = configuration
+                .get(
+                    category.get(),
+                    "MaxPathsPerMobPass",
+                    1_000_000,
+                    "Maximum executions per drop category and Looting variant. Zero or negative disables this limit.")
+                .getInt();
 
             mobBlacklist = configuration
                 .get(

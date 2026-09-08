@@ -109,8 +109,12 @@ public class MobRecipeLoader {
     private static boolean alreadyGenerated = false;
     public static boolean isInGenerationProcess = false;
     public static final String randomEnchantmentDetectedString = "RandomEnchantmentDetected";
-    // This is in nanoseconds
-    private static final long GET_DROPS_TIMEOUT = (long) (Config.MobHandler.mobTimeout * 1e9);
+    private static final int GENERATOR_VERSION = 2;
+
+    private static boolean generationBudgetReached(long start, long executions) {
+        return (Config.MobHandler.maxPathsPerMobPass > 0 && executions >= Config.MobHandler.maxPathsPerMobPass)
+            || System.nanoTime() - start >= (long) (Config.MobHandler.mobTimeout * 1e9);
+    }
 
     public static class dropinstance {
 
@@ -121,7 +125,7 @@ public class MobRecipeLoader {
         public final ItemStack stack;
         public final ItemID itemId;
         private double dropchance = 0d;
-        private int dropcount = 1;
+        private final HashMap<Integer, Double> damageWeights = new HashMap<>();
 
         public dropinstance(ItemStack s, droplist owner) {
             stack = s;
@@ -129,8 +133,27 @@ public class MobRecipeLoader {
         }
 
         public int getchance(int chancemodifier) {
-            dropchance = (double) Math.round(dropchance * 100000) / 100000d;
-            return (int) (dropchance * chancemodifier);
+            double roundedChance = (double) Math.round(dropchance * 100000) / 100000d;
+            return (int) (roundedChance * chancemodifier);
+        }
+
+        public boolean hasHigherExpectedCountThan(dropinstance other) {
+            return dropchance > other.dropchance + 1e-9;
+        }
+
+        /** Converts conditional damage probabilities to the existing integer-weight wire format. */
+        public HashMap<Integer, Integer> getDamageWeights() {
+            if (damageWeights.isEmpty()) return damagesPossible;
+            double total = damageWeights.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+            if (total <= 0) return damagesPossible;
+            damagesPossible.clear();
+            damageWeights.forEach(
+                (damage, weight) -> damagesPossible
+                    .put(damage, Math.max(1, (int) Math.round(weight / total * 1_000_000d))));
+            return damagesPossible;
         }
 
         @Override
@@ -149,12 +172,10 @@ public class MobRecipeLoader {
                 int ssize = i.stack.stackSize;
                 i = get(dropschecker.get(i.itemId));
                 i.dropchance += chance * ssize;
-                i.dropcount += ssize;
                 return i;
             }
             drops.add(i);
             i.dropchance += chance * i.stack.stackSize;
-            i.dropcount += i.stack.stackSize - 1;
             i.stack.stackSize = 1;
             dropschecker.put(i.itemId, drops.size() - 1);
             return i;
@@ -191,66 +212,59 @@ public class MobRecipeLoader {
         }
     }
 
-    private static class dropCollector {
+    public static class dropCollector {
 
         final HashMap<ItemID, Integer> damagableChecker = new HashMap<>();
         private boolean booksAlwaysRandomlyEnchanted = false;
 
         public void addDrop(droplist fdrops, ArrayList<EntityItem> listToParse, double chance) {
             for (EntityItem entityItem : listToParse) {
-                ItemStack ostack = entityItem.getEntityItem();
-                if (ostack == null) continue;
-                dropinstance drop;
-                boolean randomchomenchantdetected = ostack.hasTagCompound()
-                    && ostack.stackTagCompound.hasKey(randomEnchantmentDetectedString);
-                int randomenchantmentlevel = 0;
-                if (randomchomenchantdetected) {
-                    randomenchantmentlevel = ostack.stackTagCompound.getInteger(randomEnchantmentDetectedString);
-                    ostack.stackTagCompound.removeTag("ench");
-                    ostack.stackTagCompound.setInteger(randomEnchantmentDetectedString, 0);
-                }
-                if ((booksAlwaysRandomlyEnchanted || randomchomenchantdetected)
-                    && Items.enchanted_book == ostack.getItem()) {
-                    NBTTagCompound tagCompound = (NBTTagCompound) ostack.stackTagCompound.copy();
-                    tagCompound.removeTag("StoredEnchantments");
-                    ostack = new ItemStack(Items.book, ostack.stackSize, 0);
-                    if (!tagCompound.hasNoTags()) ostack.stackTagCompound = tagCompound;
-                    if (randomenchantmentlevel == 0) randomenchantmentlevel = 1;
-                    randomchomenchantdetected = true;
-                }
-                boolean randomdamagedetected = false;
-                int newdamage = -1;
-                if (ostack.isItemStackDamageable()) {
-                    int odamage = ostack.getItemDamage();
-                    ostack.setItemDamage(1);
-                    ItemID id = ItemID.createNoCopy(ostack);
-                    damagableChecker.putIfAbsent(id, odamage);
-                    int check = damagableChecker.get(id);
-                    if (check != odamage) {
-                        randomdamagedetected = true;
-                        newdamage = odamage;
-                        ostack.setItemDamage(check);
-                    } else ostack.setItemDamage(odamage);
-                }
-                drop = fdrops.add(new dropinstance(ostack.copy(), fdrops), chance);
-                if (!drop.isEnchatmentRandomized && randomchomenchantdetected) {
-                    drop.isEnchatmentRandomized = true;
-                    drop.enchantmentLevel = randomenchantmentlevel;
-                }
-                if (drop.isDamageRandomized && !randomdamagedetected) {
-                    drop.damagesPossible.merge(drop.stack.getItemDamage(), 1, Integer::sum);
-                }
-                if (randomdamagedetected) {
-                    if (!drop.isDamageRandomized) {
-                        drop.isDamageRandomized = true;
-                        drop.damagesPossible.merge(drop.stack.getItemDamage(), drop.dropcount - 1, Integer::sum);
-                    }
-                    if (newdamage == -1) newdamage = drop.stack.getItemDamage();
-                    drop.damagesPossible.merge(newdamage, 1, Integer::sum);
-                }
+                addDrop(fdrops, entityItem.getEntityItem(), chance);
             }
-
             listToParse.clear();
+        }
+
+        public void addDrop(droplist fdrops, ItemStack ostack, double chance) {
+            if (ostack == null) return;
+            dropinstance drop;
+            boolean randomchomenchantdetected = ostack.hasTagCompound()
+                && ostack.stackTagCompound.hasKey(randomEnchantmentDetectedString);
+            int randomenchantmentlevel = 0;
+            if (randomchomenchantdetected) {
+                randomenchantmentlevel = ostack.stackTagCompound.getInteger(randomEnchantmentDetectedString);
+                ostack.stackTagCompound.removeTag("ench");
+                ostack.stackTagCompound.setInteger(randomEnchantmentDetectedString, 0);
+            }
+            if ((booksAlwaysRandomlyEnchanted || randomchomenchantdetected)
+                && Items.enchanted_book == ostack.getItem()) {
+                NBTTagCompound tagCompound = (NBTTagCompound) ostack.stackTagCompound.copy();
+                tagCompound.removeTag("StoredEnchantments");
+                ostack = new ItemStack(Items.book, ostack.stackSize, 0);
+                if (!tagCompound.hasNoTags()) ostack.stackTagCompound = tagCompound;
+                if (randomenchantmentlevel == 0) randomenchantmentlevel = 1;
+                randomchomenchantdetected = true;
+            }
+            int originalDamage = ostack.getItemDamage();
+            int originalCount = ostack.stackSize;
+            if (ostack.isItemStackDamageable()) {
+                int odamage = ostack.getItemDamage();
+                ostack.setItemDamage(1);
+                ItemID id = ItemID.createNoCopy(ostack);
+                damagableChecker.putIfAbsent(id, odamage);
+                int check = damagableChecker.get(id);
+                if (check != odamage) {
+                    ostack.setItemDamage(check);
+                } else ostack.setItemDamage(odamage);
+            }
+            drop = fdrops.add(new dropinstance(ostack.copy(), fdrops), chance);
+            if (!drop.isEnchatmentRandomized && randomchomenchantdetected) {
+                drop.isEnchatmentRandomized = true;
+                drop.enchantmentLevel = randomenchantmentlevel;
+            }
+            if (ostack.isItemStackDamageable()) {
+                drop.damageWeights.merge(originalDamage, chance * originalCount, Double::sum);
+                drop.isDamageRandomized = drop.damageWeights.size() > 1;
+            }
         }
 
         public void newRound() {
@@ -295,6 +309,11 @@ public class MobRecipeLoader {
     private static class MobRecipeLoaderCacheStructure {
 
         String version;
+        int generatorVersion;
+        boolean comparisonWeights;
+        double timeout;
+        int maxPaths;
+        Map<String, List<String>> incompleteDrops;
         Map<String, ArrayList<MobDrop>> moblist;
     }
 
@@ -336,7 +355,10 @@ public class MobRecipeLoader {
         f.isRemote = true; // quick hack to get around achievements
 
         RandomSequencer frand = new RandomSequencer();
+        frand.useComparisonWeights = Config.MobHandler.optimizeRandomComparisons
+            && !Boolean.getBoolean("mobsinfo.disableRandomComparisonTransformer");
         f.rand = frand;
+        Map<String, List<String>> incompleteDrops = new HashMap<>();
 
         File cache = Config.getConfigFile("MobRecipeLoader.cache");
         Gson gson = GSONUtils.GSON_BUILDER.create();
@@ -355,8 +377,14 @@ public class MobRecipeLoader {
             try {
                 reader = Files.newReader(cache, StandardCharsets.UTF_8);
                 MobRecipeLoaderCacheStructure s = gson.fromJson(reader, MobRecipeLoaderCacheStructure.class);
-                if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
-                    || s.version.equals(modlistversion)) {
+                if (s.generatorVersion == GENERATOR_VERSION && s.comparisonWeights == frand.useComparisonWeights
+                    && s.timeout == Config.MobHandler.mobTimeout
+                    && s.maxPaths == Config.MobHandler.maxPathsPerMobPass
+                    && (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
+                        || modlistversion.equals(s.version))) {
+                    if (s.incompleteDrops != null && !s.incompleteDrops.isEmpty()) LOG.warn(
+                        "Cached drop enumeration is incomplete for {}. Increase MobTimeout/MaxPathsPerMobPass to regenerate.",
+                        s.incompleteDrops);
                     ProgressManager.ProgressBar bar = ProgressManager
                         .push("Parsing cached Mob Recipe Map", s.moblist.size());
                     for (Map.Entry<String, ArrayList<MobDrop>> entry : s.moblist.entrySet()) {
@@ -565,25 +593,41 @@ public class MobRecipeLoader {
 
                 ModUtils.TriConsumer<Supplier<Boolean>, droplist, String> doTheDrop = (callerCanceller, dList,
                     dListName) -> {
-                    boolean second = false;
                     final long start = System.nanoTime();
-                    do {
+                    long executions = 0;
+                    double enumeratedWeight = 0d;
+                    int maxDepth = 0;
+                    while (true) {
                         if (!callerCanceller.get()) break;
 
                         collector.addDrop(dList, e.capturedDrops, frand.chance);
-
-                        if (second && frand.chance < 0.0000001d) {
-                            LOG.warn("Skipping " + name + " " + dListName + " dropmap because it's too randomized");
+                        executions++;
+                        enumeratedWeight += frand.chance;
+                        maxDepth = Math.max(maxDepth, frand.walkCounter);
+                        if (!frand.nextRound()) break;
+                        if (generationBudgetReached(start, executions)) {
+                            incompleteDrops.computeIfAbsent(name, ignored -> new ArrayList<>())
+                                .add(dListName);
+                            LOG.warn(
+                                "{} {} enumeration incomplete: {} executions, enumerated RNG weight {}, max depth {}, weighted comparisons {}",
+                                name,
+                                dListName,
+                                executions,
+                                enumeratedWeight,
+                                maxDepth,
+                                frand.comparisonCalls);
                             break;
                         }
-
-                        if (second && System.nanoTime() - start >= GET_DROPS_TIMEOUT) {
-                            LOG.warn("{} {} dropmap took too long, skipping", name, dListName);
-                            break;
-                        }
-                        second = true;
-
-                    } while (frand.nextRound());
+                    }
+                    if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info(
+                        "{} {}: {} executions in {} ms, enumerated RNG weight {}, max depth {}, weighted comparisons {}",
+                        name,
+                        dListName,
+                        executions,
+                        (System.nanoTime() - start) / 1_000_000d,
+                        enumeratedWeight,
+                        maxDepth,
+                        frand.comparisonCalls);
 
                     frand.newRound();
                     collector.newRound();
@@ -654,7 +698,7 @@ public class MobRecipeLoader {
                     doTheDrop.accept(() -> {
                         ((EntityLivingBaseAccessor) e).callDropFewItems(true, 1);
                         return true;
-                    }, dropslooting, "normal");
+                    }, dropslooting, "normal with Looting I");
 
                     doTheDrop.accept(() -> {
                         ((EntityLivingBaseAccessor) e).callDropRareDrop(0);
@@ -664,7 +708,7 @@ public class MobRecipeLoader {
                     doTheDrop.accept(() -> {
                         ((EntityLivingBaseAccessor) e).callDropRareDrop(1);
                         return true;
-                    }, superraredrops, "rare");
+                    }, superraredrops, "rare parameter 1");
 
                     if (registeringWitherSkeleton && e instanceof EntitySkeleton && name.equals("witherSkeleton")) {
                         dropinstance i = new dropinstance(new ItemStack(Items.stone_sword), additionaldrops);
@@ -703,8 +747,10 @@ public class MobRecipeLoader {
                             frand.forceFloatValue = 0f;
                             chanceModifierLocal = 0.25f;
                         }
-                        boolean second = false;
-                        do {
+                        final long start = System.nanoTime();
+                        long executions = 0;
+                        double enumeratedWeight = 0d;
+                        while (true) {
                             ((EntityLivingAccessor) e).callAddRandomArmor();
                             if (!usingVanillaEnchantingMethod) ((EntityLivingAccessor) e).callEnchantEquipment();
                             ItemStack[] lastActiveItems = e.getLastActiveItems();
@@ -753,13 +799,28 @@ public class MobRecipeLoader {
                             }
                             Arrays.fill(e.getLastActiveItems(), null);
 
-                            if (second && frand.chance < 0.0000001d) {
-                                LOG.warn("Skipping " + name + " additional dropmap because it's too randomized");
+                            executions++;
+                            enumeratedWeight += frand.chance;
+                            if (!frand.nextRound()) break;
+                            if (generationBudgetReached(start, executions)) {
+                                incompleteDrops.computeIfAbsent(name, ignored -> new ArrayList<>())
+                                    .add("additional");
+                                LOG.warn(
+                                    "{} additional enumeration incomplete: {} executions, enumerated RNG weight {}, weighted comparisons {}",
+                                    name,
+                                    executions,
+                                    enumeratedWeight,
+                                    frand.comparisonCalls);
                                 break;
                             }
-                            second = true;
-
-                        } while (frand.nextRound());
+                        }
+                        if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info(
+                            "{} additional: {} executions in {} ms, enumerated RNG weight {}, weighted comparisons {}",
+                            name,
+                            executions,
+                            (System.nanoTime() - start) / 1_000_000d,
+                            enumeratedWeight,
+                            frand.comparisonCalls);
                     } catch (Exception ignored) {}
 
                     frand.newRound();
@@ -794,8 +855,8 @@ public class MobRecipeLoader {
                             MobDrop.DropType.Normal,
                             chance,
                             drop.isEnchatmentRandomized ? drop.enchantmentLevel : null,
-                            drop.isDamageRandomized ? drop.damagesPossible : null,
-                            dlooting != null && dlooting.dropcount > drop.dropcount,
+                            drop.isDamageRandomized ? drop.getDamageWeights() : null,
+                            dlooting != null && dlooting.hasHigherExpectedCountThan(drop),
                             false));
                 }
                 for (dropinstance drop : raredrops.drops) {
@@ -813,7 +874,7 @@ public class MobRecipeLoader {
                             MobDrop.DropType.Rare,
                             chance,
                             drop.isEnchatmentRandomized ? drop.enchantmentLevel : null,
-                            drop.isDamageRandomized ? drop.damagesPossible : null,
+                            drop.isDamageRandomized ? drop.getDamageWeights() : null,
                             false,
                             false));
                 }
@@ -833,7 +894,7 @@ public class MobRecipeLoader {
                             MobDrop.DropType.Rare,
                             chance,
                             drop.isEnchatmentRandomized ? drop.enchantmentLevel : null,
-                            drop.isDamageRandomized ? drop.damagesPossible : null,
+                            drop.isDamageRandomized ? drop.getDamageWeights() : null,
                             false,
                             false));
                 }
@@ -852,7 +913,7 @@ public class MobRecipeLoader {
                             MobDrop.DropType.Additional,
                             chance,
                             drop.isEnchatmentRandomized ? drop.enchantmentLevel : null,
-                            drop.isDamageRandomized ? drop.damagesPossible : null,
+                            drop.isDamageRandomized ? drop.getDamageWeights() : null,
                             false,
                             false));
                 }
@@ -882,6 +943,11 @@ public class MobRecipeLoader {
         LOG.info("Saving generated map to file");
         MobRecipeLoaderCacheStructure s = new MobRecipeLoaderCacheStructure();
         s.version = modlistversion;
+        s.generatorVersion = GENERATOR_VERSION;
+        s.comparisonWeights = frand.useComparisonWeights;
+        s.timeout = Config.MobHandler.mobTimeout;
+        s.maxPaths = Config.MobHandler.maxPathsPerMobPass;
+        s.incompleteDrops = incompleteDrops;
         s.moblist = new HashMap<>();
         GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.isProvidedFromAPI ? null : v.drops));
         Writer writer = null;
@@ -996,7 +1062,7 @@ public class MobRecipeLoader {
                             MobDrop.DropType.Normal,
                             chance,
                             drop.isEnchatmentRandomized ? drop.enchantmentLevel : null,
-                            drop.isDamageRandomized ? drop.damagesPossible : null,
+                            drop.isDamageRandomized ? drop.getDamageWeights() : null,
                             false,
                             false));
                     customDropsMap.put(k, override);

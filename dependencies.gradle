@@ -40,9 +40,11 @@ configurations.create('gtnhlibEmbed') {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     api("com.github.GTNewHorizons:NotEnoughItems:2.8.129-GTNH:dev")
     devOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.41:dev")
     devOnlyNonPublishable(rfg.deobf("curse.maven:Infernal-Mobs-227875:2227584"))
+    runtimeOnlyNonPublishable(rfg.deobf("curse.maven:DivineRPG-363543:6330550"))
     compileOnly("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:CraftTweaker:3.4.8:dev") { transitive = false }
     compileOnly("com.github.GTNewHorizons:Draconic-Evolution:1.5.33-GTNH:dev") { transitive = false }
