@@ -3,3 +3,13 @@
 plugins {
     id 'com.gtnewhorizons.gtnhconvention'
 }
+
+// Optional mods are needed when resolving Minecraft-facing types in integration tests.
+tasks.withType(Test).configureEach {
+    useJUnit()
+    classpath += sourceSets.main.compileClasspath
+    systemProperty 'net.bytebuddy.experimental', 'true'
+    if (project.hasProperty('reliquaryTestJars')) {
+        systemProperty 'reliquaryTestJars', project.property('reliquaryTestJars')
+    }
+}
