@@ -137,6 +137,8 @@ public class ExtraLoader {
             loaders.add(new MineFantasyII());
 
         // LAST
+        if (LoaderReference.LootPlusPlus.isLoaded && !alreadyProvided.contains(LoaderReference.LootPlusPlus.modID))
+            loaders.add(new LootPlusPlus());
         if (LoaderReference.EditMobDrops.isLoaded && !alreadyProvided.contains(LoaderReference.EditMobDrops.modID))
             loaders.add(new EditMobDrops());
         if (LoaderReference.MineTweaker.isLoaded && !alreadyProvided.contains(LoaderReference.MineTweaker.modID))

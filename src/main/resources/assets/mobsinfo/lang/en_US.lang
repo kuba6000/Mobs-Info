@@ -115,3 +115,5 @@ mobsinfo.extras.minefantasy2_hunting_weapon=Requires a hunting weapon on the kil
 mobsinfo.extras.minefantasy2_bow_skeleton=Only when the skeleton holds a bow.
 mobsinfo.extras.minefantasy2_original_item=Only when replacing a normal drop of %s.
 mobsinfo.extras.minefantasy2_tagged_sack=Only from MineFantasy II upgraded zombies.
+mobsinfo.extras.lootplusplus_player_credit=Requires player kill credit.
+mobsinfo.extras.lootplusplus_skeleton_kill=Only when killed by a skeleton.
