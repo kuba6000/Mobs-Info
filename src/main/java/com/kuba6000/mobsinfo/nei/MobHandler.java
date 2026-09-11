@@ -939,7 +939,7 @@ public class MobHandler extends TemplateRecipeHandler {
             } catch (ClassNotFoundException ignored) {
                 try {
                     // Compat with old GT versions: use old name
-                    oreDictUnificator = Class.forName("gregtech.api.GT_OreDictUnificator");
+                    oreDictUnificator = Class.forName("gregtech.api.util.GT_OreDictUnificator");
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
