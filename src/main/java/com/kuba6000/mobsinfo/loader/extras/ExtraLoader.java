@@ -133,6 +133,9 @@ public class ExtraLoader {
         if (LoaderReference.Reliquarry.isLoaded && !alreadyProvided.contains(LoaderReference.Reliquarry.modID))
             loaders.add(new Reliquarry());
 
+        if (LoaderReference.MineFantasyII.isLoaded && !alreadyProvided.contains(LoaderReference.MineFantasyII.modID))
+            loaders.add(new MineFantasyII());
+
         // LAST
         if (LoaderReference.EditMobDrops.isLoaded && !alreadyProvided.contains(LoaderReference.EditMobDrops.modID))
             loaders.add(new EditMobDrops());
