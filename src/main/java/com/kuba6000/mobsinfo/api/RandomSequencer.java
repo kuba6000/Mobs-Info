@@ -159,6 +159,22 @@ public class RandomSequencer extends Random {
             .getBoolean();
     }
 
+    /**
+     * Projects the number of leaves if the current path's branching factors applied throughout
+     * the tree. Weighted comparisons contribute their representative count, not inverse chance.
+     * Conditional RNG calls can make this an overestimate or underestimate of the whole tree.
+     * Call before nextRound resets the current path. Large products saturate instead of wrapping.
+     */
+    public long estimatedPathCount() {
+        long paths = 1;
+        for (int i = 0; i < walkCounter; i++) {
+            int branches = nexts.get(i).bound;
+            if (paths > Long.MAX_VALUE / branches) return Long.MAX_VALUE;
+            paths *= branches;
+        }
+        return paths;
+    }
+
     public void newRound() {
         comparisonCalls = 0;
         walkCounter = 0;

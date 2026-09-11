@@ -71,7 +71,7 @@ public class Config {
         public static boolean includeEmptyMobs = true;
         public static double mobTimeout = 10d;
         public static boolean optimizeRandomComparisons = true;
-        public static int maxPathsPerMobPass = 1_000_000;
+        public static int maxEstimatedPathsPerMobPass = 10_000_000;
         public static String[] mobBlacklist;
         public static boolean hiddenMode = false;
 
@@ -116,12 +116,11 @@ public class Config {
                     true,
                     "Group equivalent outcomes of direct Random comparisons when generating mob drops.")
                 .getBoolean();
-            maxPathsPerMobPass = configuration
-                .get(
-                    category.get(),
-                    "MaxPathsPerMobPass",
-                    1_000_000,
-                    "Maximum executions per drop category and Looting variant. Zero or negative disables this limit.")
+            maxEstimatedPathsPerMobPass = configuration.get(
+                category.get(),
+                "MaxEstimatedPathsPerMobPass",
+                10_000_000,
+                "Skip a drop category/Looting variant as soon as its estimated path count exceeds this value. Zero or negative disables this estimate limit. Replaces MaxPathsPerMobPass.")
                 .getInt();
 
             mobBlacklist = configuration
@@ -151,12 +150,35 @@ public class Config {
     public static class VillagerTradesHandler {
 
         public static boolean enabled = true;
+        public static boolean optimizeRandomComparisons = true;
+        public static double handlerTimeout = 10d;
+        public static int maxEstimatedPathsPerHandler = 10_000_000;
 
         private static void load(Configuration configuration) {
             Category category = Category.VILLAGER_TRADES_HANDLER;
 
             enabled = configuration.get(category.get(), "Enabled", true, "Show villager trades in NEI")
                 .getBoolean();
+            optimizeRandomComparisons = configuration
+                .get(
+                    category.get(),
+                    "OptimizeRandomComparisons",
+                    true,
+                    "Group equivalent outcomes of direct Random comparisons when generating villager trades.")
+                .getBoolean();
+            handlerTimeout = configuration
+                .get(
+                    category.get(),
+                    "HandlerTimeout",
+                    10d,
+                    "Seconds allowed per trade handler and profession. Negative disables the time limit.")
+                .getDouble();
+            maxEstimatedPathsPerHandler = configuration.get(
+                category.get(),
+                "MaxEstimatedPathsPerHandler",
+                10_000_000,
+                "Skip a trade handler/profession as soon as its estimated path count exceeds this value. Zero or negative disables this estimate limit. Replaces MaxPathsPerHandler.")
+                .getInt();
         }
     }
 

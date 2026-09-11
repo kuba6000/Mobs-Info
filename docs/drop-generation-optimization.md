@@ -43,7 +43,8 @@ uniformly sampling ten decimal values is not an exact probability model.
   This is a conservative whitelist, not a general data-flow analyzer.
 - Ordinary Random instances and subclasses retain their virtual calls and RNG
   state advancement. Weighted dispatch requires the exact RandomSequencer class
-  and its `useComparisonWeights` flag. Villager generation keeps legacy mode.
+  and its `useComparisonWeights` flag. Villager generation has its own opt-in
+  configuration; see [villager trade generation](villager-trade-generation.md).
 - Looting comparison now uses expected item counts. Observed damage variants
   accumulate probability times quantity and are converted to integer weights
   at export, with a scale of one million and a minimum weight of one per
@@ -72,7 +73,7 @@ LaunchWrapper transformer boundary, and the drop collector. Tests execute transf
 and observe results, probability distributions, exceptions, RNG state, and
 enumeration cost. They do not assert instruction layouts or private helpers.
 
-`gradlew test build` runs 19 JUnit tests, formatting/checkstyle checks, and the
+`gradlew test build` runs the JUnit suite, formatting/checkstyle checks, and the
 reobfuscated jar build. The tests compare a one-million-execution reference
 distribution with eight weighted executions, and verify float-grid counts,
 custom RNG dispatch, subsequent RNG state, exceptions, fallback, idempotence,
@@ -94,11 +95,13 @@ In the `MobHandler` category:
 
 - `OptimizeRandomComparisons=true` enables weighted choices for mob generation.
   Set false and restart to use the old RNG domains through the same hooks.
-- `MaxPathsPerMobPass=1000000` limits executions per category and Looting variant.
-  Zero or a negative number disables the execution-count limit.
+- `MaxEstimatedPathsPerMobPass=10000000` rejects a category/Looting variant
+  when a completed path projects more than this many leaves. Zero or a negative
+  number disables this estimate limit. The old MaxPathsPerMobPass setting is no
+  longer read; this is not a limit on executions already performed.
 - `MobTimeout` remains a time limit per category/variant. A negative value
   disables the time limit; it does not disable the independent path limit.
-- `Debug.LoggingLevel=1` reports executions, time, enumerated RNG weight,
+- `Debug.LoggingLevel=1` reports executions, estimated paths, time, enumerated RNG weight,
   maximum RNG depth (normal/rare passes), and weighted comparison evaluations.
 
 To disable bytecode transformation itself, including when diagnosing conflicts
@@ -115,10 +118,30 @@ to retry it. Partial probabilities are not renormalized or presented as a
 complete enumeration in the generation logs; the existing NEI display does not
 yet expose this completeness metadata.
 
-The old `chance < 1e-7` early exit is removed for mob passes: a small leaf weight
-does not bound the combined weight of unexplored branches. A timeout/path cap
-is checked between calls, after checking whether enumeration has completed.
-It cannot interrupt an individual mod method that never returns.
+The intent of the old `chance < 1e-7` early exit is preserved: abandon a huge
+search as soon as it is observed, rather than first executing millions of paths.
+After each call, RandomSequencer.estimatedPathCount multiplies the branching
+factors of that path. For ordinary uniform choices, the default threshold
+corresponds to the old inverse-chance threshold. Weighted comparisons contribute
+one or two representatives, so a very rare outcome does not imply expensive work.
+Products saturate at Long.MAX_VALUE. Conditional RNG calls mean this is a
+projection, not an exact count of unexplored leaves; it can overestimate or
+underestimate total work. Later paths are checked too, and the timeout remains
+a fallback. Checks happen after checking for completion and cannot interrupt
+an individual mod method that never returns.
+
+Generator version 3 invalidates caches from the earlier execution-cap policy.
+The estimate uses a separate configuration key so a saved one-million execution
+limit does not silently become a one-million estimate limit. With the default
+ten-million estimate limit, ordinary uniform enumeration with 1,555,200 paths
+is allowed again (subject to timeout); a 60,466,176-path sequence stops after
+the first observed path. Early rejection retains only the outcomes observed
+so far, without renormalizing their weights.
+
+A Forge smoke test with an intentionally low estimate threshold of 1 generated
+347 mob entries and logged early rejection after one execution for affected
+normal, Looting and additional passes. The cache stored generatorVersion 3 and
+the estimate threshold. The server reached startup and shut down via `stop`.
 
 ## Limits
 

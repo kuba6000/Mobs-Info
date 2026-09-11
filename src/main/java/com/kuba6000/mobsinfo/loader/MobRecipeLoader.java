@@ -109,10 +109,11 @@ public class MobRecipeLoader {
     private static boolean alreadyGenerated = false;
     public static boolean isInGenerationProcess = false;
     public static final String randomEnchantmentDetectedString = "RandomEnchantmentDetected";
-    private static final int GENERATOR_VERSION = 2;
+    private static final int GENERATOR_VERSION = 3;
 
-    private static boolean generationBudgetReached(long start, long executions) {
-        return (Config.MobHandler.maxPathsPerMobPass > 0 && executions >= Config.MobHandler.maxPathsPerMobPass)
+    private static boolean generationBudgetReached(long start, long estimatedPaths) {
+        return (Config.MobHandler.maxEstimatedPathsPerMobPass > 0
+            && estimatedPaths > Config.MobHandler.maxEstimatedPathsPerMobPass)
             || System.nanoTime() - start >= (long) (Config.MobHandler.mobTimeout * 1e9);
     }
 
@@ -312,7 +313,7 @@ public class MobRecipeLoader {
         int generatorVersion;
         boolean comparisonWeights;
         double timeout;
-        int maxPaths;
+        int maxEstimatedPaths;
         Map<String, List<String>> incompleteDrops;
         Map<String, ArrayList<MobDrop>> moblist;
     }
@@ -379,11 +380,11 @@ public class MobRecipeLoader {
                 MobRecipeLoaderCacheStructure s = gson.fromJson(reader, MobRecipeLoaderCacheStructure.class);
                 if (s.generatorVersion == GENERATOR_VERSION && s.comparisonWeights == frand.useComparisonWeights
                     && s.timeout == Config.MobHandler.mobTimeout
-                    && s.maxPaths == Config.MobHandler.maxPathsPerMobPass
+                    && s.maxEstimatedPaths == Config.MobHandler.maxEstimatedPathsPerMobPass
                     && (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
                         || modlistversion.equals(s.version))) {
                     if (s.incompleteDrops != null && !s.incompleteDrops.isEmpty()) LOG.warn(
-                        "Cached drop enumeration is incomplete for {}. Increase MobTimeout/MaxPathsPerMobPass to regenerate.",
+                        "Cached drop enumeration is incomplete for {}. Increase MobTimeout/MaxEstimatedPathsPerMobPass to regenerate.",
                         s.incompleteDrops);
                     ProgressManager.ProgressBar bar = ProgressManager
                         .push("Parsing cached Mob Recipe Map", s.moblist.size());
@@ -595,6 +596,7 @@ public class MobRecipeLoader {
                     dListName) -> {
                     final long start = System.nanoTime();
                     long executions = 0;
+                    long estimatedPaths = 1;
                     double enumeratedWeight = 0d;
                     int maxDepth = 0;
                     while (true) {
@@ -604,15 +606,17 @@ public class MobRecipeLoader {
                         executions++;
                         enumeratedWeight += frand.chance;
                         maxDepth = Math.max(maxDepth, frand.walkCounter);
+                        estimatedPaths = Math.max(estimatedPaths, frand.estimatedPathCount());
                         if (!frand.nextRound()) break;
-                        if (generationBudgetReached(start, executions)) {
+                        if (generationBudgetReached(start, estimatedPaths)) {
                             incompleteDrops.computeIfAbsent(name, ignored -> new ArrayList<>())
                                 .add(dListName);
                             LOG.warn(
-                                "{} {} enumeration incomplete: {} executions, enumerated RNG weight {}, max depth {}, weighted comparisons {}",
+                                "{} {} enumeration incomplete: {} executions, estimated paths {}, enumerated RNG weight {}, max depth {}, weighted comparisons {}",
                                 name,
                                 dListName,
                                 executions,
+                                estimatedPaths,
                                 enumeratedWeight,
                                 maxDepth,
                                 frand.comparisonCalls);
@@ -620,11 +624,12 @@ public class MobRecipeLoader {
                         }
                     }
                     if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info(
-                        "{} {}: {} executions in {} ms, enumerated RNG weight {}, max depth {}, weighted comparisons {}",
+                        "{} {}: {} executions in {} ms, estimated paths {}, enumerated RNG weight {}, max depth {}, weighted comparisons {}",
                         name,
                         dListName,
                         executions,
                         (System.nanoTime() - start) / 1_000_000d,
+                        estimatedPaths,
                         enumeratedWeight,
                         maxDepth,
                         frand.comparisonCalls);
@@ -749,6 +754,7 @@ public class MobRecipeLoader {
                         }
                         final long start = System.nanoTime();
                         long executions = 0;
+                        long estimatedPaths = 1;
                         double enumeratedWeight = 0d;
                         while (true) {
                             ((EntityLivingAccessor) e).callAddRandomArmor();
@@ -801,24 +807,27 @@ public class MobRecipeLoader {
 
                             executions++;
                             enumeratedWeight += frand.chance;
+                            estimatedPaths = Math.max(estimatedPaths, frand.estimatedPathCount());
                             if (!frand.nextRound()) break;
-                            if (generationBudgetReached(start, executions)) {
+                            if (generationBudgetReached(start, estimatedPaths)) {
                                 incompleteDrops.computeIfAbsent(name, ignored -> new ArrayList<>())
                                     .add("additional");
                                 LOG.warn(
-                                    "{} additional enumeration incomplete: {} executions, enumerated RNG weight {}, weighted comparisons {}",
+                                    "{} additional enumeration incomplete: {} executions, estimated paths {}, enumerated RNG weight {}, weighted comparisons {}",
                                     name,
                                     executions,
+                                    estimatedPaths,
                                     enumeratedWeight,
                                     frand.comparisonCalls);
                                 break;
                             }
                         }
                         if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info(
-                            "{} additional: {} executions in {} ms, enumerated RNG weight {}, weighted comparisons {}",
+                            "{} additional: {} executions in {} ms, estimated paths {}, enumerated RNG weight {}, weighted comparisons {}",
                             name,
                             executions,
                             (System.nanoTime() - start) / 1_000_000d,
+                            estimatedPaths,
                             enumeratedWeight,
                             frand.comparisonCalls);
                     } catch (Exception ignored) {}
@@ -946,7 +955,7 @@ public class MobRecipeLoader {
         s.generatorVersion = GENERATOR_VERSION;
         s.comparisonWeights = frand.useComparisonWeights;
         s.timeout = Config.MobHandler.mobTimeout;
-        s.maxPaths = Config.MobHandler.maxPathsPerMobPass;
+        s.maxEstimatedPaths = Config.MobHandler.maxEstimatedPathsPerMobPass;
         s.incompleteDrops = incompleteDrops;
         s.moblist = new HashMap<>();
         GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.isProvidedFromAPI ? null : v.drops));
