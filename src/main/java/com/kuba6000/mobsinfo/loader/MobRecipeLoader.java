@@ -28,6 +28,7 @@ import static com.kuba6000.mobsinfo.api.utils.ModUtils.isDeobfuscatedEnvironment
 import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ import com.kuba6000.mobsinfo.api.MobDropSimplified;
 import com.kuba6000.mobsinfo.api.MobOverride;
 import com.kuba6000.mobsinfo.api.MobRecipe;
 import com.kuba6000.mobsinfo.api.RandomSequencer;
+import com.kuba6000.mobsinfo.api.RandomSequencer.GenerationLimitExceededException;
 import com.kuba6000.mobsinfo.api.event.PostMobRegistrationEvent;
 import com.kuba6000.mobsinfo.api.event.PostMobsRegistrationEvent;
 import com.kuba6000.mobsinfo.api.event.PreMobRegistrationEvent;
@@ -296,6 +298,7 @@ public class MobRecipeLoader {
 
         String version;
         Map<String, ArrayList<MobDrop>> moblist;
+        HashSet<String> skippedMobs;
     }
 
     public static final List<Double> DQRChances = new ArrayList<>();
@@ -337,6 +340,7 @@ public class MobRecipeLoader {
 
         RandomSequencer frand = new RandomSequencer();
         f.rand = frand;
+        HashSet<String> skippedMobs = new HashSet<>();
 
         File cache = Config.getConfigFile("MobRecipeLoader.cache");
         Gson gson = GSONUtils.GSON_BUILDER.create();
@@ -357,6 +361,9 @@ public class MobRecipeLoader {
                 MobRecipeLoaderCacheStructure s = gson.fromJson(reader, MobRecipeLoaderCacheStructure.class);
                 if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
                     || s.version.equals(modlistversion)) {
+                    if (s.skippedMobs != null && !s.skippedMobs.isEmpty()) {
+                        LOG.warn("Cached mob map is incomplete; random call limit skipped: {}", s.skippedMobs);
+                    }
                     ProgressManager.ProgressBar bar = ProgressManager
                         .push("Parsing cached Mob Recipe Map", s.moblist.size());
                     for (Map.Entry<String, ArrayList<MobDrop>> entry : s.moblist.entrySet()) {
@@ -371,6 +378,7 @@ public class MobRecipeLoader {
                             continue;
                         }
                         try {
+                            frand.newRound();
                             EntityLiving e;
                             if (mobName.equals("witherSkeleton")
                                 && !EntityList.stringToClassMapping.containsKey("witherSkeleton")) {
@@ -401,7 +409,13 @@ public class MobRecipeLoader {
                                     mobName,
                                     new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, mobName, drops), drops));
                             }
-                        } catch (Exception ignored) {}
+                        } catch (InvocationTargetException ex) {
+                            if (ex.getCause() instanceof GenerationLimitExceededException) {
+                                LOG.warn("Skipping cached mob {}: random call limit reached in constructor", mobName);
+                            }
+                        } catch (Exception ignored) {} finally {
+                            frand.newRound();
+                        }
                     }
                     ProgressManager.pop(bar);
                     LOG.info("Parsed cached map, skipping generation");
@@ -456,8 +470,17 @@ public class MobRecipeLoader {
 
             EntityLiving e;
             try {
+                frand.newRound();
                 e = (EntityLiving) entity.getConstructor(new Class[] { World.class })
                     .newInstance(new Object[] { f });
+            } catch (InvocationTargetException ex) {
+                if (ex.getCause() instanceof GenerationLimitExceededException) {
+                    skippedMobs.add(name);
+                    LOG.warn("Skipping mob {}: random call limit reached in constructor", name);
+                } else {
+                    ex.printStackTrace();
+                }
+                return;
             } catch (NoSuchMethodException ex) {
                 // No constructor ?
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
@@ -471,6 +494,8 @@ public class MobRecipeLoader {
             } catch (Throwable ex) {
                 ex.printStackTrace();
                 return;
+            } finally {
+                frand.newRound();
             }
 
             if (!(registeringWitherSkeleton && name.equals("witherSkeleton")) && e.getCommandSenderName()
@@ -550,6 +575,8 @@ public class MobRecipeLoader {
                         boolean enchantmentDetected = false;
                         try {
                             ((EntityLivingBaseAccessor) e).callDropFewItems(true, 0);
+                        } catch (GenerationLimitExceededException ex) {
+                            throw ex;
                         } catch (Exception ex) {
                             enchantmentDetected = true;
                         }
@@ -760,6 +787,8 @@ public class MobRecipeLoader {
                             second = true;
 
                         } while (frand.nextRound());
+                    } catch (GenerationLimitExceededException ex) {
+                        throw ex;
                     } catch (Exception ignored) {}
 
                     frand.newRound();
@@ -861,10 +890,19 @@ public class MobRecipeLoader {
                     .put(name, new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, name, moboutputs), moboutputs));
 
                 if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed) LOG.info("Mapped " + name);
+            } catch (GenerationLimitExceededException ex) {
+                skippedMobs.add(name);
+                LOG.warn("Skipping mob {}: random call limit reached while generating drops", name);
             } catch (Throwable ex) {
                 currentEntity = null;
                 LOG.error("Something went wrong while generating recipes for " + name + ", stacktrace: ");
                 ex.printStackTrace();
+            } finally {
+                currentEntity = null;
+                e.capturedDrops.clear();
+                frand.newRound();
+                collector.newRound();
+                DQRChances.clear();
             }
         });
 
@@ -882,6 +920,10 @@ public class MobRecipeLoader {
         LOG.info("Saving generated map to file");
         MobRecipeLoaderCacheStructure s = new MobRecipeLoaderCacheStructure();
         s.version = modlistversion;
+        s.skippedMobs = skippedMobs;
+        if (!skippedMobs.isEmpty()) {
+            LOG.warn("Generated mob map is incomplete; random call limit skipped: {}", skippedMobs);
+        }
         s.moblist = new HashMap<>();
         GeneralMobList.forEach((k, v) -> s.moblist.put(k, v.isProvidedFromAPI ? null : v.drops));
         Writer writer = null;
