@@ -66,7 +66,6 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
-import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
@@ -90,13 +89,10 @@ import atomicstryker.infernalmobs.common.InfernalMobsCore;
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiRecipe;
-import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
@@ -256,15 +252,6 @@ public class MobHandler extends TemplateRecipeHandler {
 
     public MobHandler() {
         this.transferRects.add(new RecipeTransferRect(new Rectangle(7, 62, 16, 16), getOverlayIdentifier()));
-        if (!NEI_Config.isAdded) {
-            FMLInterModComms.sendRuntimeMessage(
-                MobsInfo.instance,
-                "NEIPlugins",
-                "register-crafting-handler",
-                "MobsInfo@" + getRecipeName() + "@" + getOverlayIdentifier());
-            GuiCraftingRecipe.craftinghandlers.add(this);
-            GuiUsageRecipe.usagehandlers.add(this);
-        }
     }
 
     @Override
