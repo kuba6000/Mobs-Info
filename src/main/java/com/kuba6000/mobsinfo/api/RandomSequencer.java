@@ -13,6 +13,27 @@ public class RandomSequencer extends Random {
 
     private static final long serialVersionUID = 109358312784613473L;
 
+    // A retry loop may never return to the loader's timeout check.
+    private static final int MAX_CALLS_PER_ROUND = 10_000;
+    private int callsThisRound;
+
+    public static class GenerationLimitExceededException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        public GenerationLimitExceededException() {
+            super("Too many random calls in one generation round");
+        }
+    }
+
+    private void checkGenerationLimit() {
+        if (callsThisRound >= MAX_CALLS_PER_ROUND) {
+            nexts.clear();
+            throw new GenerationLimitExceededException();
+        }
+        callsThisRound++;
+    }
+
     private static class nexter {
 
         private final int bound;
@@ -64,6 +85,7 @@ public class RandomSequencer extends Random {
     public int nextIntCompared(int bound, int threshold, int comparison) {
         if (bound <= 0) throw new IllegalArgumentException("bound must be positive");
         if (exceptionOnEnchantTry) return nextInt(bound);
+        checkGenerationLimit();
         if (comparison == EQUALITY) {
             if (threshold < 0 || threshold >= bound) return nextWeighted(bound, bound, 0);
             return threshold == 0 ? nextWeighted(1, bound, 1) : nextWeighted(bound - 1, bound, threshold);
@@ -77,6 +99,7 @@ public class RandomSequencer extends Random {
 
     /** Same contract as nextIntCompared, using the 2^24 equally likely values of Random.nextFloat. */
     public float nextFloatCompared(float threshold, int comparison) {
+        checkGenerationLimit();
         if (forceFloatValue != -1f) return forceFloatValue;
         final int total = 1 << 24;
         double scaled = (double) threshold * total;
@@ -111,6 +134,7 @@ public class RandomSequencer extends Random {
 
     @Override
     public int nextInt(int bound) {
+        checkGenerationLimit();
         if (exceptionOnEnchantTry && bound == Enchantment.enchantmentsBookList.length) return -1;
         if (nexts.size() <= walkCounter) { // new call
             if (maxWalkCount == walkCounter) {
@@ -128,6 +152,7 @@ public class RandomSequencer extends Random {
 
     @Override
     public float nextFloat() {
+        checkGenerationLimit();
         if (forceFloatValue != -1f) return forceFloatValue;
         if (nexts.size() <= walkCounter) { // new call
             if (maxWalkCount == walkCounter) {
@@ -145,6 +170,7 @@ public class RandomSequencer extends Random {
 
     @Override
     public boolean nextBoolean() {
+        checkGenerationLimit();
         if (nexts.size() <= walkCounter) { // new call
             if (maxWalkCount == walkCounter) {
                 return false;
@@ -177,6 +203,7 @@ public class RandomSequencer extends Random {
 
     public void newRound() {
         comparisonCalls = 0;
+        callsThisRound = 0;
         walkCounter = 0;
         nexts.clear();
         chance = 1d;
@@ -186,6 +213,7 @@ public class RandomSequencer extends Random {
     }
 
     public boolean nextRound() {
+        callsThisRound = 0;
         walkCounter = 0;
         chance = 1d;
         while (!nexts.isEmpty() && nexts.get(nexts.size() - 1)

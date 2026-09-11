@@ -34,7 +34,9 @@ A rare offer with two weighted outcomes does not count as millions of paths.
 The estimate is exact for a fixed sequence of uniform choices, but conditional
 RNG calls can make it overestimate or underestimate the full tree. Later paths
 are checked too; the time budget remains a fallback. Checks cannot interrupt a
-single nonterminating handler. Partial results keep their observed weights;
+single nonterminating handler. The separate sequencer call budget can interrupt
+repeated RNG calls within that handler, including weighted comparisons.
+Partial results keep their observed weights;
 they are never renormalized to look complete.
 
 ## Configuration
@@ -66,6 +68,9 @@ only control the use of weighted choices, not the presence of bytecode hooks.
 `VillagerTradesLoader.cache` now stores the generator version, effective
 optimization mode, budgets and an incomplete flag for each cached handler.
 Generator version 2 invalidates caches from the previous execution-cap policy.
+Version 3 regenerates caches after integrating the per-round RNG call budget
+and validation of malformed offers from master. Validation runs before aggregation
+and when restoring cached offers, while retaining the lazy stack-copy behavior.
 Changing the mode or budgets, or reading an older cache format, regenerates the
 trade cache. This includes CacheRegenerationTrigger=Never: that setting bypasses
 mod-list changes but not cache-format/settings compatibility checks.

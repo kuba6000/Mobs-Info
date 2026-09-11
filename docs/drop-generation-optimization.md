@@ -128,9 +128,13 @@ Products saturate at Long.MAX_VALUE. Conditional RNG calls mean this is a
 projection, not an exact count of unexplored leaves; it can overestimate or
 underestimate total work. Later paths are checked too, and the timeout remains
 a fallback. Checks happen after checking for completion and cannot interrupt
-an individual mod method that never returns.
+an individual mod method that never returns. The separate
+[random-call budget](generation-budget-tests.md) interrupts methods that repeatedly
+call the sequencer, including transformed comparisons, within one path.
 
 Generator version 3 invalidates caches from the earlier execution-cap policy.
+Version 4 additionally regenerates caches after integrating the per-round call
+budget and the record of mobs skipped by that budget.
 The estimate uses a separate configuration key so a saved one-million execution
 limit does not silently become a one-million estimate limit. With the default
 ten-million estimate limit, ordinary uniform enumeration with 1,555,200 paths
