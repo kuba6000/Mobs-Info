@@ -11,6 +11,41 @@ import com.kuba6000.mobsinfo.api.RandomSequencer.GenerationLimitExceededExceptio
 public class RandomSequencerBudgetTest {
 
     @Test
+    public void weightedComparisonsCannotBypassTheGenerationBudget() {
+        RandomSequencer random = new RandomSequencer();
+        random.newRound();
+        assertThrows(
+            GenerationLimitExceededException.class,
+            () -> {
+                for (int attempt = 0; attempt < 100_000; attempt++)
+                    random.nextIntCompared(100, 0, RandomSequencer.EQUALITY);
+            });
+        random.newRound();
+        assertThrows(
+            GenerationLimitExceededException.class,
+            () -> {
+                for (int attempt = 0; attempt < 100_000; attempt++)
+                    random.nextFloatCompared(0.5f, RandomSequencer.LESS_THAN);
+            });
+        random.newRound();
+        random.forceFloatValue = 0f;
+        assertThrows(
+            GenerationLimitExceededException.class,
+            () -> {
+                for (int attempt = 0; attempt < 100_000; attempt++)
+                    random.nextFloatCompared(0.5f, RandomSequencer.LESS_THAN);
+            });
+        random.newRound();
+        random.maxWalkCount = 0;
+        assertThrows(
+            GenerationLimitExceededException.class,
+            () -> {
+                for (int attempt = 0; attempt < 100_000; attempt++)
+                    random.nextIntCompared(100, 0, RandomSequencer.EQUALITY);
+            });
+    }
+
+    @Test
     public void forcedResultsCannotBypassTheGenerationBudget() {
         RandomSequencer random = new RandomSequencer();
         random.newRound();

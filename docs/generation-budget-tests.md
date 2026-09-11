@@ -1,7 +1,8 @@
 # Random generation safety
 
 `RandomSequencer` limits a round to 10,000 calls across `nextInt(bound)`,
-`nextFloat()` and `nextBoolean()`. Forced results count too. Exceeding the limit
+`nextFloat()`, `nextBoolean()` and the weighted comparison entry points
+`nextIntCompared()` / `nextFloatCompared()`. Forced results count too. Exceeding the limit
 clears the recorded choices and throws `GenerationLimitExceededException`.
 `newRound()` and `nextRound()` reset the call budget.
 
@@ -12,6 +13,10 @@ calls to these methods, or calculate the missing distribution of an aborted mob.
 The mob loader skips the failed mob, cleans up generation state and continues.
 The cache records mobs skipped by this limit and warns when that cache is loaded.
 The safeguard works without weighted random comparison optimization.
+Weighted comparison calls share the same budget as ordinary draws; a comparison
+delegating to an ordinary draw counts once. This per-call safeguard complements
+the early path-count estimate: it can abort a retry loop before its first path
+returns, while the estimate rejects excessive branching between completed paths.
 
 ## Verification
 
