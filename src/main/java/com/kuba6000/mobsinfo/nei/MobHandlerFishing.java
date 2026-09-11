@@ -13,19 +13,15 @@ import net.minecraftforge.common.FishingHooks;
 
 import org.lwjgl.opengl.GL11;
 
-import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.config.Config;
 
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiRecipe;
-import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import cpw.mods.fml.common.event.FMLInterModComms;
 
 public class MobHandlerFishing extends TemplateRecipeHandler {
 
@@ -74,15 +70,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
     private static final double fishBaseChance = 0.85d, junkBaseChance = 0.10d, treasureBaseChance = 0.05d;
 
     public MobHandlerFishing() {
-        if (!NEI_Config.isAdded) {
-            FMLInterModComms.sendRuntimeMessage(
-                MobsInfo.instance,
-                "NEIPlugins",
-                "register-crafting-handler",
-                "MobsInfo@" + getRecipeName() + "@" + getOverlayIdentifier());
-            GuiCraftingRecipe.craftinghandlers.add(this);
-            GuiUsageRecipe.usagehandlers.add(this);
-        }
+
         if (recipe == null) {
             recipe = new FishingRecipe();
         }
@@ -193,12 +181,12 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
     public void drawForeground(int recipeID) {
         int y = 0, yshift = 10, x = 7;
 
-        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_4.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_4.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
 
         x = 6;
         y = itemsYStart;
@@ -209,7 +197,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
                 Translations.FISH.get(fishBaseChance * 100d),
                 x,
                 y,
-                EnumColors.TEXT_DEFAULT.getColor(),
+                ColorUtils.textDefault.getColor(),
                 false);
             y += yshift + ((recipe.fishCount - 1) / itemsPerRow) * 18;
         }
@@ -218,7 +206,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
                 Translations.JUNK.get(junkBaseChance * 100d),
                 x,
                 y,
-                EnumColors.TEXT_DEFAULT.getColor(),
+                ColorUtils.textDefault.getColor(),
                 false);
             y += yshift + ((recipe.junkCount - 1) / itemsPerRow) * 18;
         }
@@ -227,7 +215,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
                 Translations.TREASURE.get(treasureBaseChance * 100d),
                 x,
                 y,
-                EnumColors.TEXT_DEFAULT.getColor(),
+                ColorUtils.textDefault.getColor(),
                 false);
         }
     }

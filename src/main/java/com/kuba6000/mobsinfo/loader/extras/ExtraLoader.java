@@ -128,10 +128,17 @@ public class ExtraLoader {
             && !alreadyProvided.contains(LoaderReference.EtFuturumRequiem.modID)) loaders.add(new EtFuturum());
         if (LoaderReference.LycanitesMobs.isLoaded && !alreadyProvided.contains(LoaderReference.LycanitesMobs.modID))
             loaders.add(new LycanitesMobs());
+        if (LoaderReference.MineTradingCards.isLoaded
+            && !alreadyProvided.contains(LoaderReference.MineTradingCards.modID)) loaders.add(new MineTradingCards());
         if (LoaderReference.Reliquarry.isLoaded && !alreadyProvided.contains(LoaderReference.Reliquarry.modID))
             loaders.add(new Reliquarry());
 
+        if (LoaderReference.MineFantasyII.isLoaded && !alreadyProvided.contains(LoaderReference.MineFantasyII.modID))
+            loaders.add(new MineFantasyII());
+
         // LAST
+        if (LoaderReference.LootPlusPlus.isLoaded && !alreadyProvided.contains(LoaderReference.LootPlusPlus.modID))
+            loaders.add(new LootPlusPlus());
         if (LoaderReference.EditMobDrops.isLoaded && !alreadyProvided.contains(LoaderReference.EditMobDrops.modID))
             loaders.add(new EditMobDrops());
         if (LoaderReference.MineTweaker.isLoaded && !alreadyProvided.contains(LoaderReference.MineTweaker.modID))

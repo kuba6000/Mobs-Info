@@ -33,7 +33,10 @@ import java.lang.reflect.Method;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -41,7 +44,6 @@ import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityList;
@@ -64,7 +66,6 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
-import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.LoaderReference;
 import com.kuba6000.mobsinfo.api.MobDrop;
@@ -88,13 +89,10 @@ import atomicstryker.infernalmobs.common.InfernalMobsCore;
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiRecipe;
-import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.objects.ItemData;
@@ -170,6 +168,24 @@ public class MobHandler extends TemplateRecipeHandler {
     private static int itemsYStart = itemsYStartMin;
     private static int lastArmorTick = 0;
 
+    /**
+     * Caches constant tooltip lines and chance-line Strings ("100%" etc.) per rebuild instead of
+     * per drop. Rebuilt (not static) so locale changes apply: {@link #clearRecipes()} clears
+     * both caches before every rebuild.
+     */
+    private static final Map<Translations, String> resetLineCache = new EnumMap<>(Translations.class);
+    private static final Map<Integer, String> chanceLineCache = new HashMap<>();
+
+    private static String resetLine(Translations translation) {
+        return resetLineCache.computeIfAbsent(translation, t -> EnumChatFormatting.RESET + t.get());
+    }
+
+    private static String chanceLine(int chance) {
+        return chanceLineCache.computeIfAbsent(
+            chance,
+            c -> EnumChatFormatting.RESET + Translations.CHANCE.get(c == 0 ? "<0.01%" : (double) c / 100d));
+    }
+
     public static void addRecipe(EntityLiving e, List<MobDrop> drop) {
         List<MobPositionedStack> positionedStacks = new ArrayList<>();
         int xorigin = 7, xoffset = xorigin, yoffset = 12, normaldrops = 0, raredrops = 0, additionaldrops = 0,
@@ -215,6 +231,8 @@ public class MobHandler extends TemplateRecipeHandler {
 
     public static void clearRecipes() {
         cachedRecipes.clear();
+        resetLineCache.clear();
+        chanceLineCache.clear();
     }
 
     public static void sortCachedRecipes() {
@@ -234,15 +252,6 @@ public class MobHandler extends TemplateRecipeHandler {
 
     public MobHandler() {
         this.transferRects.add(new RecipeTransferRect(new Rectangle(7, 62, 16, 16), getOverlayIdentifier()));
-        if (!NEI_Config.isAdded) {
-            FMLInterModComms.sendRuntimeMessage(
-                MobsInfo.instance,
-                "NEIPlugins",
-                "register-crafting-handler",
-                "MobsInfo@" + getRecipeName() + "@" + getOverlayIdentifier());
-            GuiCraftingRecipe.craftinghandlers.add(this);
-            GuiUsageRecipe.usagehandlers.add(this);
-        }
     }
 
     @Override
@@ -280,7 +289,7 @@ public class MobHandler extends TemplateRecipeHandler {
 
             GL11.glTranslatef(20.f, 20.f, 0.f);
             GL11.glScalef(4.f, 4.f, 0.f);
-            GuiDraw.drawString("?", 0, 0, EnumColors.TEXT_DEFAULT.getColor(), false);
+            GuiDraw.drawString("?", 0, 0, ColorUtils.textDefault.getColor(), false);
 
             GL11.glPopMatrix();
             return;
@@ -368,36 +377,12 @@ public class MobHandler extends TemplateRecipeHandler {
                 }
             }
 
-            int mobx = 31, moby = 50;
             e.setPosition(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
             e.lastTickPosX = e.posX;
             e.lastTickPosY = e.posY;
             e.lastTickPosZ = e.posZ;
 
-            org.lwjgl.util.Rectangle v = MobUtils.getMobSizeInGui(e, mobx, moby, 20);
-
-            // convert to local coordinate:
-            float ylocal = (v.getY() + v.getHeight()) - y;
-            float wantedy = 54.f;
-
-            float new_scale = (40.f / v.getHeight());
-            float new_scale_x = (38.f / v.getWidth());
-            if (new_scale_x < new_scale) new_scale = new_scale_x;
-
-            new_scale = (float) Math.round(20.f * new_scale) / 20.f;
-
-            float a = moby - ylocal;
-            float aa = a - (a * new_scale);
-            float aaa = (wantedy - ylocal) - aa;
-
-            // ARGS: x, y, scale, rot, rot, entity
-            GuiInventory.func_147046_a(
-                mobx,
-                (int) (moby + aaa),
-                Math.round(20.f * new_scale),
-                (x + mobx) - mouseX,
-                y + moby - 25 - mouseZ,
-                e);
+            MobUtils.renderMobPreview(e, x, y, mouseX, mouseZ);
 
         } catch (Throwable ex) {
             Tessellator tes = Tessellator.instance;
@@ -471,30 +456,26 @@ public class MobHandler extends TemplateRecipeHandler {
             y,
             yshift,
             168 - x,
-            EnumColors.TEXT_DEFAULT.getColor(),
+            ColorUtils.textDefault.getColor(),
             false) - yshift;
         if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey())
-            GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+            GuiDraw.drawString(currentrecipe.mobname, x, y += yshift, ColorUtils.textDefault.getColor(), false);
         GuiDraw.drawString(
             Translations.MOD.get() + currentrecipe.mod,
             x,
             y += yshift,
-            EnumColors.TEXT_DEFAULT.getColor(),
+            ColorUtils.textDefault.getColor(),
             false);
         if (!currentrecipe.isUnlocked()) {
             x = 6;
             y = 83;
-            GuiDraw.drawStringC(
-                Translations.LOCKED.get(),
-                168 / 2,
-                y += yshift,
-                EnumColors.TEXT_DEFAULT.getColor(),
-                false);
+            GuiDraw
+                .drawStringC(Translations.LOCKED.get(), 168 / 2, y += yshift, ColorUtils.textDefault.getColor(), false);
             GuiDraw.drawStringC(
                 Translations.LOCKED_1.get(),
                 168 / 2,
                 y += yshift,
-                EnumColors.TEXT_DEFAULT.getColor(),
+                ColorUtils.textDefault.getColor(),
                 false);
             return;
         }
@@ -502,7 +483,7 @@ public class MobHandler extends TemplateRecipeHandler {
             Translations.MAX_HEALTH.get() + currentrecipe.maxHealth,
             x,
             y += yshift,
-            EnumColors.TEXT_DEFAULT.getColor(),
+            ColorUtils.textDefault.getColor(),
             false);
         switch (currentrecipe.infernaltype) {
             case -1:
@@ -512,7 +493,7 @@ public class MobHandler extends TemplateRecipeHandler {
                     Translations.INFERNAL_CANNOT.get(),
                     x,
                     y += yshift,
-                    EnumColors.TEXT_DEFAULT.getColor(),
+                    ColorUtils.textDefault.getColor(),
                     false);
                 break;
             case 1:
@@ -520,7 +501,7 @@ public class MobHandler extends TemplateRecipeHandler {
                     Translations.INFERNAL_CAN.get(),
                     x,
                     y += yshift,
-                    EnumColors.TEXT_DANGER.getColor(),
+                    ColorUtils.textDanger.getColor(),
                     false);
                 break;
             case 2:
@@ -528,7 +509,7 @@ public class MobHandler extends TemplateRecipeHandler {
                     Translations.INFERNAL_ALWAYS.get(),
                     x,
                     y += yshift,
-                    EnumColors.TEXT_DANGER.getColor(),
+                    ColorUtils.textDanger.getColor(),
                     false);
                 break;
         }
@@ -537,31 +518,27 @@ public class MobHandler extends TemplateRecipeHandler {
             EnumChatFormatting.BOLD + "" + BOSS.get(),
             x,
             y += yshift,
-            EnumColors.TEXT_BOSS.getColor(),
+            ColorUtils.textBoss.getColor(),
             false);
 
-        if (currentrecipe.isPeacefulAllowed) GuiDraw.drawString(
-            Translations.PEACEFUL_ALLOWED.get(),
-            x,
-            y += yshift,
-            EnumColors.TEXT_POSITIVE.getColor(),
-            false);
+        if (currentrecipe.isPeacefulAllowed) GuiDraw
+            .drawString(Translations.PEACEFUL_ALLOWED.get(), x, y += yshift, ColorUtils.textPositive.getColor(), false);
 
         if (!currentrecipe.isUsableInVial) GuiDraw
-            .drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+            .drawString(Translations.CANNOT_USE_VIAL.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
 
         if (currentrecipe.spawnList != null && !currentrecipe.spawnList.isEmpty()) {
             int possiblePlaces = SpawnInfo.getAllKnownInfos()
                 .size();
             if (currentrecipe.spawnList.size() >= possiblePlaces && !NEIClientUtils.shiftKey()) {
-                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+                GuiDraw.drawString(SPAWNS_EVERYWHERE.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
                 setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
             } else if (currentrecipe.spawnList.size() < possiblePlaces / 2 || NEIClientUtils.shiftKey()) {
                 GuiDraw.drawString(
                     EnumChatFormatting.UNDERLINE + SPAWNS_IN.get(currentrecipe.spawnList.size()),
                     x,
                     y += yshift,
-                    EnumColors.TEXT_DEFAULT.getColor(),
+                    ColorUtils.textDefault.getColor(),
                     false);
                 setBiomeSpawnTooltip(
                     true,
@@ -578,18 +555,18 @@ public class MobHandler extends TemplateRecipeHandler {
                     y + yshift,
                     yshift,
                     168 - x,
-                    EnumColors.TEXT_DEFAULT.getColor(),
+                    ColorUtils.textDefault.getColor(),
                     false);
                 setBiomeSpawnTooltip(true, x, y - yshift, 168 - x, 18, true, currentrecipe.spawnList);
             }
         } else {
-            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+            // GuiDraw.drawString("Doesn't spawn naturally", x, y += yshift, ColorUtils.textDefault.getColor(), false);
             setBiomeSpawnTooltip(false, 0, 0, 0, 0, false, null);
         }
 
         if (!currentrecipe.additionalInformation.isEmpty()) {
             for (String s : currentrecipe.additionalInformation) {
-                GuiDraw.drawString(s, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+                GuiDraw.drawString(s, x, y += yshift, ColorUtils.textDefault.getColor(), false);
             }
         }
 
@@ -605,20 +582,19 @@ public class MobHandler extends TemplateRecipeHandler {
             y = itemsYStart;
             yshift = nextRowYShift;
             if (currentrecipe.normalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
+                GuiDraw.drawString(Translations.NORMAL_DROPS.get(), x, y, ColorUtils.textDefault.getColor(), false);
                 y += yshift + ((currentrecipe.normalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.rareOutputsCount > 0) {
-                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
+                GuiDraw.drawString(Translations.RARE_DROPS.get(), x, y, ColorUtils.textDefault.getColor(), false);
                 y += yshift + ((currentrecipe.rareOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.additionalOutputsCount > 0) {
-                GuiDraw
-                    .drawString(Translations.ADDITIONAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
+                GuiDraw.drawString(Translations.ADDITIONAL_DROPS.get(), x, y, ColorUtils.textDefault.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             if (currentrecipe.infernalOutputsCount > 0) {
-                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, EnumColors.TEXT_DEFAULT.getColor(), false);
+                GuiDraw.drawString(Translations.INFERNAL_DROPS.get(), x, y, ColorUtils.textDefault.getColor(), false);
                 y += yshift + ((currentrecipe.additionalOutputsCount - 1) / itemsPerRow) * 18;
             }
             yshift = 10;
@@ -712,11 +688,24 @@ public class MobHandler extends TemplateRecipeHandler {
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
-        if (Minecraft.getMinecraft().currentScreen instanceof GuiRecipe<?>guiRecipe) {
+        if (Minecraft.getMinecraft().currentScreen instanceof GuiRecipe<?>guiRecipe && guiRecipe.getHandler() == this) {
             for (Integer recipe : guiRecipe.getRecipeIndices()) {
                 ((MobCachedRecipe) arecipes.get(recipe)).onUpdate();
             }
         }
+    }
+
+    @Override
+    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
+        Point offset = gui.getRecipePosition(recipe);
+        Point mouse = GuiDraw.getMousePosition();
+        GuiContainerAccessor accessor = (GuiContainerAccessor) gui;
+        if (MobUtils
+            .isPreviewBoxHovered(accessor.getGuiLeft() + offset.x, accessor.getGuiTop() + offset.y, mouse.x, mouse.y)) {
+            MobUtils.adjustPreviewZoom(((MobCachedRecipe) arecipes.get(recipe)).mob, scroll);
+            return true;
+        }
+        return false;
     }
 
     private static final Rectangle extendedTooltipRect = new Rectangle(28, 62, 8, 16);
@@ -789,20 +778,18 @@ public class MobHandler extends TemplateRecipeHandler {
             extraTooltip = new ArrayList<>();
 
             if (!drop.variableChance) {
-                extraTooltip.add(
-                    EnumChatFormatting.RESET
-                        + Translations.CHANCE.get(chance == 0 ? "<0.01%" : (double) chance / 100d));
+                extraTooltip.add(chanceLine(chance));
             } else {
                 for (IChanceModifier chanceModifier : drop.chanceModifiers) {
                     chanceModifier.applyTooltip(extraTooltip);
                 }
             }
-            if (drop.lootable) extraTooltip.add(EnumChatFormatting.RESET + Translations.LOOTABLE.get());
+            if (drop.lootable) extraTooltip.add(resetLine(Translations.LOOTABLE));
             if (drop.playerOnly) {
-                extraTooltip.add(EnumChatFormatting.RESET + Translations.PLAYER_ONLY.get());
+                extraTooltip.add(resetLine(Translations.PLAYER_ONLY));
             }
             if (drop.additionalInfo != null && !drop.additionalInfo.isEmpty()) extraTooltip.addAll(drop.additionalInfo);
-            extraTooltip.add(EnumChatFormatting.RESET + Translations.AVERAGE_REMINDER.get());
+            extraTooltip.add(resetLine(Translations.AVERAGE_REMINDER));
 
             setPermutationToRender(0);
         }

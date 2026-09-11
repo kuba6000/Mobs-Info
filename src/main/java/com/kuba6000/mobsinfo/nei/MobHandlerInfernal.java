@@ -15,7 +15,6 @@ import net.minecraft.util.StatCollector;
 
 import org.lwjgl.opengl.GL11;
 
-import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.api.utils.FastRandom;
 import com.kuba6000.mobsinfo.mixin.late.InfernalMobs.InfernalMobsCoreAccessor;
@@ -24,13 +23,10 @@ import atomicstryker.infernalmobs.common.InfernalMobsCore;
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiRecipe;
-import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import cpw.mods.fml.common.event.FMLInterModComms;
 
 public class MobHandlerInfernal extends TemplateRecipeHandler {
 
@@ -80,15 +76,6 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
     public static int cycleTicksStatic = Math.abs((int) System.currentTimeMillis());
 
     public MobHandlerInfernal() {
-        if (!NEI_Config.isAdded) {
-            FMLInterModComms.sendRuntimeMessage(
-                MobsInfo.instance,
-                "NEIPlugins",
-                "register-crafting-handler",
-                "MobsInfo@" + getRecipeName() + "@" + getOverlayIdentifier());
-            GuiCraftingRecipe.craftinghandlers.add(this);
-            GuiUsageRecipe.usagehandlers.add(this);
-        }
         if (recipe == null) {
             recipe = new InfernalRecipe();
         }
@@ -163,8 +150,10 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
-        for (Integer recipe : ((GuiRecipe<?>) Minecraft.getMinecraft().currentScreen).getRecipeIndices()) {
-            ((InfernalRecipe) arecipes.get(recipe)).onUpdate();
+        if (Minecraft.getMinecraft().currentScreen instanceof GuiRecipe<?>guiRecipe && guiRecipe.getHandler() == this) {
+            for (Integer recipe : guiRecipe.getRecipeIndices()) {
+                ((InfernalRecipe) arecipes.get(recipe)).onUpdate();
+            }
         }
     }
 
@@ -205,12 +194,12 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
     public void drawForeground(int recipeID) {
         int y = 0, yshift = 10, x = 7;
 
-        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+        GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_1.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_2.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(Translations.FORMAT_4.get(), x + 20, y += yshift, ColorUtils.textDefault.getColor(), false);
 
         {
             x = 6;
@@ -221,7 +210,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
                     Translations.ELITE.get(recipe.eliteChance * 100d, 100d),
                     x,
                     y,
-                    EnumColors.TEXT_DEFAULT.getColor(),
+                    ColorUtils.textDefault.getColor(),
                     false);
                 y += yshift + ((recipe.eliteCount - 1) / itemsPerRow) * 18;
             }
@@ -230,7 +219,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
                     Translations.ULTRA.get(recipe.ultraChance * recipe.eliteChance * 100d, recipe.ultraChance * 100d),
                     x,
                     y,
-                    EnumColors.TEXT_DEFAULT.getColor(),
+                    ColorUtils.textDefault.getColor(),
                     false);
                 y += yshift + ((recipe.ultraCount - 1) / itemsPerRow) * 18;
             }
@@ -241,7 +230,7 @@ public class MobHandlerInfernal extends TemplateRecipeHandler {
                         recipe.infernoChance * recipe.ultraChance * 100d),
                     x,
                     y,
-                    EnumColors.TEXT_DEFAULT.getColor(),
+                    ColorUtils.textDefault.getColor(),
                     false);
             }
         }

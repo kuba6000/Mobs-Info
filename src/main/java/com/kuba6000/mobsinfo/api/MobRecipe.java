@@ -22,6 +22,7 @@ import net.minecraft.world.biome.BiomeGenBase;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.helper.EnderIOHelper;
 import com.kuba6000.mobsinfo.api.helper.InfernalMobsCoreHelper;
 import com.kuba6000.mobsinfo.loader.MobRecipeLoader;
@@ -35,6 +36,7 @@ import jas.spawner.modern.spawner.biome.structure.StructureHandlerRegistry;
 import jas.spawner.modern.spawner.creature.entry.BiomeSpawnListRegistry;
 import jas.spawner.modern.spawner.creature.entry.SpawnListEntry;
 import jas.spawner.modern.spawner.creature.handler.LivingHandler;
+import jas.spawner.modern.world.WorldSettings;
 
 public class MobRecipe {
 
@@ -118,12 +120,16 @@ public class MobRecipe {
             MobNameToStructureList = new HashMap<>();
             BiomeGenBase[] biomeList = BiomeGenBase.getBiomeGenArray();
             // JustAnotherSpawner.globalSettings().emptyVanillaSpawnLists
-            if (LoaderReference.JustAnotherSpawner.isLoaded) {
-                BiomeSpawnListRegistry biomeSpawnListRegistry = MVELProfile.worldSettings()
-                    .biomeSpawnListRegistry();
+            WorldSettings jasSettings = LoaderReference.JustAnotherSpawner.isLoaded ? MVELProfile.worldSettings()
+                : null;
+            if (LoaderReference.JustAnotherSpawner.isLoaded && jasSettings == null) {
+                MobsInfo.warn("Skipping JAS spawn information: Just Another Spawner world settings are unavailable.");
+            }
+            if (jasSettings != null) {
+                BiomeSpawnListRegistry biomeSpawnListRegistry = jasSettings.biomeSpawnListRegistry();
                 for (BiomeGenBase biome : biomeList) {
                     if (biome == null) continue;
-                    new SpawnInfo.SpawnInfoBiome(biome);
+                    SpawnInfo.ofBiome(biome);
                     for (SpawnListEntry spawnListEntry : biomeSpawnListRegistry
                         .getSpawnListFor(BiomeHelper.getPackageName(biome))) {
                         LivingHandler handler = spawnListEntry.getLivingHandler();
@@ -142,17 +148,15 @@ public class MobRecipe {
                         }
                     }
                 }
-                StructureHandlerRegistry registry = MVELProfile.worldSettings()
-                    .structureHandlerRegistry();
+                StructureHandlerRegistry registry = jasSettings.structureHandlerRegistry();
                 for (StructureHandler registryhandler : registry.handlers()) {
                     for (String structureKey : registryhandler.getStructureKeys()) {
-                        new SpawnInfo.SpawnInfoStructure(structureKey);
+                        SpawnInfo.ofStructure(structureKey);
                         for (SpawnListEntry spawnListEntry : registryhandler.getStructureSpawnList(structureKey)) {
                             LivingHandler handler = spawnListEntry.getLivingHandler();
                             if (!handler.namedJASSpawnables.isEmpty()) {
                                 for (String namedJASSpawnable : handler.namedJASSpawnables) {
-                                    Class<? extends Entity> entityClass = MVELProfile.worldSettings()
-                                        .livingGroupRegistry()
+                                    Class<? extends Entity> entityClass = jasSettings.livingGroupRegistry()
                                         .jasNametoEntityClass()
                                         .get(namedJASSpawnable);
                                     if (entityClass != null) MobNameToStructureList
@@ -174,7 +178,7 @@ public class MobRecipe {
             for (BiomeGenBase biome : biomeList) {
                 if (biome == null) continue;
                 // make sure to create known place
-                new SpawnInfo.SpawnInfoBiome(biome);
+                SpawnInfo.ofBiome(biome);
                 for (EnumCreatureType type : EnumCreatureType.values()) {
                     List<BiomeGenBase.SpawnListEntry> spawnableList = (List<BiomeGenBase.SpawnListEntry>) biome
                         .getSpawnableList(type);
@@ -193,13 +197,13 @@ public class MobRecipe {
         spawnList = new HashSet<>();
         if (ar != null) {
             for (Pair<BiomeGenBase, BiomeGenBase.SpawnListEntry> entry : ar) {
-                spawnList.add(new SpawnInfo.SpawnInfoBiome(entry.getKey()));
+                spawnList.add(SpawnInfo.ofBiome(entry.getKey()));
             }
         }
         ArrayList<String> structs = MobNameToStructureList.get(this.entityName);
         if (structs != null) {
             for (String struct : structs) {
-                spawnList.add(new SpawnInfo.SpawnInfoStructure(struct));
+                spawnList.add(SpawnInfo.ofStructure(struct));
             }
         }
 

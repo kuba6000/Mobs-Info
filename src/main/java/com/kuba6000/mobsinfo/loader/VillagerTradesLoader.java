@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
@@ -27,12 +28,12 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import com.kuba6000.mobsinfo.api.ConstructableItemStack;
 import com.kuba6000.mobsinfo.api.DummyWorld;
 import com.kuba6000.mobsinfo.api.IVillagerInfoProvider;
 import com.kuba6000.mobsinfo.api.RandomSequencer;
 import com.kuba6000.mobsinfo.api.VillagerRecipe;
 import com.kuba6000.mobsinfo.api.VillagerTrade;
-import com.kuba6000.mobsinfo.api.helper.ProgressBarWrapper;
 import com.kuba6000.mobsinfo.api.utils.GSONUtils;
 import com.kuba6000.mobsinfo.api.utils.ItemID;
 import com.kuba6000.mobsinfo.api.utils.ModUtils;
@@ -41,6 +42,7 @@ import com.kuba6000.mobsinfo.mixin.early.minecraft.VillagerRegistryAccessor;
 import com.kuba6000.mobsinfo.nei.VillagerTradesHandler;
 import com.kuba6000.mobsinfo.network.LoadConfigPacket;
 
+import cpw.mods.fml.common.ProgressManager;
 import cpw.mods.fml.common.registry.VillagerRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -110,9 +112,8 @@ public class VillagerTradesLoader {
                 VillagerTradesLoaderCacheStructure s = gson.fromJson(reader, VillagerTradesLoaderCacheStructure.class);
                 if (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
                     || s.version.equals(modlistversion)) {
-                    ProgressBarWrapper bar = new ProgressBarWrapper(
-                        "Parsing cached Villager Trades Map",
-                        s.handlerList.size());
+                    ProgressManager.ProgressBar bar = ProgressManager
+                        .push("Parsing cached Villager Trades Map", s.handlerList.size());
                     for (Map.Entry<Integer, ArrayList<VillagerTradesLoaderCacheStructure.VillagerTradesLoaderCacheStructure_Handler>> entry : s.handlerList
                         .entrySet()) {
                         int profession = entry.getKey();
@@ -135,17 +136,19 @@ public class VillagerTradesLoader {
                                         for (VillagerRegistry.IVillageTradeHandler tradeHandler : tradeHandlers) {
                                             ((IVillagerInfoProvider) tradeHandler)
                                                 .provideTrades(villager, profession, trades);
+                                            trades.removeIf(trade -> !prepareTrade(trade, profession, handler.handler));
                                         }
                                     }
                                 } else {
-                                    trades.addAll(handler.tradeList);
+                                    for (VillagerTrade trade : handler.tradeList) {
+                                        if (restoreTrade(trade, profession, handler.handler)) trades.add(trade);
+                                    }
                                 }
                             }
-                            trades.forEach(VillagerTrade::reconstructStacks);
                             VillagerRecipe.recipes.put(profession, new VillagerRecipe(trades, profession, villager));
                         } catch (Exception ignored) {}
                     }
-                    bar.end();
+                    ProgressManager.pop(bar);
                     LOG.info("Parsed cached map, skipping generation");
                     MobRecipeLoader.isInGenerationProcess = false;
                     return;
@@ -172,7 +175,7 @@ public class VillagerTradesLoader {
         final ArrayList<Integer> villagerIDs = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4));
         villagerIDs.addAll(VillagerRegistry.getRegisteredVillagers());
 
-        ProgressBarWrapper bar = new ProgressBarWrapper("Generating Villager Traders Map", villagerIDs.size());
+        ProgressManager.ProgressBar bar = ProgressManager.push("Generating Villager Traders Map", villagerIDs.size());
 
         for (final int id : villagerIDs) {
             bar.step("Profession " + id);
@@ -232,6 +235,8 @@ public class VillagerTradesLoader {
 
                     if (handler instanceof IVillagerInfoProvider provider) {
                         provider.provideTrades(villager, id, recipes);
+                        String handlerName = handlerToCache.handler;
+                        recipes.removeIf(trade -> !prepareTrade(trade, id, handlerName));
                         handlerToCache.tradeList = null;
                         continue;
                     }
@@ -239,7 +244,7 @@ public class VillagerTradesLoader {
                     do {
                         MerchantRecipeList list = new MerchantRecipeList();
                         handler.manipulateTradesForVillager(villager, list, frand);
-                        collector.collectTrades(trades, list, frand.chance);
+                        collector.collectTrades(trades, list, frand.chance, id, handlerToCache.handler);
 
                         if (second && frand.chance < 0.0000001d) {
                             LOG.warn("Skipping {} because it's too randomized", id);
@@ -252,6 +257,7 @@ public class VillagerTradesLoader {
 
                     for (TradeInstance value : trades.itemsToTrade.values()) {
                         VillagerTrade trade = new VillagerTrade(value.i1, value.i2, value.o, value.chance);
+                        if (!prepareTrade(trade, id, handlerToCache.handler)) continue;
                         recipes.add(trade);
                         handlerToCache.tradeList.add(trade);
                     }
@@ -264,7 +270,7 @@ public class VillagerTradesLoader {
         }
         MobRecipeLoader.isInGenerationProcess = false;
 
-        bar.end();
+        ProgressManager.pop(bar);
 
         final long endTime = System.currentTimeMillis();
         LOG.info(
@@ -365,11 +371,26 @@ public class VillagerTradesLoader {
 
     private static class TradeCollector {
 
-        void collectTrades(TradeList trades, MerchantRecipeList recipeList, double chance) {
+        void collectTrades(TradeList trades, MerchantRecipeList recipeList, double chance, int profession,
+            String handler) {
             for (MerchantRecipe recipe : (ArrayList<MerchantRecipe>) recipeList) {
+                if (recipe == null) {
+                    LOG.warn("Skipping null villager trade: profession {}, handler {}", profession, handler);
+                    continue;
+                }
                 ItemStack i1 = recipe.getItemToBuy();
                 ItemStack i2 = recipe.getSecondItemToBuy();
                 ItemStack o = recipe.getItemToSell();
+                if (!validStack(i1) || !validStack(o) || (recipe.hasSecondItemToBuy() && !validStack(i2))) {
+                    LOG.warn(
+                        "Skipping invalid villager trade: profession {}, handler {}, inputs [{}; {}], output {}",
+                        profession,
+                        handler,
+                        describeStack(i1),
+                        describeStack(i2),
+                        describeStack(o));
+                    continue;
+                }
                 boolean i1randomchomenchantdetected = i1.hasTagCompound()
                     && i1.stackTagCompound.hasKey(randomEnchantmentDetectedString);
                 int i1randomenchantmentlevel = 0;
@@ -404,6 +425,70 @@ public class VillagerTradesLoader {
         void newRound() {
 
         }
+    }
+
+    private static boolean validStack(ItemStack stack) {
+        if (stack == null || stack.getItem() == null || stack.stackSize <= 0) return false;
+        String name = Item.itemRegistry.getNameForObject(stack.getItem());
+        return name != null && Item.itemRegistry.getObject(name) == stack.getItem();
+    }
+
+    private static boolean prepareTrade(VillagerTrade trade, int profession, String handler) {
+        if (trade == null || !validTradeItem(trade.getFirstInput())
+            || !validTradeItem(trade.getOutput())
+            || (trade.hasSecondInput() && !validTradeItem(trade.getSecondInput()))) {
+            LOG.warn(
+                "Skipping invalid villager trade: profession {}, handler {}, inputs [{}; {}], output {}",
+                profession,
+                handler,
+                trade == null ? null : describeTradeItem(trade.getFirstInput()),
+                trade == null ? null : describeTradeItem(trade.getSecondInput()),
+                trade == null ? null : describeTradeItem(trade.getOutput()));
+            return false;
+        }
+        // Providers may update their live stacks after creating TradeItems.
+        trade.getFirstInput().reconstructableStack = new ConstructableItemStack(trade.getFirstInput().stack);
+        if (trade.hasSecondInput()) {
+            trade.getSecondInput().reconstructableStack = new ConstructableItemStack(trade.getSecondInput().stack);
+        }
+        trade.getOutput().reconstructableStack = new ConstructableItemStack(trade.getOutput().stack);
+        return true;
+    }
+
+    private static boolean restoreTrade(VillagerTrade trade, int profession, String handler) {
+        if (trade == null || !hasSavedStack(trade.getFirstInput())
+            || !hasSavedStack(trade.getOutput())
+            || (trade.hasSecondInput() && !hasSavedStack(trade.getSecondInput()))) {
+            LOG.warn("Skipping malformed cached villager trade: profession {}, handler {}", profession, handler);
+            return false;
+        }
+        trade.reconstructStacks();
+        return prepareTrade(trade, profession, handler);
+    }
+
+    private static boolean hasSavedStack(VillagerTrade.TradeItem item) {
+        return item != null && item.reconstructableStack != null;
+    }
+
+    private static boolean validTradeItem(VillagerTrade.TradeItem item) {
+        return item != null && validStack(item.stack);
+    }
+
+    private static String describeTradeItem(VillagerTrade.TradeItem item) {
+        if (item == null) return "<missing trade item>";
+        if (item.stack == null && item.reconstructableStack != null) {
+            return "<unresolved " + item.reconstructableStack.itemIdentifier + ">";
+        }
+        return describeStack(item.stack);
+    }
+
+    private static String describeStack(ItemStack stack) {
+        if (stack == null) return "<missing stack>";
+        if (stack.getItem() == null) return "<missing item>";
+        String name = Item.itemRegistry.getNameForObject(stack.getItem());
+        return name == null ? "<unregistered " + stack.getItem()
+            .getClass()
+            .getName() + ">" : name;
     }
 
 }

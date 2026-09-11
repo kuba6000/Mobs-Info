@@ -16,7 +16,6 @@ import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLiving;
@@ -35,7 +34,6 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
-import com.kuba6000.mobsinfo.MobsInfo;
 import com.kuba6000.mobsinfo.api.VillagerRecipe;
 import com.kuba6000.mobsinfo.api.VillagerTrade;
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
@@ -47,13 +45,10 @@ import com.kuba6000.mobsinfo.mixin.early.minecraft.GuiContainerAccessor;
 import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.GuiCraftingRecipe;
 import codechicken.nei.recipe.GuiRecipe;
-import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.VillagerRegistry;
 
@@ -183,15 +178,6 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
 
     public VillagerTradesHandler() {
         this.transferRects.add(new RecipeTransferRect(new Rectangle(7, 62, 16, 16), getOverlayIdentifier()));
-        if (!NEI_Config.isAdded) {
-            FMLInterModComms.sendRuntimeMessage(
-                MobsInfo.instance,
-                "NEIPlugins",
-                "register-crafting-handler",
-                "MobsInfo@" + getRecipeName() + "@" + getOverlayIdentifier());
-            GuiCraftingRecipe.craftinghandlers.add(this);
-            GuiUsageRecipe.usagehandlers.add(this);
-        }
     }
 
     private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
@@ -261,36 +247,12 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
         try {
             EntityLiving e = currentRecipe.displayMob;
 
-            int mobx = 31, moby = 50;
             e.setPosition(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
             e.lastTickPosX = e.posX;
             e.lastTickPosY = e.posY;
             e.lastTickPosZ = e.posZ;
 
-            org.lwjgl.util.Rectangle v = MobUtils.getMobSizeInGui(e, mobx, moby, 20);
-
-            // convert to local coordinate:
-            float ylocal = (v.getY() + v.getHeight()) - y;
-            float wantedy = 54.f;
-
-            float new_scale = (40.f / v.getHeight());
-            float new_scale_x = (38.f / v.getWidth());
-            if (new_scale_x < new_scale) new_scale = new_scale_x;
-
-            new_scale = (float) Math.round(20.f * new_scale) / 20.f;
-
-            float a = moby - ylocal;
-            float aa = a - (a * new_scale);
-            float aaa = (wantedy - ylocal) - aa;
-
-            // ARGS: x, y, scale, rot, rot, entity
-            GuiInventory.func_147046_a(
-                mobx,
-                (int) (moby + aaa),
-                Math.round(20.f * new_scale),
-                (x + mobx) - mouseX,
-                y + moby - 25 - mouseZ,
-                e);
+            MobUtils.renderMobPreview(e, x, y, mouseX, mouseZ);
 
         } catch (Throwable ex) {
             Tessellator tes = Tessellator.instance;
@@ -327,11 +289,11 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
             NAME.get() + currentRecipe.profession,
             x,
             y += yshift,
-            EnumColors.TEXT_DEFAULT.getColor(),
+            ColorUtils.textDefault.getColor(),
             false);
         if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips && NEIClientUtils.shiftKey()) GuiDraw
-            .drawString("ID: " + currentRecipe.professionID, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
-        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, EnumColors.TEXT_DEFAULT.getColor(), false);
+            .drawString("ID: " + currentRecipe.professionID, x, y += yshift, ColorUtils.textDefault.getColor(), false);
+        GuiDraw.drawString(MOD.get() + currentRecipe.mod, x, y += yshift, ColorUtils.textDefault.getColor(), false);
 
     }
 
@@ -375,9 +337,24 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
     @Override
     public void onUpdate() {
         cycleTicksStatic++;
-        for (Integer recipe : ((GuiRecipe<?>) Minecraft.getMinecraft().currentScreen).getRecipeIndices()) {
-            ((VillagerCachedRecipe) arecipes.get(recipe)).onUpdate();
+        if (Minecraft.getMinecraft().currentScreen instanceof GuiRecipe<?>guiRecipe && guiRecipe.getHandler() == this) {
+            for (Integer recipe : guiRecipe.getRecipeIndices()) {
+                ((VillagerCachedRecipe) arecipes.get(recipe)).onUpdate();
+            }
         }
+    }
+
+    @Override
+    public boolean mouseScrolled(GuiRecipe<?> gui, int scroll, int recipe) {
+        Point offset = gui.getRecipePosition(recipe);
+        Point mouse = GuiDraw.getMousePosition();
+        GuiContainerAccessor accessor = (GuiContainerAccessor) gui;
+        if (MobUtils
+            .isPreviewBoxHovered(accessor.getGuiLeft() + offset.x, accessor.getGuiTop() + offset.y, mouse.x, mouse.y)) {
+            MobUtils.adjustPreviewZoom(((VillagerCachedRecipe) arecipes.get(recipe)).displayMob, scroll);
+            return true;
+        }
+        return false;
     }
 
     @Override

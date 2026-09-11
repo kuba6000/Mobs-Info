@@ -108,18 +108,18 @@ public class Config {
                 .getDouble();
             if (mobTimeout < 0) mobTimeout = Double.MAX_VALUE;
 
-            mobBlacklist = configuration
-                .get(
-                    category.get(),
-                    "MobBlacklist",
-                    new String[] { "Giant", "Thaumcraft.TravelingTrunk", "chisel.snowman", "OpenBlocks.Luggage",
-                        "OpenBlocks.MiniMe", "SpecialMobs.SpecialCreeper", "SpecialMobs.SpecialZombie",
-                        "SpecialMobs.SpecialPigZombie", "SpecialMobs.SpecialSlime", "SpecialMobs.SpecialSkeleton",
-                        "SpecialMobs.SpecialEnderman", "SpecialMobs.SpecialCaveSpider", "SpecialMobs.SpecialGhast",
-                        "SpecialMobs.SpecialWitch", "SpecialMobs.SpecialSpider", "TwilightForest.HydraHead",
-                        "TwilightForest.RovingCube", "TwilightForest.Harbinger Cube", "TwilightForest.Adherent",
-                        "SpecialMobs.SpecialSilverfish", },
-                    "These mobs will be skipped when generating recipe map")
+            mobBlacklist = configuration.get(
+                category.get(),
+                "MobBlacklist",
+                new String[] { "Giant", "Thaumcraft.TravelingTrunk", "chisel.snowman", "OpenBlocks.Luggage",
+                    "OpenBlocks.MiniMe", "SpecialMobs.SpecialCreeper", "SpecialMobs.SpecialZombie",
+                    "SpecialMobs.SpecialPigZombie", "SpecialMobs.SpecialSlime", "SpecialMobs.SpecialSkeleton",
+                    "SpecialMobs.SpecialEnderman", "SpecialMobs.SpecialCaveSpider", "SpecialMobs.SpecialGhast",
+                    "SpecialMobs.SpecialWitch", "SpecialMobs.SpecialSpider", "TwilightForest.HydraHead",
+                    "TwilightForest.RovingCube", "TwilightForest.Harbinger Cube", "TwilightForest.Adherent",
+                    "SpecialMobs.SpecialSilverfish", },
+                "These mobs are skipped during recipe generation and cache loading. "
+                    + "The client's blacklist also applies when joining a server. Restart the game after changing it.")
                 .getStringList();
 
             hiddenMode = configuration
