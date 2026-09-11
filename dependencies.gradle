@@ -41,6 +41,7 @@ configurations.create('gtnhlibEmbed') {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-inline:4.11.0")
     api("com.github.GTNewHorizons:NotEnoughItems:2.8.129-GTNH:dev")
     devOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.41:dev")
     devOnlyNonPublishable(rfg.deobf("curse.maven:Infernal-Mobs-227875:2227584"))

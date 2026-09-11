@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.profiler.Profiler;
@@ -159,4 +160,11 @@ public class DummyWorld extends World {
     public boolean spawnEntityInWorld(Entity p_72838_1_) {
         return false;
     }
+
+    // Drop simulation runs before a client world exists. Do not dispatch audio events to other mods.
+    @Override
+    public void playSoundAtEntity(Entity entity, String sound, float volume, float pitch) {}
+
+    @Override
+    public void playSoundToNearExcept(EntityPlayer player, String sound, float volume, float pitch) {}
 }

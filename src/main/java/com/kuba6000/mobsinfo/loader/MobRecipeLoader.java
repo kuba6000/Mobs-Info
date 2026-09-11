@@ -1180,6 +1180,10 @@ public class MobRecipeLoader {
         MinecraftForge.EVENT_BUS.post(new PreMobsRegistrationEvent());
         mobs.forEach(k -> {
             GeneralMappedMob v = GeneralMobList.get(k);
+            if (v == null) {
+                LOG.warn("Skipping server mob {}: no locally generated recipe is available", k);
+                return;
+            }
 
             MobRecipe recipe = v.recipe;
             recipe = recipe.copy();
