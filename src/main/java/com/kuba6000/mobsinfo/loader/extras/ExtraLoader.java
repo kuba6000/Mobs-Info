@@ -173,7 +173,13 @@ public class ExtraLoader {
                     try {
                         chanceModifier.getClass()
                             .getDeclaredConstructor();
-                    } catch (NoSuchMethodException ignored) {}
+                    } catch (NoSuchMethodException ex) {
+                        LOG.fatal(
+                            "ChanceModifier {} does not have a default constructor!",
+                            chanceModifier.getClass()
+                                .getSimpleName());
+                        ex.printStackTrace();
+                    }
                 }
             }
         }
