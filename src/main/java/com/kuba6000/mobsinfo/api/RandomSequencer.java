@@ -9,6 +9,27 @@ public class RandomSequencer extends Random {
 
     private static final long serialVersionUID = 109358312784613473L;
 
+    // A retry loop may never return to the loader's timeout check.
+    private static final int MAX_CALLS_PER_ROUND = 10_000;
+    private int callsThisRound;
+
+    public static class GenerationLimitExceededException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        public GenerationLimitExceededException() {
+            super("Too many random calls in one generation round");
+        }
+    }
+
+    private void checkGenerationLimit() {
+        if (callsThisRound >= MAX_CALLS_PER_ROUND) {
+            nexts.clear();
+            throw new GenerationLimitExceededException();
+        }
+        callsThisRound++;
+    }
+
     private static class nexter {
 
         private final int bound;
@@ -46,6 +67,7 @@ public class RandomSequencer extends Random {
 
     @Override
     public int nextInt(int bound) {
+        checkGenerationLimit();
         if (exceptionOnEnchantTry && bound == Enchantment.enchantmentsBookList.length) return -1;
         if (nexts.size() <= walkCounter) { // new call
             if (maxWalkCount == walkCounter) {
@@ -63,6 +85,7 @@ public class RandomSequencer extends Random {
 
     @Override
     public float nextFloat() {
+        checkGenerationLimit();
         if (forceFloatValue != -1f) return forceFloatValue;
         if (nexts.size() <= walkCounter) { // new call
             if (maxWalkCount == walkCounter) {
@@ -80,6 +103,7 @@ public class RandomSequencer extends Random {
 
     @Override
     public boolean nextBoolean() {
+        checkGenerationLimit();
         if (nexts.size() <= walkCounter) { // new call
             if (maxWalkCount == walkCounter) {
                 return false;
@@ -95,6 +119,7 @@ public class RandomSequencer extends Random {
     }
 
     public void newRound() {
+        callsThisRound = 0;
         walkCounter = 0;
         nexts.clear();
         chance = 1d;
@@ -104,6 +129,7 @@ public class RandomSequencer extends Random {
     }
 
     public boolean nextRound() {
+        callsThisRound = 0;
         walkCounter = 0;
         chance = 1d;
         while (!nexts.isEmpty() && nexts.get(nexts.size() - 1)
