@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.profiler.Profiler;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
@@ -80,6 +81,11 @@ public class DummyWorld extends World {
 
     @Override
     protected IChunkProvider createChunkProvider() {
+        return null;
+    }
+
+    @Override
+    public TileEntity getTileEntity(int x, int y, int z) {
         return null;
     }
 

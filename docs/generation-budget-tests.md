@@ -25,6 +25,8 @@ The Forge fixture exercises the public `generateMobRecipeMap()` entry point with
 real mixins. It checks drop, constructor and equipment retry loops, followed by
 healthy mobs whose guaranteed drops must survive. When ManaMetal is installed,
 it also runs the reported Nightmare mob and checks that generation continues.
+It also checks that a mob whose name lookup throws cannot abort the batch,
+using a self-contained fixture that does not require Pokecube Legacy.
 
 ```text
 gradlew runServer -PgenerationBudgetIntegration -PrunServerWorkingDirectory=build/generation-budget-integration
