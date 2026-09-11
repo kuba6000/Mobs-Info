@@ -65,9 +65,7 @@ public class ExtraLoader {
                             ((ASMEventHandlerAccessor) listener).getOwner()
                                 .getModId());
                     }
-                } catch (IllegalAccessException | NoSuchFieldException e) {
-                    throw new RuntimeException(e);
-                }
+                } catch (Exception ignored) {}
             }
         }
 
@@ -175,8 +173,12 @@ public class ExtraLoader {
                     try {
                         chanceModifier.getClass()
                             .getDeclaredConstructor();
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException(e);
+                    } catch (NoSuchMethodException ex) {
+                        LOG.fatal(
+                            "ChanceModifier {} does not have a default constructor!",
+                            chanceModifier.getClass()
+                                .getSimpleName());
+                        ex.printStackTrace();
                     }
                 }
             }
