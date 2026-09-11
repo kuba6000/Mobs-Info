@@ -32,6 +32,7 @@ public class Config {
 
         MOB_HANDLER("MobHandler"),
         VILLAGER_TRADES_HANDLER("VillagerTradesHandler"),
+        FISHING_HANDLER("FishingHandler"),
         DEBUG("Debug"),
         COMPATIBILITY("Compatibility");
 
@@ -143,6 +144,18 @@ public class Config {
         }
     }
 
+    public static class FishingHandler {
+
+        public static boolean enabled = true;
+
+        private static void load(Configuration configuration) {
+            Category category = Category.FISHING_HANDLER;
+
+            enabled = configuration.get(category.get(), "Enabled", true, "Show fishing drops in NEI")
+                .getBoolean();
+        }
+    }
+
     public static class Debug {
 
         public enum LoggingLevel {
@@ -215,6 +228,7 @@ public class Config {
 
         MobHandler.load(configuration);
         VillagerTradesHandler.load(configuration);
+        FishingHandler.load(configuration);
         Debug.load(configuration);
         Compatibility.load(configuration);
 
