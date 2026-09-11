@@ -498,15 +498,13 @@ public class MobRecipeLoader {
                 frand.newRound();
             }
 
-            if (!(registeringWitherSkeleton && name.equals("witherSkeleton")) && e.getCommandSenderName()
-                .startsWith("entity.")) {
-                LOG.warn("Entity " + name + " doesn't have localized name!");
-                // return;
-            }
-
             // POWERFULL GENERATION
 
             try {
+                if (!(registeringWitherSkeleton && name.equals("witherSkeleton")) && e.getCommandSenderName()
+                    .startsWith("entity.")) {
+                    LOG.warn("Entity " + name + " doesn't have localized name!");
+                }
 
                 e.captureDrops = true;
 

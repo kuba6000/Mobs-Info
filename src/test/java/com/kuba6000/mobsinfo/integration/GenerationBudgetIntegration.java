@@ -32,6 +32,8 @@ public class GenerationBudgetIntegration {
             EntityList.stringToClassMapping.put("fixture:after_constructor", Healthy.class);
             EntityList.stringToClassMapping.put("fixture:armor_loop", ArmorLoop.class);
             EntityList.stringToClassMapping.put("fixture:after_armor", Healthy.class);
+            EntityList.stringToClassMapping.put("fixture:broken_name", BrokenName.class);
+            EntityList.stringToClassMapping.put("fixture:after_name", Healthy.class);
             if (nightmare != null) {
                 EntityList.stringToClassMapping.put("manametalmod.EntityMobNightmareBase", nightmare);
                 EntityList.stringToClassMapping.put("fixture:after_manametal", Healthy.class);
@@ -41,7 +43,7 @@ public class GenerationBudgetIntegration {
             Config.MobHandler.mobHandlerEnabled = true;
             Config.MobHandler.regenerationTrigger = Config.MobHandler._CacheRegenerationTrigger.Always;
             MobRecipeLoader.generateMobRecipeMap();
-            for (String name : new String[] { "after_drop", "after_constructor", "after_armor" }) {
+            for (String name : new String[] { "after_drop", "after_constructor", "after_armor", "after_name" }) {
                 MobRecipeLoader.GeneralMappedMob mob = MobRecipeLoader.GeneralMobList.get("fixture:" + name);
                 if (mob == null || mob.drops.isEmpty()) {
                     throw new AssertionError("Healthy mob lost after failed generation: " + name);
@@ -51,7 +53,7 @@ public class GenerationBudgetIntegration {
                     throw new AssertionError("Healthy mob lost its guaranteed drop: " + name);
                 }
             }
-            for (String name : new String[] { "drop_loop", "constructor_loop", "armor_loop" }) {
+            for (String name : new String[] { "drop_loop", "constructor_loop", "armor_loop", "broken_name" }) {
                 if (MobRecipeLoader.GeneralMobList.containsKey("fixture:" + name)) {
                     throw new AssertionError("Aborted generation published a recipe: " + name);
                 }
@@ -84,6 +86,18 @@ public class GenerationBudgetIntegration {
         @Override
         protected void dropFewItems(boolean recentlyHit, int looting) {
             dropItem(Items.diamond, 1);
+        }
+    }
+
+    public static class BrokenName extends EntityLiving {
+
+        public BrokenName(World world) {
+            super(world);
+        }
+
+        @Override
+        public String getCommandSenderName() {
+            throw new IllegalStateException("Fixture cannot resolve its entity name");
         }
     }
 
