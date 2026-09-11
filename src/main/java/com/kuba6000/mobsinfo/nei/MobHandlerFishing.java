@@ -1,27 +1,35 @@
 package com.kuba6000.mobsinfo.nei;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import static com.kuba6000.mobsinfo.MobsInfo.MODID;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.WeightedRandomFishable;
 import net.minecraftforge.common.FishingHooks;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import com.kuba6000.mobsinfo.api.helper.TranslationHelper;
 import com.kuba6000.mobsinfo.config.Config;
 
 import codechicken.lib.gui.GuiDraw;
+import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IUsageHandler;
 import codechicken.nei.recipe.RecipeCatalysts;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import cpw.mods.fml.common.registry.GameRegistry;
 
 public class MobHandlerFishing extends TemplateRecipeHandler {
 
@@ -65,6 +73,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
         }
     }
 
+    private static final Logger LOG = LogManager.getLogger(MODID + "[Fishing Handler]");
     private static FishingRecipe recipe = null;
     private static final int itemsPerRow = 8, itemXShift = 18, itemYShift = 18, nextRowYShift = 30, itemsYStart = 75;
     private static final double fishBaseChance = 0.85d, junkBaseChance = 0.10d, treasureBaseChance = 0.05d;
@@ -82,6 +91,17 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
     }
 
     @Override
+    public void onUpdate() {
+        super.onUpdate();
+        if (Minecraft.getMinecraft().currentScreen instanceof GuiRecipe<?>guiRecipe && guiRecipe.getHandler() == this
+            && !arecipes.isEmpty()
+            && !NEIClientUtils.shiftKey()
+            && cycleticks % 10 == 0) {
+            recipe.all.forEach(stack -> stack.setPermutationToRender(0));
+        }
+    }
+
+    @Override
     public String getOverlayIdentifier() {
         return "mobsinfo.mobhandlerfishing";
     }
@@ -93,7 +113,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
 
     @Override
     public String getRecipeName() {
-        return "Fishing Loot Table";
+        return Translations.TITLE.get();
     }
 
     @Override
@@ -153,26 +173,11 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
         GuiDraw.changeTexture(getGuiTexture());
         GuiDraw.drawTexturedModalRect(0, 0, 0, 0, 168, 105);
 
-        int x = 6, y = itemsYStart + 11, yshift = nextRowYShift;
-
-        if (recipe.fishCount > 0) {
-            for (int i = 0; i < ((recipe.fishCount - 1) / itemsPerRow) + 1; i++) {
-                GuiDraw.drawTexturedModalRect(x, y + (18 * i), 0, 192, 144, 18);
-                if (i > 0) GuiDraw.drawTexturedModalRect(x, y + ((18 * i) - 1), 0, 193, 144, 2);
-            }
-            y += yshift + ((recipe.fishCount - 1) / itemsPerRow) * 18;
-        }
-        if (recipe.junkCount > 0) {
-            for (int i = 0; i < ((recipe.junkCount - 1) / itemsPerRow) + 1; i++) {
-                GuiDraw.drawTexturedModalRect(x, y + (18 * i), 0, 192, 144, 18);
-                if (i > 0) GuiDraw.drawTexturedModalRect(x, y + ((18 * i) - 1), 0, 193, 144, 2);
-            }
-            y += yshift + ((recipe.junkCount - 1) / itemsPerRow) * 18;
-        }
-        if (recipe.treasureCount > 0) {
-            for (int i = 0; i < ((recipe.treasureCount - 1) / itemsPerRow) + 1; i++) {
-                GuiDraw.drawTexturedModalRect(x, y + (18 * i), 0, 192, 144, 18);
-                if (i > 0) GuiDraw.drawTexturedModalRect(x, y + ((18 * i) - 1), 0, 193, 144, 2);
+        for (FishingCategory category : recipe.categories) {
+            for (int row = 0; row < category.rows; row++) {
+                int y = category.y + 11 + itemYShift * row;
+                GuiDraw.drawTexturedModalRect(6, y, 0, 192, itemsPerRow * itemXShift, itemYShift);
+                if (row > 0) GuiDraw.drawTexturedModalRect(6, y - 1, 0, 193, itemsPerRow * itemXShift, 2);
             }
         }
     }
@@ -188,33 +193,11 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
         GuiDraw.drawString(Translations.FORMAT_3.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
         GuiDraw.drawString(Translations.FORMAT_4.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
 
-        x = 6;
-        y = itemsYStart;
-        yshift = nextRowYShift;
-
-        if (recipe.fishCount > 0) {
+        for (FishingCategory category : recipe.categories) {
             GuiDraw.drawString(
-                Translations.FISH.get(fishBaseChance * 100d),
-                x,
-                y,
-                ColorUtils.textDefault.getColor(),
-                false);
-            y += yshift + ((recipe.fishCount - 1) / itemsPerRow) * 18;
-        }
-        if (recipe.junkCount > 0) {
-            GuiDraw.drawString(
-                Translations.JUNK.get(junkBaseChance * 100d),
-                x,
-                y,
-                ColorUtils.textDefault.getColor(),
-                false);
-            y += yshift + ((recipe.junkCount - 1) / itemsPerRow) * 18;
-        }
-        if (recipe.treasureCount > 0) {
-            GuiDraw.drawString(
-                Translations.TREASURE.get(treasureBaseChance * 100d),
-                x,
-                y,
+                category.title.get(category.chance * 100d),
+                6,
+                category.y,
                 ColorUtils.textDefault.getColor(),
                 false);
         }
@@ -224,7 +207,7 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
     public List<String> handleItemTooltip(GuiRecipe<?> gui, ItemStack stack, List<String> currenttip, int recipeID) {
         if (recipe == null) return currenttip;
         FishingPositionedStack pstack = (FishingPositionedStack) recipe.all.stream()
-            .filter(f -> f.containsWithNBT(stack))
+            .filter(f -> gui.isMouseOver(f, recipeID))
             .findFirst()
             .orElse(null);
         if (pstack != null) pstack.handleTooltip(currenttip);
@@ -234,10 +217,62 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
     private static class FishingPositionedStack extends PositionedStack {
 
         private final double chance;
+        private final WeightedRandomFishable fishable;
+        private final Random random = new Random();
+        private boolean randomable = false;
 
-        public FishingPositionedStack(ItemStack stack, int x, int y, double chance) {
-            super(stack, x, y, false);
+        public FishingPositionedStack(WeightedRandomFishable fishable, int x, int y, double chance) {
+            super(fishable.field_150711_b, x, y, false);
             this.chance = chance;
+            this.fishable = fishable;
+            this.randomable = fishable.field_150710_d || fishable.field_150712_c > 0;
+            setPermutationToRender(0);
+        }
+
+        @Override
+        public void setPermutationToRender(int index) {
+            if (fishable != null) {
+                if (!randomable) {
+                    item = fishable.field_150711_b.copy();
+                    return;
+                }
+                try {
+                    item = fishable.func_150708_a(random);
+                } catch (Exception e) {
+                    item = fishable.field_150711_b.copy();
+                    GameRegistry.UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(item.getItem());
+                    LOG.error(
+                        "Fishing permutation randomization failed on {}:{}, marking this item as not randomable! Printing stacktrace:",
+                        ui.toString(),
+                        this.item.getItemDamage());
+                    e.printStackTrace();
+                    randomable = false;
+                }
+            }
+        }
+
+        @Override
+        public boolean containsWithNBT(ItemStack candidate) {
+            if (candidate == null) return false;
+            ItemStack expected = fishable.field_150711_b.copy();
+            if (fishable.field_150710_d && expected.getItem() == Items.book) {
+                expected.func_150996_a(Items.enchanted_book);
+            }
+            if (expected.getItem() != candidate.getItem()) return false;
+            ItemStack actual = candidate.copy();
+            if (fishable.field_150712_c > 0) actual.setItemDamage(expected.getItemDamage());
+            if (fishable.field_150710_d) {
+                removeRandomEnchantments(expected);
+                removeRandomEnchantments(actual);
+            }
+            return expected.isItemEqual(actual) && ItemStack.areItemStackTagsEqual(expected, actual);
+        }
+
+        private static void removeRandomEnchantments(ItemStack stack) {
+            NBTTagCompound tag = stack.getTagCompound();
+            if (tag == null) return;
+            tag.removeTag(stack.getItem() == Items.enchanted_book ? "StoredEnchantments" : "ench");
+            if (tag.hasNoTags()) stack.setTagCompound(null);
         }
 
         public void handleTooltip(List<String> currenttip) {
@@ -245,87 +280,52 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
         }
     }
 
+    private static class FishingCategory {
+
+        final Translations title;
+        final double chance;
+        final int y;
+        final int rows;
+        final List<PositionedStack> stacks = new ArrayList<>();
+
+        FishingCategory(Translations title, double chance, List<WeightedRandomFishable> entries, int y) {
+            this.title = title;
+            this.chance = chance;
+            this.y = y;
+            rows = (entries.size() + itemsPerRow - 1) / itemsPerRow;
+            int totalWeight = WeightedRandom.getTotalWeight(entries);
+            for (int index = 0; index < entries.size(); index++) {
+                WeightedRandomFishable entry = entries.get(index);
+                stacks.add(
+                    new FishingPositionedStack(
+                        entry,
+                        7 + (index % itemsPerRow) * itemXShift,
+                        y + 12 + (index / itemsPerRow) * itemYShift,
+                        chance * entry.itemWeight / totalWeight));
+            }
+        }
+    }
+
     private class FishingRecipe extends TemplateRecipeHandler.CachedRecipe {
 
-        public final int fishCount;
-        public final int junkCount;
-        public final int treasureCount;
-
-        final List<PositionedStack> all;
-        final List<PositionedStack> fish;
-        final List<PositionedStack> junk;
-        final List<PositionedStack> treasure;
-
+        final List<FishingCategory> categories = new ArrayList<>();
+        final List<PositionedStack> all = new ArrayList<>();
         private final int height;
 
-        public FishingRecipe() {
-            int xorigin = 7, xoffset = xorigin, yoffset = itemsYStart + 12;
+        FishingRecipe() {
+            int y = itemsYStart;
+            y = addCategory(Translations.FISH, fishBaseChance, FishingHooks.fish, y);
+            y = addCategory(Translations.JUNK, junkBaseChance, FishingHooks.junk, y);
+            y = addCategory(Translations.TREASURE, treasureBaseChance, FishingHooks.treasure, y);
+            height = y + 12;
+        }
 
-            List<WeightedRandomFishable> fishList = FishingHooks.fish;
-            int fishTotalWeight = WeightedRandom.getTotalWeight(fishList);
-            fishCount = fishList.size();
-            fish = new ArrayList<>();
-
-            for (Iterator<WeightedRandomFishable> iterator = fishList.iterator(); iterator.hasNext();) {
-                WeightedRandomFishable fishable = iterator.next();
-                ItemStack stack = fishable.field_150711_b.copy();
-                double chance = (double) fishable.itemWeight / fishTotalWeight;
-
-                fish.add(new FishingPositionedStack(stack, xoffset, yoffset, chance));
-                xoffset += itemXShift;
-                if (xoffset >= xorigin + (itemXShift * itemsPerRow) && iterator.hasNext()) {
-                    xoffset = xorigin;
-                    yoffset += itemYShift;
-                }
-            }
-
-            xoffset = xorigin;
-            yoffset += nextRowYShift;
-
-            List<WeightedRandomFishable> junkList = FishingHooks.junk;
-            int junkTotalWeight = WeightedRandom.getTotalWeight(junkList);
-            junkCount = junkList.size();
-            junk = new ArrayList<>();
-
-            for (Iterator<WeightedRandomFishable> iterator = junkList.iterator(); iterator.hasNext();) {
-                WeightedRandomFishable fishable = iterator.next();
-                ItemStack stack = fishable.field_150711_b.copy();
-                double chance = (double) fishable.itemWeight / junkTotalWeight;
-
-                junk.add(new FishingPositionedStack(stack, xoffset, yoffset, chance));
-                xoffset += itemXShift;
-                if (xoffset >= xorigin + (itemXShift * itemsPerRow) && iterator.hasNext()) {
-                    xoffset = xorigin;
-                    yoffset += itemYShift;
-                }
-            }
-
-            xoffset = xorigin;
-            yoffset += nextRowYShift;
-
-            List<WeightedRandomFishable> treasureList = FishingHooks.treasure;
-            int treasureTotalWeight = WeightedRandom.getTotalWeight(treasureList);
-            treasureCount = treasureList.size();
-            treasure = new ArrayList<>();
-
-            for (Iterator<WeightedRandomFishable> iterator = treasureList.iterator(); iterator.hasNext();) {
-                WeightedRandomFishable fishable = iterator.next();
-                ItemStack stack = fishable.field_150711_b.copy();
-                double chance = (double) fishable.itemWeight / treasureTotalWeight;
-                treasure.add(new FishingPositionedStack(stack, xoffset, yoffset, chance));
-                xoffset += itemXShift;
-                if (xoffset >= xorigin + (itemXShift * itemsPerRow) && iterator.hasNext()) {
-                    xoffset = xorigin;
-                    yoffset += itemYShift;
-                }
-            }
-
-            all = new ArrayList<>();
-            all.addAll(fish);
-            all.addAll(junk);
-            all.addAll(treasure);
-
-            height = yoffset + 30;
+        private int addCategory(Translations title, double chance, List<WeightedRandomFishable> entries, int y) {
+            if (entries.isEmpty()) return y;
+            FishingCategory category = new FishingCategory(title, chance, entries, y);
+            categories.add(category);
+            all.addAll(category.stacks);
+            return y + nextRowYShift + (category.rows - 1) * itemYShift;
         }
 
         @Override
