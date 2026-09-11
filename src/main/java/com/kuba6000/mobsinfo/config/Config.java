@@ -32,6 +32,7 @@ public class Config {
 
         MOB_HANDLER("MobHandler"),
         VILLAGER_TRADES_HANDLER("VillagerTradesHandler"),
+        FISHING_HANDLER("FishingHandler"),
         DEBUG("Debug"),
         COMPATIBILITY("Compatibility");
 
@@ -123,18 +124,18 @@ public class Config {
                 "Skip a drop category/Looting variant as soon as its estimated path count exceeds this value. Zero or negative disables this estimate limit. Replaces MaxPathsPerMobPass.")
                 .getInt();
 
-            mobBlacklist = configuration
-                .get(
-                    category.get(),
-                    "MobBlacklist",
-                    new String[] { "Giant", "Thaumcraft.TravelingTrunk", "chisel.snowman", "OpenBlocks.Luggage",
-                        "OpenBlocks.MiniMe", "SpecialMobs.SpecialCreeper", "SpecialMobs.SpecialZombie",
-                        "SpecialMobs.SpecialPigZombie", "SpecialMobs.SpecialSlime", "SpecialMobs.SpecialSkeleton",
-                        "SpecialMobs.SpecialEnderman", "SpecialMobs.SpecialCaveSpider", "SpecialMobs.SpecialGhast",
-                        "SpecialMobs.SpecialWitch", "SpecialMobs.SpecialSpider", "TwilightForest.HydraHead",
-                        "TwilightForest.RovingCube", "TwilightForest.Harbinger Cube", "TwilightForest.Adherent",
-                        "SpecialMobs.SpecialSilverfish", },
-                    "These mobs will be skipped when generating recipe map")
+            mobBlacklist = configuration.get(
+                category.get(),
+                "MobBlacklist",
+                new String[] { "Giant", "Thaumcraft.TravelingTrunk", "chisel.snowman", "OpenBlocks.Luggage",
+                    "OpenBlocks.MiniMe", "SpecialMobs.SpecialCreeper", "SpecialMobs.SpecialZombie",
+                    "SpecialMobs.SpecialPigZombie", "SpecialMobs.SpecialSlime", "SpecialMobs.SpecialSkeleton",
+                    "SpecialMobs.SpecialEnderman", "SpecialMobs.SpecialCaveSpider", "SpecialMobs.SpecialGhast",
+                    "SpecialMobs.SpecialWitch", "SpecialMobs.SpecialSpider", "TwilightForest.HydraHead",
+                    "TwilightForest.RovingCube", "TwilightForest.Harbinger Cube", "TwilightForest.Adherent",
+                    "SpecialMobs.SpecialSilverfish", },
+                "These mobs are skipped during recipe generation and cache loading. "
+                    + "The client's blacklist also applies when joining a server. Restart the game after changing it.")
                 .getStringList();
 
             hiddenMode = configuration
@@ -179,6 +180,18 @@ public class Config {
                 10_000_000,
                 "Skip a trade handler/profession as soon as its estimated path count exceeds this value. Zero or negative disables this estimate limit. Replaces MaxPathsPerHandler.")
                 .getInt();
+        }
+    }
+
+    public static class FishingHandler {
+
+        public static boolean enabled = true;
+
+        private static void load(Configuration configuration) {
+            Category category = Category.FISHING_HANDLER;
+
+            enabled = configuration.get(category.get(), "Enabled", true, "Show fishing drops in NEI")
+                .getBoolean();
         }
     }
 
@@ -254,6 +267,7 @@ public class Config {
 
         MobHandler.load(configuration);
         VillagerTradesHandler.load(configuration);
+        FishingHandler.load(configuration);
         Debug.load(configuration);
         Compatibility.load(configuration);
 

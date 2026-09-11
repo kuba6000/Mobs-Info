@@ -4,6 +4,20 @@ plugins {
     id 'com.gtnewhorizons.gtnhconvention'
 }
 
+if (project.hasProperty('mobBlacklistIntegration')) {
+    def fixtureJar = tasks.register('mobBlacklistFixtureJar', Jar) {
+        from sourceSets.test.output
+        include 'com/kuba6000/mobsinfo/blacklistintegration/**'
+        archiveClassifier = 'mob-blacklist-fixture'
+    }
+    dependencies {
+        runtimeOnlyNonPublishable(files(fixtureJar))
+    }
+    tasks.named('runServer') {
+        systemProperty 'mobsinfo.mobBlacklistIntegration', project.property('mobBlacklistIntegration')
+    }
+}
+
 if (project.hasProperty('villagerTradeIntegration')) {
     def fixtureJar = tasks.register('villagerTradeFixtureJar', Jar) {
         from sourceSets.test.output

@@ -319,6 +319,7 @@ public class MobRecipeLoader {
         Map<String, List<String>> incompleteDrops;
         Map<String, ArrayList<MobDrop>> moblist;
         HashSet<String> skippedMobs;
+        HashSet<String> blacklistedMobs;
     }
 
     public static final List<Double> DQRChances = new ArrayList<>();
@@ -341,6 +342,8 @@ public class MobRecipeLoader {
         if (alreadyGenerated) return;
         alreadyGenerated = true;
         if (!Config.MobHandler.mobHandlerEnabled) return;
+        HashSet<String> blacklistedMobs = new HashSet<>();
+        if (Config.MobHandler.mobBlacklist != null) Collections.addAll(blacklistedMobs, Config.MobHandler.mobBlacklist);
         VanillaMobRecipeLoader.init();
 
         World f = new DummyWorld() {
@@ -382,7 +385,10 @@ public class MobRecipeLoader {
             try {
                 reader = Files.newReader(cache, StandardCharsets.UTF_8);
                 MobRecipeLoaderCacheStructure s = gson.fromJson(reader, MobRecipeLoaderCacheStructure.class);
-                if (s.generatorVersion == GENERATOR_VERSION && s.comparisonWeights == frand.useComparisonWeights
+                // Additional exclusions can reuse the cache. Re-enabled mobs need their missing recipes generated.
+                boolean compatibleBlacklist = s.blacklistedMobs != null
+                    && blacklistedMobs.containsAll(s.blacklistedMobs);
+                if (compatibleBlacklist && s.generatorVersion == GENERATOR_VERSION && s.comparisonWeights == frand.useComparisonWeights
                     && s.timeout == Config.MobHandler.mobTimeout
                     && s.maxEstimatedPaths == Config.MobHandler.maxEstimatedPathsPerMobPass
                     && (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
@@ -398,6 +404,11 @@ public class MobRecipeLoader {
                     for (Map.Entry<String, ArrayList<MobDrop>> entry : s.moblist.entrySet()) {
                         String mobName = entry.getKey();
                         bar.step(mobName);
+                        if (blacklistedMobs.contains(mobName)) {
+                            if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
+                                LOG.info("Entity {} is blacklisted, skipping cached recipe", mobName);
+                            continue;
+                        }
                         GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(mobName);
                         if (vanillaMob != null
                             && (vanillaMob.mob.getClass() == EntityList.stringToClassMapping.get(mobName)
@@ -451,7 +462,7 @@ public class MobRecipeLoader {
                     isInGenerationProcess = false;
                     return;
                 } else {
-                    LOG.info("Cached map version mismatch, generating a new one");
+                    LOG.info("Cached map version or generation blacklist changed, generating a new one");
                 }
             } catch (Exception ignored) {
                 LOG.warn("There was an exception while parsing cached map, generating a new one");
@@ -477,6 +488,11 @@ public class MobRecipeLoader {
         EntityList.stringToClassMapping.forEach((name, entity) -> {
             bar.step(name);
             if (entity == null) return;
+            if (blacklistedMobs.contains(name)) {
+                if (Config.Debug.loggingLevel == Config.Debug.LoggingLevel.Detailed)
+                    LOG.info("Entity {} is blacklisted, skipping generation", name);
+                return;
+            }
 
             GeneralMappedMob vanillaMob = VanillaMobRecipeLoader.vanillaMobList.get(name);
             if (vanillaMob != null && vanillaMob.mob.getClass() == entity) {
@@ -993,6 +1009,7 @@ public class MobRecipeLoader {
         s.timeout = Config.MobHandler.mobTimeout;
         s.maxEstimatedPaths = Config.MobHandler.maxEstimatedPathsPerMobPass;
         s.incompleteDrops = incompleteDrops;
+        s.blacklistedMobs = blacklistedMobs;
         s.skippedMobs = skippedMobs;
         if (!skippedMobs.isEmpty()) {
             LOG.warn("Generated mob map is incomplete; random call limit skipped: {}", skippedMobs);
