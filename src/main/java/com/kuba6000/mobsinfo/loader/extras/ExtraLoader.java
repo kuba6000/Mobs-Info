@@ -128,6 +128,8 @@ public class ExtraLoader {
             && !alreadyProvided.contains(LoaderReference.EtFuturumRequiem.modID)) loaders.add(new EtFuturum());
         if (LoaderReference.LycanitesMobs.isLoaded && !alreadyProvided.contains(LoaderReference.LycanitesMobs.modID))
             loaders.add(new LycanitesMobs());
+        if (LoaderReference.MineTradingCards.isLoaded
+            && !alreadyProvided.contains(LoaderReference.MineTradingCards.modID)) loaders.add(new MineTradingCards());
         if (LoaderReference.Reliquarry.isLoaded && !alreadyProvided.contains(LoaderReference.Reliquarry.modID))
             loaders.add(new Reliquarry());
 

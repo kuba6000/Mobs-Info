@@ -40,6 +40,7 @@ public enum LoaderReference {
     ExtraUtilities("ExtraUtilities"),
     EtFuturumRequiem("etfuturum"),
     LycanitesMobs("lycanitesmobs"),
+    MineTradingCards("is_mtc"),
     JustAnotherSpawner("JustAnotherSpawner"),
     Reliquarry("xreliquary"),;
 
