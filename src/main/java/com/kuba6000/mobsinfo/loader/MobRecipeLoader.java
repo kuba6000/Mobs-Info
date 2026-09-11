@@ -388,7 +388,8 @@ public class MobRecipeLoader {
                 // Additional exclusions can reuse the cache. Re-enabled mobs need their missing recipes generated.
                 boolean compatibleBlacklist = s.blacklistedMobs != null
                     && blacklistedMobs.containsAll(s.blacklistedMobs);
-                if (compatibleBlacklist && s.generatorVersion == GENERATOR_VERSION && s.comparisonWeights == frand.useComparisonWeights
+                if (compatibleBlacklist && s.generatorVersion == GENERATOR_VERSION
+                    && s.comparisonWeights == frand.useComparisonWeights
                     && s.timeout == Config.MobHandler.mobTimeout
                     && s.maxEstimatedPaths == Config.MobHandler.maxEstimatedPathsPerMobPass
                     && (Config.MobHandler.regenerationTrigger == Config.MobHandler._CacheRegenerationTrigger.Never
