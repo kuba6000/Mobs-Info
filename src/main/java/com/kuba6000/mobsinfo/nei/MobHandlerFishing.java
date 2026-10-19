@@ -167,6 +167,11 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
         }
     }
 
+    public MobHandlerFishing addAllRecipes() {
+        arecipes.add(recipe);
+        return this;
+    }
+
     @Override
     public void drawBackground(int recipeID) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
