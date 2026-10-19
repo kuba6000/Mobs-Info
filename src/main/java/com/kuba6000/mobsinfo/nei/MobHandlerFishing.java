@@ -184,6 +184,8 @@ public class MobHandlerFishing extends TemplateRecipeHandler {
 
     @Override
     public void drawForeground(int recipeID) {
+        // NEI enables item lighting before invoking the foreground renderer.
+        GL11.glDisable(GL11.GL_LIGHTING);
         int y = 0, yshift = 10, x = 7;
 
         GuiDraw.drawString(Translations.TITLE.get(), x, y += yshift, ColorUtils.textDefault.getColor(), false);
