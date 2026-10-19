@@ -283,6 +283,8 @@ public class VillagerTradesHandler extends TemplateRecipeHandler {
 
     @Override
     public void drawForeground(int recipe) {
+        // NEI enables item lighting before invoking the foreground renderer.
+        GL11.glDisable(GL11.GL_LIGHTING);
         VillagerCachedRecipe currentRecipe = (VillagerCachedRecipe) arecipes.get(recipe);
         int y = 7, yshift = 10, x = 57;
         GuiDraw.drawString(
