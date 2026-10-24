@@ -64,6 +64,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import com.kuba6000.mobsinfo.api.ConstructableItemStack;
 import com.kuba6000.mobsinfo.api.DummyWorld;
 import com.kuba6000.mobsinfo.api.IChanceModifier;
 import com.kuba6000.mobsinfo.api.IMobInfoProvider;
@@ -301,6 +302,13 @@ public class MobRecipeLoader {
         public ArrayList<MobDrop> copyDrops() {
             ArrayList<MobDrop> copy = new ArrayList<>(drops.size());
             for (MobDrop drop : drops) {
+                if (drop.stack == null) {
+                    LOG.warn(
+                        "Skipping null-stack drop for mob {}: {}",
+                        recipe.entityName,
+                        describeReconstructableStack(drop.reconstructableStack));
+                    continue;
+                }
                 copy.add(drop.copy());
             }
             return copy;
@@ -324,6 +332,28 @@ public class MobRecipeLoader {
 
     public static final List<Double> DQRChances = new ArrayList<>();
     private static EntityLiving currentEntity = null;
+
+    private static String describeReconstructableStack(ConstructableItemStack stack) {
+        if (stack == null || stack.itemIdentifier == null) return "<unknown>";
+        return stack.itemIdentifier.modId + ":" + stack.itemIdentifier.name;
+    }
+
+    /**
+     * Cached drops can reference items that no longer exist (e.g. after a mod's item registry was reworked), in
+     * which case {@link MobDrop#reconstructStack()} leaves {@link MobDrop#stack} null. Removes those before they
+     * reach anything that dereferences the stack.
+     */
+    private static void removeNullStackDrops(String mobName, ArrayList<MobDrop> drops, String source) {
+        drops.removeIf(drop -> {
+            if (drop.stack != null) return false;
+            LOG.warn(
+                "Skipping null-stack drop for mob {} from {}: {}",
+                mobName,
+                source,
+                describeReconstructableStack(drop.reconstructableStack));
+            return true;
+        });
+    }
 
     public static void preGenerationEntityModifiers(EntityLiving entity, String mobName) {
         if (entity instanceof EntitySkeleton && mobName.equals("witherSkeleton")) {
@@ -433,6 +463,11 @@ public class MobRecipeLoader {
                                 if (e instanceof IMobInfoProvider provider) {
                                     drops = new ArrayList<>();
                                     provider.provideDropsInformation(drops);
+                                    removeNullStackDrops(
+                                        mobName,
+                                        drops,
+                                        provider.getClass()
+                                            .getName());
                                     for (MobDrop drop : drops) {
                                         drop.clampChance();
                                     }
@@ -446,6 +481,7 @@ public class MobRecipeLoader {
                                 }
                             } else {
                                 drops.forEach(MobDrop::reconstructStack);
+                                removeNullStackDrops(mobName, drops, "cache");
                                 GeneralMobList.put(
                                     mobName,
                                     new GeneralMappedMob(e, MobRecipe.generateMobRecipe(e, mobName, drops), drops));
@@ -586,6 +622,11 @@ public class MobRecipeLoader {
                     } else {
                         ArrayList<MobDrop> moboutputs = new ArrayList<>();
                         provider.provideDropsInformation(moboutputs);
+                        removeNullStackDrops(
+                            name,
+                            moboutputs,
+                            provider.getClass()
+                                .getName());
                         for (MobDrop moboutput : moboutputs) {
                             moboutput.clampChance();
                         }

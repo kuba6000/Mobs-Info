@@ -168,6 +168,15 @@ public class ExtraLoader {
                     k);
                 ex.printStackTrace();
             }
+            drops.removeIf(drop -> {
+                if (drop.stack != null) return false;
+                LOG.warn(
+                    "Skipping null-stack drop for mob {} from {}",
+                    k,
+                    provider.getClass()
+                        .getName());
+                return true;
+            });
             for (MobDrop drop : drops) {
                 for (IChanceModifier chanceModifier : drop.chanceModifiers) {
                     try {
